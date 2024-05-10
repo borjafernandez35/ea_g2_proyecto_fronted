@@ -29,7 +29,7 @@ class UserService {
     //Aquí llamamos a la función request
     print('request');
     // Utilizar Dio para enviar la solicitud POST a http://127.0.0.1:3000/users
-    Response response = await dio.post('$baseUrl/signup', data: newUser.toJson());
+    Response response = await dio.post('$baseUrl/create', data: newUser.toJson());
     //En response guardamos lo que recibimos como respuesta
     //Printeamos los datos recibidos
 
