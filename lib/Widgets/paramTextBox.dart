@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_seminario/Resources/pallete.dart';
+import 'package:spotfinder/Resources/pallete.dart';
 
 class ParamTextBox extends StatelessWidget {
   final String text;

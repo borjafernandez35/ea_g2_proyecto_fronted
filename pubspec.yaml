@@ -1,5 +1,5 @@
-name: flutter_seminario
-description: "A new Flutter project."
+name: spotfinder
+description: "Localizador de actividades interactivo."
 publish_to: 'none'
 version: 0.1.0
 

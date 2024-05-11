@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_seminario/Models/UserModel.dart';
-import 'package:flutter_seminario/Screens/home_page.dart';
-import 'package:flutter_seminario/Screens/home_users.dart';
-import 'package:flutter_seminario/Screens/login_screen.dart';
-import 'package:flutter_seminario/Widgets/button_sign_in.dart';
-import 'package:flutter_seminario/Widgets/paramTextBox.dart';
-import 'package:flutter_seminario/Services/UserService.dart';
-import 'package:flutter_seminario/Resources/pallete.dart';
+import 'package:spotfinder/Models/UserModel.dart';
+import 'package:spotfinder/Screens/login_screen.dart';
+import 'package:spotfinder/Widgets/button_sign_in.dart';
+import 'package:spotfinder/Widgets/paramTextBox.dart';
+import 'package:spotfinder/Services/UserService.dart';
+import 'package:spotfinder/Resources/pallete.dart';
 import 'package:get/get.dart';
 
 late UserService userService;

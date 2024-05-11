@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_seminario/Screens/login_screen.dart';
-import 'package:flutter_seminario/Screens/register_screen.dart';
+import 'package:spotfinder/Screens/login_screen.dart';
+import 'package:spotfinder/Screens/register_screen.dart';
 
 class TitleScreen extends StatelessWidget {
   Widget build(BuildContext context){

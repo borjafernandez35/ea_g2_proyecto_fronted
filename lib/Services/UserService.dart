@@ -1,8 +1,5 @@
-import 'dart:convert';
-import 'package:flutter_seminario/Models/ActivityModel.dart';
-import 'package:flutter_seminario/Screens/home_users.dart';
-import 'package:flutter_seminario/main.dart';
-import 'package:flutter_seminario/Models/UserModel.dart';
+import 'package:spotfinder/Models/ActivityModel.dart';
+import 'package:spotfinder/Models/UserModel.dart';
 import 'package:dio/dio.dart'; // Usa un prefijo 'Dio' para importar la clase Response desde Dio
 import 'package:get_storage/get_storage.dart';
 

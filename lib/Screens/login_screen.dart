@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_seminario/Models/UserModel.dart';
-import 'package:flutter_seminario/Screens/home_page.dart';
-import 'package:flutter_seminario/Screens/home_users.dart';
-import 'package:flutter_seminario/Screens/register_screen.dart';
-import 'package:flutter_seminario/Widgets/button_sign_in.dart';
-import 'package:flutter_seminario/Widgets/paramTextBox.dart';
-import 'package:flutter_seminario/Services/UserService.dart';
-import 'package:flutter_seminario/Resources/pallete.dart';
+import 'package:spotfinder/Screens/home_page.dart';
+import 'package:spotfinder/Screens/register_screen.dart';
+import 'package:spotfinder/Widgets/button_sign_in.dart';
+import 'package:spotfinder/Widgets/paramTextBox.dart';
+import 'package:spotfinder/Services/UserService.dart';
 import 'package:get/get.dart';
 
 late UserService userService;
 
 class LoginScreen extends StatefulWidget {
-  LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _LoginScreen createState() => _LoginScreen();
 }
 

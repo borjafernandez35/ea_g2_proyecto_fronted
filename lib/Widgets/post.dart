@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_seminario/Models/ActivityModel.dart';
-import 'package:flutter_seminario/Screens/detalles_user.dart';
-import 'package:flutter_seminario/Screens/register_screen.dart';
-import 'package:flutter_seminario/Screens/detalles_user.dart';
-
-import 'package:flutter_seminario/Resources/pallete.dart';
+import 'package:spotfinder/Models/ActivityModel.dart';
+import 'package:spotfinder/Screens/detalles_user.dart';
 import 'package:get/get.dart';
 
 

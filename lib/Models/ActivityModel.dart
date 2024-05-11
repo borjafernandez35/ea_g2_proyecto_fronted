@@ -1,5 +1,5 @@
-class Activity {
-   final String name;
+  class Activity {
+  final String name;
   final String description;
   final String idUser;
   final DateTime date;

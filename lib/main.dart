@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_seminario/Resources/pallete.dart';
-import 'package:flutter_seminario/Screens/login_screen.dart';
-import 'package:flutter_seminario/Screens/home_page.dart';
-import 'package:flutter_seminario/Screens/title_screen.dart';
+import 'package:spotfinder/Resources/pallete.dart';
+import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:get/get.dart';
 
 void main() {

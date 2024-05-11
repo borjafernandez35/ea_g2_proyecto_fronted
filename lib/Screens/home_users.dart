@@ -1,28 +1,26 @@
 // ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors
 
-import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_seminario/Models/ActivityModel.dart';
-import 'package:flutter_seminario/Screens/home_page.dart';
-import 'package:flutter_seminario/Screens/detalles_user.dart';
-import 'package:flutter_seminario/Widgets/post.dart';
-import 'package:http/http.dart' as http;
+import 'package:spotfinder/Models/ActivityModel.dart';
+import 'package:spotfinder/Screens/home_page.dart';
+import 'package:spotfinder/Widgets/post.dart';
 import 'package:get/get.dart';
-import 'package:dio/dio.dart' ;
-import 'package:flutter_seminario/Services/UserService.dart';
+import 'package:spotfinder/Services/UserService.dart';
 
 late UserService userService;
 
 
 class UserListPage extends StatefulWidget {
-    UserListPage({Key? key}) : super(key: key);
+    const UserListPage({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _UserListPage createState() => _UserListPage();
 }
 
 class _UserListPage extends State<UserListPage> {
+  // ignore: non_constant_identifier_names
   late List<Activity> lista_users;
 
   bool isLoading = true; // Nuevo estado para indicar si se están cargando los datos
@@ -46,7 +44,9 @@ class _UserListPage extends State<UserListPage> {
         'No se han podido obtener los datos.',
         snackPosition: SnackPosition.BOTTOM,
       );
-      print('Error al comunicarse con el backend: $error');
+      if (kDebugMode) {
+        print('Error al comunicarse con el backend: $error');
+      }
     }
   }
 

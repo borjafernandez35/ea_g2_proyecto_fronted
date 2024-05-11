@@ -1,10 +1,10 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
-import 'package:flutter_seminario/Screens/home_users.dart';
-import 'package:flutter_seminario/Resources/pallete.dart';
-import 'package:flutter_seminario/Screens/register_screen.dart';
-import 'package:flutter_seminario/Screens/login_screen.dart';
+import 'package:spotfinder/Screens/home_users.dart';
+import 'package:spotfinder/Resources/pallete.dart';
+import 'package:spotfinder/Screens/register_screen.dart';
+import 'package:spotfinder/Screens/login_screen.dart';
 
 import 'package:get/get.dart';
 
