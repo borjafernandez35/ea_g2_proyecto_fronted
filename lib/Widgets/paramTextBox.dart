@@ -15,21 +15,26 @@ class ParamTextBox extends StatelessWidget {
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
+          filled: true, // Establecer como true para agregar un fondo
+          fillColor: Colors.white, // Establecer el color de fondo
           enabledBorder: OutlineInputBorder(
           borderSide: const BorderSide(
-            color: Pallete.greyColor,
+            color: Color.fromARGB(255, 255, 255, 255),
             width: 3,
           ),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(50),
           ),
           focusedBorder: OutlineInputBorder(
             borderSide: const BorderSide(
             color: Pallete.salmonColor,
             width: 3,
           ),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(50),
           ),
           hintText: text,
+          hintStyle: TextStyle(color: const Color.fromARGB(255, 0, 0, 0), fontSize: 20.0), // Cambiar el color y tamaño del texto dentro del cuadro de texto
+          contentPadding: EdgeInsets.only(left: 20.0),
+          
         ),
         
       ),
