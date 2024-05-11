@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:flutter_seminario/Screens/chatScreen.dart';
 import 'package:flutter_seminario/Screens/home_users.dart';
 import 'package:flutter_seminario/Resources/pallete.dart';
 import 'package:flutter_seminario/Screens/register_screen.dart';
@@ -109,11 +110,11 @@ class _nameState extends State<HomePage> {
 
                 ),
                 title: Text(
-                  'Log In',
+                  'Chat',
                   style: TextStyle(color: Colors.white),
                 ),
                 onTap: () {
-                  Get.to(() =>LoginScreen());
+                  Get.to(() =>ChatScreen());
                 },
               ),
             ),
