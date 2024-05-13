@@ -12,7 +12,6 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _LoginScreen createState() => _LoginScreen();
 }
 
@@ -31,29 +30,70 @@ class _LoginScreen extends State<LoginScreen> {
       appBar: AppBar(
         title: const Text('SpotFinder'),
       ),
-      // #docregion addWidget
-      body: SingleChildScrollView(
-        child: Center(
-          child: Column(
+      body: Stack(
+        children: [
+          // Fondo de pantalla
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/login_background.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          // Contenido de la pantalla
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 50),
-              const Text('Log in', style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 50,
+              // Logo de la empresa
+              Image.asset(
+                'assets/spotfinder.png',
+                height: 150,
+                width: 150,
+              ),
+              SizedBox(height: 20), // Separación entre el logo y el cuadro negro
+              // Cuadro negro con el formulario de inicio de sesión
+              Container(
+                margin: EdgeInsets.all(20), // Ajusta el margen del cuadro negro aquí
+                padding: EdgeInsets.all(20), // Ajusta el padding del cuadro negro aquí
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7), // Color del cuadro negro con opacidad
+                  borderRadius: BorderRadius.circular(20), // Bordes redondeados del cuadro
+                ),
+                child: Column(
+                  children: [
+                    const Text('Welcome', style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 30,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    ParamTextBox(controller: controller.mailController, text: 'e-mail'),
+                    const SizedBox(height: 10),
+                    ParamTextBox(controller: controller.contrasenaController, text: 'Password'),
+                    const SizedBox(height: 10),
+                    SignInButton(onPressed: () => controller.logIn(), text: 'Sign in'),
+                    const SizedBox(height: 10),
+                    // Nuevo texto para olvidar la contraseña
+                    GestureDetector(
+                      onTap: () {
+                        // Aquí puedes agregar la acción para olvidar la contraseña
+                      },
+                      child: Text(
+                        'Forgot password?',
+                        style: TextStyle(
+                          color: Colors.white,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 40),
-              const SizedBox(height: 15),
-              ParamTextBox(controller: controller.mailController, text: 'E-Mail'),
-              const SizedBox(height: 15),
-              ParamTextBox(controller: controller.contrasenaController, text: 'Contraseña'),
-              const SizedBox(height: 40),
-              SignInButton(onPressed: () => controller.logIn(), text: 'Log in'),
-              const SizedBox(height: 15),
-              SignInButton(onPressed: () => Get.to(RegisterScreen()), text: 'Register'),
             ],
           ),
-        )
+        ],
       ),
     );
   }
@@ -104,6 +144,3 @@ class Controller extends GetxController {
     }
   }
 }
-
-
-
