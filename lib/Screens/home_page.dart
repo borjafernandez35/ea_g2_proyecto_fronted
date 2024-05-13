@@ -21,35 +21,21 @@ class HomePage extends StatefulWidget {
 // ignore: camel_case_types
 class _nameState extends State<HomePage> {
   int _selectedIndex = 0;
-
- /*  void navigationBar(int index){
-    setState(() {
-      _selectedIndex=index;
-    });
-  }
-  final List<Widget> _pages = [
-    UserListPage(),
-  ]; */
+  
   @override
   Widget build(BuildContext context) {
+    const gradientStart = Colors.black;
+    const gradientEnd = Colors.transparent;
+
+    final _gradient = LinearGradient(
+      colors: [gradientStart, gradientEnd],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      stops: [0, 0.3]
+    );
+
     return Scaffold(
-      appBar: AppBar(
-        
-        // ignore: prefer_const_constructors
-        title: Center(child: Text('DEMO FLUTTER',),),
-        elevation: 0,
-        leading: Builder(
-          builder: (context) =>IconButton(
-            icon: Icon(
-            Icons.menu,
-            color: Pallete.salmonColor,
-            ),
-            onPressed: (){
-              Scaffold.of(context).openDrawer();
-            },
-          ),
-        ),
-      ),
+      backgroundColor: Colors.transparent,
       drawer: Drawer(
         backgroundColor: Pallete.greyColor,
         child: Column(
@@ -138,7 +124,22 @@ class _nameState extends State<HomePage> {
           ],
         ),
       ),
-      body: Center(child: Text('Welcome'),),
+      body: Container(
+        decoration: BoxDecoration(gradient: _gradient),
+        child: Row(
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.menu,
+                color: Pallete.salmonColor,
+              ),
+              onPressed: (){
+                Scaffold.of(context).openDrawer();
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

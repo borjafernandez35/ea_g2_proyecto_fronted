@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_seminario/Resources/pallete.dart';
-import 'package:flutter_seminario/Screens/login_screen.dart';
+import 'package:flutter_seminario/Screens/home_page.dart';
 import 'package:get/get.dart';
 
 void main() {
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Pallete.backgroundColor,
       ),
-      home: LoginScreen(),
+      home: HomePage(),
     );
   }
 }
