@@ -1,161 +1,139 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Screens/login_screen.dart';
-import 'package:spotfinder/Widgets/button_sign_in.dart';
-import 'package:spotfinder/Widgets/paramTextBox.dart';
+import 'package:spotfinder/Widgets/button_sign_up.dart';
+import 'package:spotfinder/Widgets/paramTextBox_sign_up.dart';
 import 'package:spotfinder/Services/UserService.dart';
-import 'package:spotfinder/Resources/pallete.dart';
 import 'package:get/get.dart';
 
 late UserService userService;
 
 class RegisterScreen extends StatefulWidget {
-  RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _RegisterScreen createState() => _RegisterScreen();
 }
 
 class _RegisterScreen extends State<RegisterScreen> {
-  final RegisterScreenController controller =
-      Get.put(RegisterScreenController());
+  final Controller controller = Get.put(Controller());
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     userService = UserService();
   }
 
-  @override
+  @override 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('SpotFinder'),
       ),
-      // #docregion addWidget
-      body: SingleChildScrollView(
-          child: Center(
-        child: Column(
-          children: [
-            const SizedBox(height: 50),
-            const Text(
-              'Crear usuario',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 50,
+      body: Stack(
+        children: [
+          // Fondo de pantalla
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/login_background.png'),
+                fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 40),
-
-            const SizedBox(height: 15),
-            ParamTextBox(
-                controller: controller.nombreController, text: 'Nombre'),
-            const SizedBox(height: 15),
-            ParamTextBox(
-                controller: controller.generoController, text: 'Género'),
-            const SizedBox(height: 15),
-
-            ParamTextBox(
-                controller: controller.contrasenaController,
-                text: 'Contraseña'),
-            const SizedBox(height: 15),
-            ParamTextBox(controller: controller.mailController, text: 'E-Mail'),
-            Visibility(
-              visible: controller.invalid,
-              child: const Text(
-                'Invalid',
-                style: TextStyle(color: Pallete.salmonColor, fontSize: 15),
+          ),
+          // Contenido de la pantalla
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Logo de la empresa
+              Image.asset(
+                'assets/spotfinder.png',
+                height: 100,
+                width: 100,
               ),
-            ),
-            const SizedBox(height: 15),
-            ParamTextBox(
-                controller: controller.telController, text: 'Teléfono'),
-            const SizedBox(height: 15),
-            /* ParamTextBox(controller: controller.cumpleController, text: 'Cumpleaños'),
-              const SizedBox(height: 40), */
-            /*  ElevatedButton(
-                onPressed: () => controller.selectDate(context),
-                child: Text('Seleccionar Fecha de Nacimiento'),
-              ), */
-            //const SizedBox(height: 15),
-            // Mostrar la fecha seleccionada
-            const SizedBox(height: 15),
-            SignInButton(
-                onPressed: () => controller.signUp(), text: 'Register'),
-            const SizedBox(height: 40),
-          ],
-        ),
-      )),
+              const SizedBox(height: 5), // Separación entre el logo y el cuadro negro
+              // Cuadro negro con el formulario de inicio de sesión
+              Container(
+                margin: const EdgeInsets.all(5), // Ajusta el margen del cuadro negro aquí
+                padding: const EdgeInsets.all(5), // Ajusta el padding del cuadro negro aquí
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7), // Color del cuadro negro con opacidad
+                  borderRadius: BorderRadius.circular(20), // Bordes redondeados del cuadro
+                ),
+                child: Column(
+                  children: [
+                    const Text('Welcome', style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    ParamTextBox(controller: Null, text:'username'),
+                    const SizedBox(height: 5),
+                    ParamTextBox(controller: null, text: 'name'),
+                    const SizedBox(height: 5),
+                    ParamTextBox(controller: null, text: 'birthday'),
+                    const SizedBox(height: 5),
+                    ParamTextBox(controller: controller.mailController, text: 'e-mail'),
+                    const SizedBox(height: 5),
+                    ParamTextBox(controller: controller.contrasenaController, text: 'password'),
+                    const SizedBox(height: 5),
+                    ParamTextBox(controller: controller.contrasenaController, text: 'confirm password'),
+                    const SizedBox(height: 5),
+                    SignUpButton(onPressed: () => controller.logIn(), text: 'Sign up')
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
-class RegisterScreenController extends GetxController {
-  final TextEditingController nombreController = TextEditingController();
-  final TextEditingController generoController = TextEditingController();
+class Controller extends GetxController {
   final TextEditingController contrasenaController = TextEditingController();
   final TextEditingController mailController = TextEditingController();
-  final TextEditingController telController = TextEditingController();
-  // final TextEditingController cumpleController = TextEditingController();
 
   bool invalid = false;
   bool parameters = false;
 
-/* Future<void> selectDate(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (pickedDate != null) {
-      cumpleController.text = pickedDate.toString(); // Actualizar el controlador de texto con la fecha seleccionada
-    }
-  } */
-
-  void signUp() {
-    if (nombreController.text.isEmpty ||
-        generoController.text.isEmpty ||
-        contrasenaController.text.isEmpty ||
-        mailController.text.isEmpty ||
-        telController.text.isEmpty /* || cumpleController.text.isEmpty */) {
+  void logIn() {
+    if(contrasenaController.text.isEmpty || mailController.text.isEmpty){
       Get.snackbar(
-        'Error',
+        'Error', 
         'Campos vacios',
         snackPosition: SnackPosition.BOTTOM,
       );
-    } else {
-      if (GetUtils.isEmail(mailController.text) == true) {
-        User newUser = User(
-          name: nombreController.text,
-          active: true,
-          gender: generoController.text,
-          password: contrasenaController.text,
+    }
+    else{
+      if(GetUtils.isEmail(mailController.text)==true){
+        final logIn = (
           email: mailController.text,
-          phone_number: telController.text,
+          password: contrasenaController.text,
         );
-        userService.createUser(newUser).then((statusCode) {
+        userService.logIn(logIn).then((statusCode) {
           // La solicitud se completó exitosamente, puedes realizar acciones adicionales si es necesario
           print('Usuario creado exitosamente');
-          Get.snackbar(
-            '¡Usuario Creado!',
-            'Usuario creado correctamente',
-            snackPosition: SnackPosition.BOTTOM,
-          );
-          Get.to(() => LoginScreen());
+          Get.to(() => const LoginScreen());
         }).catchError((error) {
-          print('tienes este error:$error');
           // Manejar errores de solicitud HTTP
           Get.snackbar(
             'Error',
-            'Este E-Mail o Teléfono ya están en uso actualmente.',
+            'Los datos introducidos son incorrectos. Prueba otra vez.',
             snackPosition: SnackPosition.BOTTOM,
           );
-          print('Error al enviar usuario al backend: $error');
+          if (kDebugMode) {
+            print('Error al enviar log in al backend: $error');
+          }
         });
-      } else {
+      }
+      else{
         Get.snackbar(
-          'Error',
+          'Error', 
           'e-mail no valido',
           snackPosition: SnackPosition.BOTTOM,
         );
