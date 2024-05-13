@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Screens/home_page.dart';
-import 'package:spotfinder/Screens/register_screen.dart';
 import 'package:spotfinder/Widgets/button_sign_in.dart';
 import 'package:spotfinder/Widgets/paramTextBox.dart';
 import 'package:spotfinder/Services/UserService.dart';
@@ -12,6 +11,7 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _LoginScreen createState() => _LoginScreen();
 }
 
@@ -34,7 +34,7 @@ class _LoginScreen extends State<LoginScreen> {
         children: [
           // Fondo de pantalla
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/login_background.png'),
                 fit: BoxFit.cover,
@@ -51,11 +51,11 @@ class _LoginScreen extends State<LoginScreen> {
                 height: 150,
                 width: 150,
               ),
-              SizedBox(height: 20), // Separación entre el logo y el cuadro negro
+              const SizedBox(height: 20), // Separación entre el logo y el cuadro negro
               // Cuadro negro con el formulario de inicio de sesión
               Container(
-                margin: EdgeInsets.all(20), // Ajusta el margen del cuadro negro aquí
-                padding: EdgeInsets.all(20), // Ajusta el padding del cuadro negro aquí
+                margin: const EdgeInsets.all(20), // Ajusta el margen del cuadro negro aquí
+                padding: const EdgeInsets.all(20), // Ajusta el padding del cuadro negro aquí
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.7), // Color del cuadro negro con opacidad
                   borderRadius: BorderRadius.circular(20), // Bordes redondeados del cuadro
@@ -80,7 +80,7 @@ class _LoginScreen extends State<LoginScreen> {
                       onTap: () {
                         // Aquí puedes agregar la acción para olvidar la contraseña
                       },
-                      child: Text(
+                      child: const Text(
                         'Forgot password?',
                         style: TextStyle(
                           color: Colors.white,
@@ -128,7 +128,7 @@ class Controller extends GetxController {
           // Manejar errores de solicitud HTTP
           Get.snackbar(
             'Error',
-            'Este E-Mail ya está en uso actualmente.',
+            'Los datos introducidos son incorrectos. Prueba otra vez.',
             snackPosition: SnackPosition.BOTTOM,
           );
           print('Error al enviar log in al backend: $error');
