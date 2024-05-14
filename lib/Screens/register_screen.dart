@@ -70,17 +70,17 @@ class _RegisterScreen extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 5),
-                    ParamTextBox(controller: Null, text:'username'),
+                    ParamTextBox(controller: controller.usernameController, text:'username'),
                     const SizedBox(height: 5),
-                    ParamTextBox(controller: null, text: 'name'),
+                    ParamTextBox(controller: controller.nameController, text: 'name'),
                     const SizedBox(height: 5),
-                    ParamTextBox(controller: null, text: 'birthday'),
+                    ParamTextBox(controller: controller.birthdayController, text: 'birthday'),
                     const SizedBox(height: 5),
                     ParamTextBox(controller: controller.mailController, text: 'e-mail'),
                     const SizedBox(height: 5),
                     ParamTextBox(controller: controller.contrasenaController, text: 'password'),
                     const SizedBox(height: 5),
-                    ParamTextBox(controller: controller.contrasenaController, text: 'confirm password'),
+                    ParamTextBox(controller: controller.confirmcontrasenaController, text: 'confirm password'),
                     const SizedBox(height: 5),
                     SignUpButton(onPressed: () => controller.logIn(), text: 'Sign up')
                   ],
@@ -95,7 +95,11 @@ class _RegisterScreen extends State<RegisterScreen> {
 }
 
 class Controller extends GetxController {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController birthdayController = TextEditingController();
   final TextEditingController contrasenaController = TextEditingController();
+  final TextEditingController confirmcontrasenaController = TextEditingController();
   final TextEditingController mailController = TextEditingController();
 
   bool invalid = false;
