@@ -122,7 +122,7 @@ class Controller extends GetxController {
         );
         userService.logIn(logIn).then((statusCode) {
           // La solicitud se completó exitosamente, puedes realizar acciones adicionales si es necesario
-          print('Usuario creado exitosamente');
+          print('Usuario logeado exitosamente');
           Get.to(() => HomePage());
         }).catchError((error) {
           // Manejar errores de solicitud HTTP

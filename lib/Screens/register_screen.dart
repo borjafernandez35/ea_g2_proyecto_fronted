@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Screens/login_screen.dart';
 import 'package:spotfinder/Widgets/button_sign_up.dart';
 import 'package:spotfinder/Widgets/paramTextBox_sign_up.dart';
@@ -17,7 +18,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreen extends State<RegisterScreen> {
-  final Controller controller = Get.put(Controller());
+  final RegisterController controller = Get.put(RegisterController());
 
   @override
   void initState(){
@@ -69,8 +70,8 @@ class _RegisterScreen extends State<RegisterScreen> {
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 5),
-                    ParamTextBox(controller: controller.usernameController, text:'username'),
+                    // const SizedBox(height: 5),
+                    // ParamTextBox(controller: controller.usernameController, text:'username'),
                     const SizedBox(height: 5),
                     ParamTextBox(controller: controller.nameController, text: 'name'),
                     const SizedBox(height: 5),
@@ -78,11 +79,15 @@ class _RegisterScreen extends State<RegisterScreen> {
                     const SizedBox(height: 5),
                     ParamTextBox(controller: controller.mailController, text: 'e-mail'),
                     const SizedBox(height: 5),
+                    ParamTextBox(controller: controller.phoneController, text: 'phone_number'),
+                    const SizedBox(height: 5),
+                    ParamTextBox(controller: controller.genderController, text: 'gender'),
+                    const SizedBox(height: 5),
                     ParamTextBox(controller: controller.contrasenaController, text: 'password'),
                     const SizedBox(height: 5),
                     ParamTextBox(controller: controller.confirmcontrasenaController, text: 'confirm password'),
                     const SizedBox(height: 5),
-                    SignUpButton(onPressed: () => controller.logIn(), text: 'Sign up')
+                    SignUpButton(onPressed: () => controller.signUp(), text: 'Sign up')
                   ],
                 ),
               ),
@@ -94,8 +99,9 @@ class _RegisterScreen extends State<RegisterScreen> {
   }
 }
 
-class Controller extends GetxController {
-  final TextEditingController usernameController = TextEditingController();
+class RegisterController extends GetxController {
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController genderController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController birthdayController = TextEditingController();
   final TextEditingController contrasenaController = TextEditingController();
@@ -105,7 +111,7 @@ class Controller extends GetxController {
   bool invalid = false;
   bool parameters = false;
 
-  void logIn() {
+  void signUp() {
     if(contrasenaController.text.isEmpty || mailController.text.isEmpty){
       Get.snackbar(
         'Error', 
@@ -115,11 +121,15 @@ class Controller extends GetxController {
     }
     else{
       if(GetUtils.isEmail(mailController.text)==true){
-        final logIn = (
-          email: mailController.text,
-          password: contrasenaController.text,
+        User newUser = User(
+        name: nameController.text,
+        email: mailController.text,
+        password: contrasenaController.text,
+        birthday: birthdayController.text,
+        phone_number: phoneController.text,
+        gender: genderController.text,
         );
-        userService.logIn(logIn).then((statusCode) {
+        userService.createUser(newUser).then((statusCode) {
           // La solicitud se completó exitosamente, puedes realizar acciones adicionales si es necesario
           print('Usuario creado exitosamente');
           Get.to(() => const LoginScreen());
@@ -131,7 +141,7 @@ class Controller extends GetxController {
             snackPosition: SnackPosition.BOTTOM,
           );
           if (kDebugMode) {
-            print('Error al enviar log in al backend: $error');
+            print('Error al enviar create in al backend: $error');
           }
         });
       }

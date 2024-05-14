@@ -18,17 +18,15 @@ class UserService {
   String? getToken(){
     final box = GetStorage();
     return box.read('token');
+    
   }
   //Función createUser
   Future<int> createUser(User newUser)async{
     print('createUser');
     print('try');
-    //Aquí llamamos a la función request
-    print('request');
     // Utilizar Dio para enviar la solicitud POST a http://127.0.0.1:3000/users
     Response response = await dio.post('$baseUrl/user', data: newUser.toJson());
     //En response guardamos lo que recibimos como respuesta
-    //Printeamos los datos recibidos
 
     data = response.data.toString();
     print('Data: $data');
@@ -110,7 +108,7 @@ class UserService {
     statusCode = response.statusCode;
     print('Status code: $statusCode');
 
-    if (statusCode == 200) {
+    if (statusCode == 201) {
       // Si el usuario se crea correctamente, retornamos el código 201
       saveToken(data);
       print('200');
