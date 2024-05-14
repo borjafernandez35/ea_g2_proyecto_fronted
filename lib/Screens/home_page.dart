@@ -5,6 +5,7 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:get/get.dart';
 import 'package:line_icons/line_icons.dart';
 import 'profile_screen.dart';
+import 'chatScreen.dart';
 
 class HomePage extends StatefulWidget {
   // ignore: prefer_const_constructors_in_immutables
@@ -51,7 +52,7 @@ class _nameState extends State<HomePage> {
       ),
     ),
     const Text("Activities"),
-    const Text("Chats"),
+    const ChatScreen(),
     ProfileScreen()
   ];
 
@@ -116,6 +117,13 @@ class _nameState extends State<HomePage> {
                 setState(() {
                   _selectedIndex = index;
                 });
+                if (index == 2) {
+                  // Si se selecciona la pestaña de chats, cambiar a la pantalla de chat
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ChatScreen()),
+                  );
+                }
               },
             ),
           ),
