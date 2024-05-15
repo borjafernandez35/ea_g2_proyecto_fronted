@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:spotfinder/Models/UserModel.dart';
+import 'package:spotfinder/Screens/detalles_user.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'dart:io';
 import 'package:spotfinder/Services/UserService.dart';
@@ -46,6 +47,20 @@ class _ProfileScreen extends State<ProfileScreen> {
     }).catchError((error) {
       // Handle error
       print("Error fetching user data: $error");
+    });
+  }
+
+  void updateProfile() {
+    setState(() {
+      // Actualiza la información del usuario
+      userService.getUser().then((retrievedUser) {
+        setState(() {
+          user = retrievedUser;
+        });
+      }).catchError((error) {
+        // Maneja el error
+        print("Error fetching user data: $error");
+      });
     });
   }
 
@@ -203,7 +218,7 @@ class _ProfileScreen extends State<ProfileScreen> {
               children: [
                 TextButton(
                   onPressed: () {
-                    // Navegar a otra pantalla (puedes reemplazar esta función)
+                    Get.to(() => UserDetailsPage(user!, onUpdate: updateProfile));
                   },
                   child: const Align(
                     alignment: Alignment.centerLeft,

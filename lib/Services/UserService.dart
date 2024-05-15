@@ -72,6 +72,49 @@ class UserService {
     }
   }
 
+  Future<int> updateUser(User user) async {
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        // Obtener el token guardado
+        final token = getToken();
+
+        if (token != null) {
+          options.headers['x-access-token'] = token;
+        }
+        return handler.next(options);
+      },
+    ));
+
+    print(user.toJson());
+    Response response =await dio.put('$baseUrl/user/${user.id}', data: user.toJson());
+
+    data = response.data.toString();
+    print('Data: $data');
+    statusCode = response.statusCode;
+    print('Status code: $statusCode');
+
+    if (statusCode == 201) {
+      // Si el usuario se crea correctamente, retornamos el código 201
+      print('201');
+      return 201;
+    } else if (statusCode == 400) {
+      // Si hay campos faltantes, retornamos el código 400
+      print('400');
+
+      return 400;
+    } else if (statusCode == 500) {
+      // Si hay un error interno del servidor, retornamos el código 500
+      print('500');
+
+      return 500;
+    } else {
+      // Otro caso no manejado
+      print('-1');
+
+      return -1;
+    }
+  }
+
   Future<User> getUser() async {
 
     dio.interceptors.add(InterceptorsWrapper(
@@ -172,5 +215,31 @@ class UserService {
 
   Map<String, dynamic> logInToJson(logIn) {
     return {'email': logIn.email, 'password': logIn.password};
+  }
+
+  Future<void> deleteUser() async {
+
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = getToken();
+        print(token);
+        if (token != null) {
+          options.headers['x-access-token'] = token;
+        }
+        return handler.next(options);
+      },
+    ));
+
+    final id = getId();
+    try {
+      Response response = await dio.put('$baseUrl/user/delete/$id');
+        statusCode = response.statusCode;
+        print(response.data);
+      logout();
+    } catch (e) {
+      // Manejar cualquier error que pueda ocurrir durante la solicitud
+      print('Error fetching data: $e');
+      throw e; // Relanzar el error para que el llamador pueda manejarlo
+    }
   }
 }

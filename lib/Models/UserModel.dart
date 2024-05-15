@@ -40,6 +40,7 @@ class User {
     };
   }
 
+
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['_id'],
@@ -54,7 +55,7 @@ class User {
           .map((activityJson) => Activity.fromJson(activityJson))
           .toList(),
       listActivities: (json['listActivities'] as List<dynamic>)
-          .map((activityJson) =>  Activity.fromJson(activityJson))
+          .map((activityJson) => Activity.fromJson(activityJson))
           .toList(),
       comments: (json['comments'] as List<dynamic>)
           .map((commentJson) => Comment.fromJson(commentJson))

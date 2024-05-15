@@ -11,7 +11,6 @@ void main() async {
   await GetStorage.init(); // Espera la inicialización de GetStorage
   final UserService userService = UserService();
   final String? token = await userService.getToken();
-
   runApp(MyApp(token: token));
 }
 
