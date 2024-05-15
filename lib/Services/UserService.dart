@@ -3,25 +3,40 @@ import 'package:spotfinder/Models/UserModel.dart';
 import 'package:dio/dio.dart'; // Usa un prefijo 'Dio' para importar la clase Response desde Dio
 import 'package:get_storage/get_storage.dart';
 
-
 class UserService {
   final String baseUrl = "http://127.0.0.1:3000"; // URL de tu backend
   final Dio dio = Dio(); // Usa el prefijo 'Dio' para referenciar la clase Dio
   var statusCode;
   var data;
 
-  void saveToken(String token){
+  void saveToken(String token) {
     final box = GetStorage();
     box.write('token', token);
   }
 
-  String? getToken(){
+  String? getToken() {
     final box = GetStorage();
     return box.read('token');
-    
   }
+
+  void saveId(String id) {
+    final box = GetStorage();
+    box.write('id', id);
+  }
+
+  String? getId() {
+    final box = GetStorage();
+    return box.read('id');
+  }
+
+   void logout() {
+    final box = GetStorage();
+    box.remove('token');
+    box.remove('id');
+  }
+
   //Función createUser
-  Future<int> createUser(User newUser)async{
+  Future<int> createUser(User newUser) async {
     print('createUser');
     print('try');
     // Utilizar Dio para enviar la solicitud POST a http://127.0.0.1:3000/users
@@ -57,60 +72,84 @@ class UserService {
     }
   }
 
-  Future<List<Activity>> getData() async {
-  print('getData');
-  // Interceptor para agregar el token a la cabecera 'x-access-token'
-  dio.interceptors.add(InterceptorsWrapper(
-    onRequest: (options, handler) async {
-      // Obtener el token guardado
-      final token = getToken();
+  Future<User> getUser() async {
 
-      print(token);
-      
-      // Si el token está disponible, agregarlo a la cabecera 'x-access-token'
-      if (token != null) {
-        options.headers['x-access-token'] = token;
-      }
-      return handler.next(options);
-    },
-  ));
-  
-  try {
-    var res = await dio.get('$baseUrl/place');
-    List<dynamic> responseData = res.data; // Obtener los datos de la respuesta
-  
-    // Convertir los datos en una lista de objetos Place
-    List<Activity> activities = responseData.map((data) => Activity.fromJson(data)).toList();
-  
-    return activities; // Devolver la lista de actividadess
-  } catch (e) {
-    // Manejar cualquier error que pueda ocurrir durante la solicitud
-    print('Error fetching data: $e');
-    throw e; // Relanzar el error para que el llamador pueda manejarlo
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = getToken();
+
+        if (token != null) {
+          options.headers['x-access-token'] = token;
+        }
+        return handler.next(options);
+      },
+    ));
+
+    final id = getId();
+    try {
+      Response res = await dio.get('$baseUrl/user/$id');
+      User user = User.fromJson(res.data['data']);
+      return user;
+    } catch (e) {
+      // Manejar cualquier error que pueda ocurrir durante la solicitud
+      print('Error fetching data: $e');
+      throw e; // Relanzar el error para que el llamador pueda manejarlo
+    }
   }
-}
 
+  Future<List<Activity>> getData() async {
+    print('getData');
+    // Interceptor para agregar el token a la cabecera 'x-access-token'
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        // Obtener el token guardado
+        final token = getToken();
 
-  Future<int> logIn(logIn)async{
+        print(token);
+
+        // Si el token está disponible, agregarlo a la cabecera 'x-access-token'
+        if (token != null) {
+          options.headers['x-access-token'] = token;
+        }
+        return handler.next(options);
+      },
+    ));
+
+    try {
+      var res = await dio.get('$baseUrl/place');
+      List<dynamic> responseData =
+          res.data; // Obtener los datos de la respuesta
+
+      // Convertir los datos en una lista de objetos Place
+      List<Activity> activities =
+          responseData.map((data) => Activity.fromJson(data)).toList();
+
+      return activities; // Devolver la lista de actividadess
+    } catch (e) {
+      // Manejar cualquier error que pueda ocurrir durante la solicitud
+      print('Error fetching data: $e');
+      throw e; // Relanzar el error para que el llamador pueda manejarlo
+    }
+  }
+
+  Future<int> logIn(logIn) async {
     print('LogIn');
-    print('try');
-    //Aquí llamamos a la función request
-    print('request');
-    
-    Response response = await dio.post('$baseUrl/signin', data: logInToJson(logIn));
-    //En response guardamos lo que recibimos como respuesta
-    //Printeamos los datos recibidos
+
+    Response response =
+        await dio.post('$baseUrl/signin', data: logInToJson(logIn));
 
     data = response.data.toString();
     print('Data: $data');
-    //Printeamos el status code recibido por el backend
 
     statusCode = response.statusCode;
     print('Status code: $statusCode');
 
     if (statusCode == 201) {
       // Si el usuario se crea correctamente, retornamos el código 201
-      saveToken(data);
+      var token = response.data['token'];
+      var id = response.data['id'];
+      saveToken(token);
+      saveId(id);
       print('200');
       return 201;
     } else if (statusCode == 400) {
@@ -132,9 +171,6 @@ class UserService {
   }
 
   Map<String, dynamic> logInToJson(logIn) {
-    return {
-      'email': logIn.email,
-      'password': logIn.password
-    };
+    return {'email': logIn.email, 'password': logIn.password};
   }
 }

@@ -1,4 +1,5 @@
 import 'package:spotfinder/Models/ActivityModel.dart';
+import 'package:spotfinder/Models/CommentModel.dart';
 
 class User {
   final String? id;
@@ -8,8 +9,8 @@ class User {
   final String gender;
   final String? birthday;
   final List<Activity>? activities;
-  final List<String>? listActivities;
-  final List<String>? comments;
+  final List<Activity>? listActivities;
+  final List<Comment>? comments;
   final bool? active;
   final String password;
 
@@ -53,10 +54,10 @@ class User {
           .map((activityJson) => Activity.fromJson(activityJson))
           .toList(),
       listActivities: (json['listActivities'] as List<dynamic>)
-          .map((activity) => activity.toString())
+          .map((activityJson) =>  Activity.fromJson(activityJson))
           .toList(),
       comments: (json['comments'] as List<dynamic>)
-          .map((comment) => comment.toString())
+          .map((commentJson) => Comment.fromJson(commentJson))
           .toList(),
     );
   }
