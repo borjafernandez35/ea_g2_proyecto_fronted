@@ -7,6 +7,19 @@ import 'package:spotfinder/Services/UserService.dart';
 
 late UserService userService;
 
+const List<String> phonePrefixes = [
+  '+1', '+7', '+20', '+27', '+30', '+31', '+32', '+33', '+34', '+36', '+39', '+40',
+  '+41', '+43', '+44', '+45', '+46', '+47', '+48', '+49', '+51', '+52', '+53', '+54',
+  '+55', '+56', '+57', '+58', '+60', '+61', '+62', '+63', '+64', '+65', '+66', '+81',
+  '+82', '+84', '+86', '+90', '+91', '+92', '+93', '+94', '+95', '+98', '+211', '+212',
+  '+213', '+216', '+218', '+220', '+221', '+222', '+223', '+224', '+225', '+226', '+227',
+  '+228', '+229', '+230', '+231', '+232', '+233', '+234', '+235', '+236', '+237', '+238',
+  '+239', '+240', '+241', '+242', '+243', '+244', '+245', '+246', '+247', '+248', '+249',
+  '+250', '+251', '+252', '+253', '+254', '+255', '+256', '+257', '+258', '+260', '+261',
+  '+262', '+263', '+264', '+265', '+266', '+267', '+268', '+269', '+290', '+291', '+297',
+  '+298', '+299'
+];
+
 class UserDetailsPage extends StatefulWidget {
   final User user;
   final VoidCallback onUpdate;
@@ -24,21 +37,31 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   @override
   void initState() {
     super.initState();
+
+    final phoneNumber = widget.user.phone_number;
+    final prefix = phonePrefixes.firstWhere(
+      (prefix) => phoneNumber.startsWith(prefix),
+      orElse: () => '+1', 
+    );
+    final number = phoneNumber.replaceFirst(prefix, '');
+
     userService = UserService();
     controller.nombreController.text = widget.user.name;
     controller.generoController.text = widget.user.gender;
     controller.contrasenaController.text = widget.user.password;
     controller.mailController.text = widget.user.email;
-    controller.telController.text = widget.user.phone_number;
+    controller.selectedPrefix.value = prefix;
+    controller.telController.text = number;
     controller.date = widget.user.birthday!;
     if (widget.user.birthday != null) {
       final DateTime birthdayDateTime = DateTime.parse(widget.user.birthday!);
       final localBirthdayDateTime = birthdayDateTime.toLocal();
-      final formattedBirthday =
-          "${localBirthdayDateTime.day}/${localBirthdayDateTime.month}/${localBirthdayDateTime.year}";
+      final formattedBirthday = "${localBirthdayDateTime.day.toString().padLeft(2, '0')}/${localBirthdayDateTime.month.toString().padLeft(2, '0')}/${localBirthdayDateTime.year}";
       controller.cumpleController.text = formattedBirthday;
     }
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -75,10 +98,34 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 ),
               ),
             ),
-            SizedBox(height: 15),
-            ParamTextBox(
-              controller: controller.telController,
-              text: 'Teléfono',
+             SizedBox(height: 15),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Obx(() => DropdownButton<String>(
+                    value: controller.selectedPrefix.value,
+                    onChanged: (String? newValue) {
+                      controller.selectedPrefix.value = newValue!;
+                    },
+                    items: phonePrefixes
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  )),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  flex: 5,
+                  child: ParamTextBox(
+                    controller: controller.telController,
+                    text: 'Teléfono',
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 15),
             Row(
@@ -179,6 +226,8 @@ class UpdateScreenController extends GetxController {
   final TextEditingController cumpleController = TextEditingController();
   late String date;
 
+  var selectedPrefix = '+1'.obs;
+
   bool invalid = false;
   bool parameters = false;
 
@@ -191,8 +240,7 @@ class UpdateScreenController extends GetxController {
     );
     if (pickedDate != null) {
       final utcDate = pickedDate.toUtc();
-      String formattedDate =
-          "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+      String formattedDate = "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year.toString()}";
       cumpleController.text = formattedDate;
 
       date = utcDate.toIso8601String();
@@ -219,7 +267,7 @@ class UpdateScreenController extends GetxController {
           gender: generoController.text,
           password: contrasenaController.text,
           email: mailController.text,
-          phone_number: telController.text,
+          phone_number: '${selectedPrefix.value} ${telController.text}',
           birthday: date,
         );
         userService.updateUser(user).then((statusCode) {
@@ -239,10 +287,16 @@ class UpdateScreenController extends GetxController {
       } else {
         Get.snackbar(
           'Error',
-          'E-mail no válido',
+          'E-mail o teléfono no válidos',
           snackPosition: SnackPosition.BOTTOM,
         );
       }
     }
   }
+
+  bool validatePhoneNumber(String phoneNumber) {
+    final regex = RegExp(r'^\d{7,15}$');
+    return regex.hasMatch(phoneNumber);
+  }
+
 }
