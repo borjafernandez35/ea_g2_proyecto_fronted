@@ -14,29 +14,29 @@ class ParamTextBox extends StatelessWidget {
       ),
       child: TextFormField(
         controller: controller,
+        style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)), // Cambia el color del texto a negro
         decoration: InputDecoration(
-          filled: true, // Establecer como true para agregar un fondo
-          fillColor: Colors.white, // Establecer el color de fondo
+        filled: true, // Habilita el relleno del campo de texto
+        fillColor: Colors.white, // Establece el color de fondo blanco
           enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color.fromARGB(255, 255, 255, 255),
-            width: 3,
-          ),
-          borderRadius: BorderRadius.circular(50),
+            borderSide: const BorderSide(
+              color: Pallete.salmonColor,
+              width: 3,
+            ),
+            borderRadius: BorderRadius.circular(50),
           ),
           focusedBorder: OutlineInputBorder(
             borderSide: const BorderSide(
-            color: Pallete.salmonColor,
-            width: 3,
-          ),
-          borderRadius: BorderRadius.circular(50),
+              color: Pallete.salmonColor,
+              width: 3,
+            ),
+            borderRadius: BorderRadius.circular(50),
           ),
           hintText: text,
-          hintStyle: TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 15.0), // Cambiar el color y tamaño del texto dentro del cuadro de texto
-          contentPadding: EdgeInsets.only(left: 20.0),
-          
-        ),
-        
+          hintStyle: const TextStyle(
+            color: Color.fromARGB(255, 0, 0, 0),
+          ),
+        ),        
       ),
     );
   }

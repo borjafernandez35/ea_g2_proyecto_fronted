@@ -107,9 +107,26 @@ class RegisterController extends GetxController {
   final TextEditingController contrasenaController = TextEditingController();
   final TextEditingController confirmcontrasenaController = TextEditingController();
   final TextEditingController mailController = TextEditingController();
+  late String date;
 
   bool invalid = false;
   bool parameters = false;
+
+
+  void selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (pickedDate != null) {
+      final utcDate = pickedDate.toUtc();
+      String formattedDate = "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year.toString()}";
+          birthdayController.text = formattedDate;  
+          date = utcDate.toIso8601String();
+    }
+  }
 
   void signUp() {
     if(contrasenaController.text.isEmpty || mailController.text.isEmpty){
@@ -125,7 +142,7 @@ class RegisterController extends GetxController {
         name: nameController.text,
         email: mailController.text,
         password: contrasenaController.text,
-        birthday: birthdayController.text,
+        birthday: date,
         phone_number: phoneController.text,
         gender: genderController.text,
         );
