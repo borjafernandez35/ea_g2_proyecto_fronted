@@ -26,9 +26,9 @@ class Activity {
       name: json['name'],
       description: json['description'],
       rate: json['rate'],
-      idUser: json['owner'],
+      idUser: json['owner']['name'],
       date: json['date'],
-       listUsers: (json['listUsers'] as List<dynamic>?)?.cast<String>(),
+      listUsers: (json['listUsers'] as List<dynamic>?)?.cast<String>(),
       comments: (json['comments'] as List<dynamic>?)?.cast<String>(),
     );
   }
