@@ -21,79 +21,75 @@ class _RegisterScreen extends State<RegisterScreen> {
   final RegisterController controller = Get.put(RegisterController());
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     userService = UserService();
   }
 
-  @override 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('SpotFinder'),
       ),
-      body: Stack(
-        children: [
-          // Fondo de pantalla
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/login_background.png'),
-                fit: BoxFit.cover,
-              ),
+      body: SingleChildScrollView(
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/login_background.png'),
+              fit: BoxFit.cover,
             ),
           ),
-          // Contenido de la pantalla
-          Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Logo de la empresa
               Image.asset(
                 'assets/spotfinder.png',
-                height: 100,
-                width: 100,
+                height: 90,
+                width: 90,
               ),
               const SizedBox(height: 5), // Separación entre el logo y el cuadro negro
               // Cuadro negro con el formulario de inicio de sesión
               Container(
-                margin: const EdgeInsets.all(5), // Ajusta el margen del cuadro negro aquí
-                padding: const EdgeInsets.all(5), // Ajusta el padding del cuadro negro aquí
+                margin: const EdgeInsets.all(3), // Ajusta el margen del cuadro negro aquí
+                padding: const EdgeInsets.all(3), // Ajusta el padding del cuadro negro aquí
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.7), // Color del cuadro negro con opacidad
                   borderRadius: BorderRadius.circular(20), // Bordes redondeados del cuadro
                 ),
                 child: Column(
                   children: [
-                    const Text('Welcome', style: TextStyle(
+                    const Text(
+                      'Welcome',
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 20,
+                        fontSize: 18,
                         color: Colors.white,
                       ),
                     ),
-                    // const SizedBox(height: 5),
-                    // ParamTextBox(controller: controller.usernameController, text:'username'),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     ParamTextBox(controller: controller.nameController, text: 'name'),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     ParamTextBox(controller: controller.birthdayController, text: 'birthday'),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     ParamTextBox(controller: controller.mailController, text: 'e-mail'),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     ParamTextBox(controller: controller.phoneController, text: 'phone_number'),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     ParamTextBox(controller: controller.genderController, text: 'gender'),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     ParamTextBox(controller: controller.contrasenaController, text: 'password'),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     ParamTextBox(controller: controller.confirmcontrasenaController, text: 'confirm password'),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     SignUpButton(onPressed: () => controller.signUp(), text: 'Sign up')
                   ],
                 ),
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -111,7 +107,6 @@ class RegisterController extends GetxController {
 
   bool invalid = false;
   bool parameters = false;
-
 
   void selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(

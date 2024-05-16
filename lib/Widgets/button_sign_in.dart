@@ -11,7 +11,7 @@ class SignInButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        fixedSize: const Size(400, 55),
+        fixedSize: const Size(200, 55),
         backgroundColor: Pallete.salmonColor,
         foregroundColor: Colors.white,
       ),

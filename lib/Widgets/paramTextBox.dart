@@ -21,14 +21,14 @@ class ParamTextBox extends StatelessWidget {
           enabledBorder: OutlineInputBorder(
           borderSide: const BorderSide(
             color: Pallete.salmonColor,
-            width: 3,
+            width: 2,
           ),
           borderRadius: BorderRadius.circular(50),
           ),
           focusedBorder: OutlineInputBorder(
             borderSide: const BorderSide(
             color: Pallete.salmonColor,
-            width: 3,
+            width: 2,
           ),
           borderRadius: BorderRadius.circular(50),
           ),
