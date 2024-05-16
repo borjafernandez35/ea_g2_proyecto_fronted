@@ -31,7 +31,7 @@ class ParamTextBox extends StatelessWidget {
           ),
           hintText: text,
           hintStyle: const TextStyle(
-            color: Pallete.greyColor,
+            color: Color.fromARGB(255, 122, 122, 122),
           ),
         ),
         

@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: appTitle,
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Pallete.backgroundColor,
+        scaffoldBackgroundColor: Pallete.whiteColor,
       ),
       home: token != null ? HomePage() : TitleScreen(),
     );
