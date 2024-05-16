@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Resources/pallete.dart';
@@ -8,16 +9,111 @@ import 'package:spotfinder/Services/UserService.dart';
 late UserService userService;
 
 const List<String> phonePrefixes = [
-  '+1', '+7', '+20', '+27', '+30', '+31', '+32', '+33', '+34', '+36', '+39', '+40',
-  '+41', '+43', '+44', '+45', '+46', '+47', '+48', '+49', '+51', '+52', '+53', '+54',
-  '+55', '+56', '+57', '+58', '+60', '+61', '+62', '+63', '+64', '+65', '+66', '+81',
-  '+82', '+84', '+86', '+90', '+91', '+92', '+93', '+94', '+95', '+98', '+211', '+212',
-  '+213', '+216', '+218', '+220', '+221', '+222', '+223', '+224', '+225', '+226', '+227',
-  '+228', '+229', '+230', '+231', '+232', '+233', '+234', '+235', '+236', '+237', '+238',
-  '+239', '+240', '+241', '+242', '+243', '+244', '+245', '+246', '+247', '+248', '+249',
-  '+250', '+251', '+252', '+253', '+254', '+255', '+256', '+257', '+258', '+260', '+261',
-  '+262', '+263', '+264', '+265', '+266', '+267', '+268', '+269', '+290', '+291', '+297',
-  '+298', '+299'
+  '+1',
+  '+7',
+  '+20',
+  '+27',
+  '+30',
+  '+31',
+  '+32',
+  '+33',
+  '+34',
+  '+36',
+  '+39',
+  '+40',
+  '+41',
+  '+43',
+  '+44',
+  '+45',
+  '+46',
+  '+47',
+  '+48',
+  '+49',
+  '+51',
+  '+52',
+  '+53',
+  '+54',
+  '+55',
+  '+56',
+  '+57',
+  '+58',
+  '+60',
+  '+61',
+  '+62',
+  '+63',
+  '+64',
+  '+65',
+  '+66',
+  '+81',
+  '+82',
+  '+84',
+  '+86',
+  '+90',
+  '+91',
+  '+92',
+  '+93',
+  '+94',
+  '+95',
+  '+98',
+  '+211',
+  '+212',
+  '+213',
+  '+216',
+  '+218',
+  '+220',
+  '+221',
+  '+222',
+  '+223',
+  '+224',
+  '+225',
+  '+226',
+  '+227',
+  '+228',
+  '+229',
+  '+230',
+  '+231',
+  '+232',
+  '+233',
+  '+234',
+  '+235',
+  '+236',
+  '+237',
+  '+238',
+  '+239',
+  '+240',
+  '+241',
+  '+242',
+  '+243',
+  '+244',
+  '+245',
+  '+246',
+  '+247',
+  '+248',
+  '+249',
+  '+250',
+  '+251',
+  '+252',
+  '+253',
+  '+254',
+  '+255',
+  '+256',
+  '+257',
+  '+258',
+  '+260',
+  '+261',
+  '+262',
+  '+263',
+  '+264',
+  '+265',
+  '+266',
+  '+267',
+  '+268',
+  '+269',
+  '+290',
+  '+291',
+  '+297',
+  '+298',
+  '+299'
 ];
 
 class UserDetailsPage extends StatefulWidget {
@@ -41,9 +137,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     final phoneNumber = widget.user.phone_number;
     final prefix = phonePrefixes.firstWhere(
       (prefix) => phoneNumber.startsWith(prefix),
-      orElse: () => '+1', 
+      orElse: () => '+1',
     );
-    final number = phoneNumber.replaceFirst(prefix, '');
+    final number = phoneNumber.replaceFirst(prefix, '').trim();
 
     userService = UserService();
     controller.nombreController.text = widget.user.name;
@@ -56,120 +152,123 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     if (widget.user.birthday != null) {
       final DateTime birthdayDateTime = DateTime.parse(widget.user.birthday!);
       final localBirthdayDateTime = birthdayDateTime.toLocal();
-      final formattedBirthday = "${localBirthdayDateTime.day.toString().padLeft(2, '0')}/${localBirthdayDateTime.month.toString().padLeft(2, '0')}/${localBirthdayDateTime.year}";
+      final formattedBirthday =
+          "${localBirthdayDateTime.day.toString().padLeft(2, '0')}/${localBirthdayDateTime.month.toString().padLeft(2, '0')}/${localBirthdayDateTime.year}";
       controller.cumpleController.text = formattedBirthday;
     }
   }
 
-  
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Información del Usuario',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+    return Theme(
+      data: ThemeData.light(), // Establecer el tema en modo claro
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Detalles del Usuario'),
+        ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 20),
+              ParamTextBox(
+                controller: controller.nombreController,
+                text: 'Nombre',
               ),
-            ),
-            SizedBox(height: 20),
-            ParamTextBox(
-              controller: controller.nombreController,
-              text: 'Nombre',
-            ),
-            SizedBox(height: 15),
-            ParamTextBox(
-              controller: controller.mailController,
-              text: 'E-Mail',
-            ),
-            Visibility(
-              visible: controller.invalid,
-              child: Text(
-                'Invalid',
-                style: TextStyle(
-                  color: Pallete.salmonColor,
-                  fontSize: 15,
-                ),
+              SizedBox(height: 15),
+              ParamTextBox(
+                controller: controller.mailController,
+                text: 'E-Mail',
               ),
-            ),
-             SizedBox(height: 15),
-            Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Obx(() => DropdownButton<String>(
-                    value: controller.selectedPrefix.value,
-                    onChanged: (String? newValue) {
-                      controller.selectedPrefix.value = newValue!;
-                    },
-                    items: phonePrefixes
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  )),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  flex: 5,
-                  child: ParamTextBox(
-                    controller: controller.telController,
-                    text: 'Teléfono',
+              Visibility(
+                visible: controller.invalid,
+                child: Text(
+                  'Invalid',
+                  style: TextStyle(
+                    color: Pallete.salmonColor,
+                    fontSize: 15,
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 15),
-            Row(
-              children: [
-                Expanded(
-                  child: ParamTextBox(
-                    controller: controller.cumpleController,
-                    text: 'Cumpleaños',
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.calendar_today),
-                  onPressed: () => controller.selectDate(context),
-                ),
-              ],
-            ),
-            SizedBox(height: 15),
-            ParamTextBox(
-              controller: controller.generoController,
-              text: 'Género',
-            ),
-            // SizedBox(height: 15),
-            // ParamTextBox(
-            //   controller: controller.contrasenaController,
-            //   text: 'Contraseña',
-            // ),
-            SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {
-                controller.updateUser(widget.user);
-                widget.onUpdate();
-              },
-              child: const Text ('Update'),
-            ),
-            SizedBox(height: 15),
-            ElevatedButton(
-              onPressed: () => _confirmDeleteAccount(context),
-              child: const Text('Eliminar Cuenta'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
               ),
-            ),
-            SizedBox(height: 40),
-          ],
+              SizedBox(height: 15),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Obx(
+                      () => DropdownButtonFormField<String>(
+                        value: controller.selectedPrefix.value,
+                        onChanged: (String? newValue) {
+                          controller.selectedPrefix.value = newValue!;
+                        },
+                        items: phonePrefixes
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        decoration: InputDecoration(
+                          labelText: 'Prefijo',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    flex: 5,
+                    child: ParamTextBox(
+                      controller: controller.telController,
+                      text: 'Teléfono',
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[\d\s]')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 15),
+              Row(
+                children: [
+                  Expanded(
+                    child: ParamTextBox(
+                      controller: controller.cumpleController,
+                      text: 'Cumpleaños',
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.calendar_today),
+                    onPressed: () => controller.selectDate(context),
+                  ),
+                ],
+              ),
+              SizedBox(height: 15),
+              ParamTextBox(
+                controller: controller.generoController,
+                text: 'Género',
+              ),
+              SizedBox(height: 40),
+              ElevatedButton(
+                onPressed: () {
+                  controller.updateUser(widget.user);
+                  widget.onUpdate();
+                },
+                child: const Text('Update'),
+              ),
+              SizedBox(height: 15),
+              ElevatedButton(
+                onPressed: () => _confirmDeleteAccount(context),
+                child: const Text('Eliminar Cuenta'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                ),
+              ),
+              SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
@@ -205,14 +304,26 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 class ParamTextBox extends StatelessWidget {
   final TextEditingController controller;
   final String text;
+  final TextInputType keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
-  const ParamTextBox({required this.controller, required this.text});
+  const ParamTextBox({
+    required this.controller,
+    required this.text,
+    this.keyboardType = TextInputType.text,
+    this.inputFormatters,
+  });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      decoration: InputDecoration(labelText: text),
+      decoration: InputDecoration(
+        labelText: text,
+        border: OutlineInputBorder(),
+      ),
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
     );
   }
 }
@@ -240,7 +351,8 @@ class UpdateScreenController extends GetxController {
     );
     if (pickedDate != null) {
       final utcDate = pickedDate.toUtc();
-      String formattedDate = "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year.toString()}";
+      String formattedDate =
+          "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year.toString()}";
       cumpleController.text = formattedDate;
 
       date = utcDate.toIso8601String();
@@ -260,14 +372,15 @@ class UpdateScreenController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     } else {
-      if (GetUtils.isEmail(mailController.text) == true) {
+      if (GetUtils.isEmail(mailController.text) == true &&
+          validatePhoneNumber(telController.text)) {
         User user = User(
           id: updatedUser.id,
           name: nombreController.text,
           gender: generoController.text,
           password: contrasenaController.text,
           email: mailController.text,
-          phone_number: '${selectedPrefix.value} ${telController.text}',
+          phone_number: '${selectedPrefix.value}${telController.text.trim()}',
           birthday: date,
         );
         userService.updateUser(user).then((statusCode) {
@@ -295,8 +408,7 @@ class UpdateScreenController extends GetxController {
   }
 
   bool validatePhoneNumber(String phoneNumber) {
-    final regex = RegExp(r'^\d{7,15}$');
+    final regex = RegExp(r'^[\d\s]{7,15}$');
     return regex.hasMatch(phoneNumber);
   }
-
 }
