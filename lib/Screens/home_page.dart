@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Widgets/paramTextBox.dart';
+import 'package:spotfinder/Screens/activity_list_page.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:get/get.dart';
 import 'package:line_icons/line_icons.dart';
@@ -51,9 +52,9 @@ class _nameState extends State<HomePage> {
         ],
       ),
     ),
-    const Text("Activities"),
+    const ActivityListPage(),
     const ChatScreen(),
-    ProfileScreen()
+    const ProfileScreen()
   ];
 
   @override
