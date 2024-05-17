@@ -1,42 +1,79 @@
 import 'package:flutter/material.dart';
-import 'package:spotfinder/Resources/pallete.dart';
+import 'package:flutter/services.dart'; // Necesario para usar inputFormatters
 
 class ParamTextBox extends StatelessWidget {
   final String text;
   final TextEditingController controller;
-  const ParamTextBox({super.key, required this.controller, required this.text});
+  final IconButton? suffixIcon;
+  final bool editable;
+  final List<TextInputFormatter>? inputFormatters;
+  final Widget? prefixWidget;
+  final TextInputType? keyboardType;
 
-  @override 
+  const ParamTextBox({
+    Key? key,
+    required this.controller,
+    required this.text,
+    this.suffixIcon,
+    this.editable = true,
+    this.inputFormatters,
+    this.prefixWidget,
+    this.keyboardType,
+  }) : super(key: key);
+
+  @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: const BoxConstraints(
         maxWidth: 200,
       ),
-      child: TextFormField(
-        controller: controller,
-        style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)), // Cambia el color del texto a negro
-        decoration: InputDecoration(
-        filled: true, // Habilita el relleno del campo de texto
-        fillColor: Colors.white, // Establece el color de fondo blanco
-          enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(
-              color: Pallete.salmonColor,
-              width: 2,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return TextFormField(
+            controller: controller,
+            readOnly: !editable,
+            style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+            inputFormatters: inputFormatters,
+            keyboardType: keyboardType,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              enabledBorder: OutlineInputBorder(
+                borderSide: const BorderSide(
+                  color: Color(0xFFE57373),
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(50),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(
+                  color: Color(0xFFE57373),
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(50),
+              ),
+              hintText: text,
+              hintStyle: const TextStyle(
+                color: Color.fromARGB(255, 0, 0, 0),
+              ),
+              prefixIcon: prefixWidget != null
+                  ? SizedBox(
+                      width: constraints.maxWidth * 0.39, 
+                      child: Padding(
+                       padding: const EdgeInsets.only(left: 6.0),
+                       child: prefixWidget!,
+                      ),
+                    )
+                  : null,
+              suffixIcon: suffixIcon != null
+                  ? Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: suffixIcon!,
+                    )
+                  : null,
             ),
-            borderRadius: BorderRadius.circular(50),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(
-              color: Pallete.salmonColor,
-              width: 2,
-            ),
-            borderRadius: BorderRadius.circular(50),
-          ),
-          hintText: text,
-          hintStyle: const TextStyle(
-            color: Color.fromARGB(255, 0, 0, 0),
-          ),
-        ),        
+          );
+        },
       ),
     );
   }

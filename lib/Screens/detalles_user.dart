@@ -5,116 +5,9 @@ import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
+import 'package:spotfinder/Utils/phone_utils.dart';
 
 late UserService userService;
-
-const List<String> phonePrefixes = [
-  '+1',
-  '+7',
-  '+20',
-  '+27',
-  '+30',
-  '+31',
-  '+32',
-  '+33',
-  '+34',
-  '+36',
-  '+39',
-  '+40',
-  '+41',
-  '+43',
-  '+44',
-  '+45',
-  '+46',
-  '+47',
-  '+48',
-  '+49',
-  '+51',
-  '+52',
-  '+53',
-  '+54',
-  '+55',
-  '+56',
-  '+57',
-  '+58',
-  '+60',
-  '+61',
-  '+62',
-  '+63',
-  '+64',
-  '+65',
-  '+66',
-  '+81',
-  '+82',
-  '+84',
-  '+86',
-  '+90',
-  '+91',
-  '+92',
-  '+93',
-  '+94',
-  '+95',
-  '+98',
-  '+211',
-  '+212',
-  '+213',
-  '+216',
-  '+218',
-  '+220',
-  '+221',
-  '+222',
-  '+223',
-  '+224',
-  '+225',
-  '+226',
-  '+227',
-  '+228',
-  '+229',
-  '+230',
-  '+231',
-  '+232',
-  '+233',
-  '+234',
-  '+235',
-  '+236',
-  '+237',
-  '+238',
-  '+239',
-  '+240',
-  '+241',
-  '+242',
-  '+243',
-  '+244',
-  '+245',
-  '+246',
-  '+247',
-  '+248',
-  '+249',
-  '+250',
-  '+251',
-  '+252',
-  '+253',
-  '+254',
-  '+255',
-  '+256',
-  '+257',
-  '+258',
-  '+260',
-  '+261',
-  '+262',
-  '+263',
-  '+264',
-  '+265',
-  '+266',
-  '+267',
-  '+268',
-  '+269',
-  '+290',
-  '+291',
-  '+297',
-  '+298',
-  '+299'
-];
 
 class UserDetailsPage extends StatefulWidget {
   final User user;
@@ -135,7 +28,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     super.initState();
 
     final phoneNumber = widget.user.phone_number;
-    final prefix = phonePrefixes.firstWhere(
+    final prefix = PhoneUtils.phonePrefixes.firstWhere(
       (prefix) => phoneNumber.startsWith(prefix),
       orElse: () => '+1',
     );
@@ -164,7 +57,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       data: ThemeData.light(), // Establecer el tema en modo claro
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Detalles del Usuario'),
+          title: Text('User details'),
         ),
         body: SingleChildScrollView(
           padding: EdgeInsets.all(20),
@@ -174,7 +67,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               SizedBox(height: 20),
               ParamTextBox(
                 controller: controller.nombreController,
-                text: 'Nombre',
+                text: 'Name',
               ),
               SizedBox(height: 15),
               ParamTextBox(
@@ -202,7 +95,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                         onChanged: (String? newValue) {
                           controller.selectedPrefix.value = newValue!;
                         },
-                        items: phonePrefixes
+                        items: PhoneUtils.phonePrefixes
                             .map<DropdownMenuItem<String>>((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
@@ -210,7 +103,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                           );
                         }).toList(),
                         decoration: InputDecoration(
-                          labelText: 'Prefijo',
+                          labelText: 'Prefix',
                           border: OutlineInputBorder(),
                         ),
                       ),
@@ -221,7 +114,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                     flex: 5,
                     child: ParamTextBox(
                       controller: controller.telController,
-                      text: 'Teléfono',
+                      text: 'Phone number',
                       keyboardType: TextInputType.phone,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[\d\s]')),
@@ -236,7 +129,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                   Expanded(
                     child: ParamTextBox(
                       controller: controller.cumpleController,
-                      text: 'Cumpleaños',
+                      text: 'Birthdate',
+                      editable: false,
                     ),
                   ),
                   IconButton(
@@ -248,7 +142,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               SizedBox(height: 15),
               ParamTextBox(
                 controller: controller.generoController,
-                text: 'Género',
+                text: 'Gender',
               ),
               SizedBox(height: 40),
               ElevatedButton(
@@ -261,7 +155,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               SizedBox(height: 15),
               ElevatedButton(
                 onPressed: () => _confirmDeleteAccount(context),
-                child: const Text('Eliminar Cuenta'),
+                child: const Text('Delete account'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                 ),
@@ -279,12 +173,12 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmar Eliminación'),
-          content: Text('¿Estás seguro de querer eliminar tu cuenta?'),
+          title: Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete your account?'),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancelar'),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -292,7 +186,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 userService.deleteUser();
                 Get.to(TitleScreen());
               },
-              child: Text('Eliminar cuenta'),
+              child: Text('Delete account'),
             ),
           ],
         );
@@ -305,6 +199,7 @@ class ParamTextBox extends StatelessWidget {
   final TextEditingController controller;
   final String text;
   final TextInputType keyboardType;
+  final bool? editable;
   final List<TextInputFormatter>? inputFormatters;
 
   const ParamTextBox({
@@ -312,12 +207,14 @@ class ParamTextBox extends StatelessWidget {
     required this.text,
     this.keyboardType = TextInputType.text,
     this.inputFormatters,
+    this.editable = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      readOnly: !editable!,
       decoration: InputDecoration(
         labelText: text,
         border: OutlineInputBorder(),
@@ -368,12 +265,12 @@ class UpdateScreenController extends GetxController {
         cumpleController.text.isEmpty) {
       Get.snackbar(
         'Error',
-        'Campos vacíos',
+        'Empty fields',
         snackPosition: SnackPosition.BOTTOM,
       );
     } else {
       if (GetUtils.isEmail(mailController.text) == true &&
-          validatePhoneNumber(telController.text)) {
+          PhoneUtils.validatePhoneNumber(telController.text)) {
         User user = User(
           id: updatedUser.id,
           name: nombreController.text,
@@ -384,31 +281,26 @@ class UpdateScreenController extends GetxController {
           birthday: date,
         );
         userService.updateUser(user).then((statusCode) {
-          print('Usuario editado exitosamente');
+          print('User successfully edited');
           Get.snackbar(
-            '¡Usuario editado!',
-            'Usuario editado correctamente',
+            'User edited!',
+            'User edited successfully',
             snackPosition: SnackPosition.BOTTOM,
           );
         }).catchError((error) {
           Get.snackbar(
             'Error',
-            'Error al enviar usuario al backend: $error',
+            'Error sending user to backend: $error',
             snackPosition: SnackPosition.BOTTOM,
           );
         });
       } else {
         Get.snackbar(
           'Error',
-          'E-mail o teléfono no válidos',
+          'Invalid email or phone number',
           snackPosition: SnackPosition.BOTTOM,
         );
       }
     }
-  }
-
-  bool validatePhoneNumber(String phoneNumber) {
-    final regex = RegExp(r'^[\d\s]{7,15}$');
-    return regex.hasMatch(phoneNumber);
   }
 }
