@@ -234,7 +234,6 @@ class UserService {
     try {
       Response response = await dio.put('$baseUrl/user/delete/$id');
         statusCode = response.statusCode;
-        print(response.data);
       logout();
     } catch (e) {
       // Manejar cualquier error que pueda ocurrir durante la solicitud

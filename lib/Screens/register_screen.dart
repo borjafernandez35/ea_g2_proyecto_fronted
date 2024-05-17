@@ -51,19 +51,14 @@ class _RegisterScreen extends State<RegisterScreen> {
                 height: 90,
                 width: 90,
               ),
-              const SizedBox(
-                  height: 5), // Separación entre el logo y el cuadro negro
+              const SizedBox(height: 5), // Separación entre el logo y el cuadro negro
               // Cuadro negro con el formulario de inicio de sesión
               Container(
-                margin: const EdgeInsets.all(
-                    3), // Ajusta el margen del cuadro negro aquí
-                padding: const EdgeInsets.all(
-                    3), // Ajusta el padding del cuadro negro aquí
+                margin: const EdgeInsets.all(3), // Ajusta el margen del cuadro negro aquí
+                padding: const EdgeInsets.all(3), // Ajusta el padding del cuadro negro aquí
                 decoration: BoxDecoration(
-                  color: Colors.black
-                      .withOpacity(0.7), // Color del cuadro negro con opacidad
-                  borderRadius: BorderRadius.circular(
-                      20), // Bordes redondeados del cuadro
+                  color: Colors.black.withOpacity(0.7), // Color del cuadro negro con opacidad
+                  borderRadius: BorderRadius.circular(20), // Bordes redondeados del cuadro
                 ),
                 child: Column(
                   children: [
@@ -76,15 +71,12 @@ class _RegisterScreen extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    ParamTextBox(
-                        controller: controller.nameController, text: 'name'),
+                    ParamTextBox(controller: controller.nameController, text: 'name'),
                     const SizedBox(height: 4),
-                    ParamTextBox(
-                        controller: controller.mailController, text: 'e-mail'),
+                    ParamTextBox(controller: controller.mailController, text: 'e-mail'),
                     const SizedBox(height: 4),
                     ConstrainedBox(
-                      constraints: BoxConstraints(
-                          maxWidth: 200), // Ancho máximo para el Row
+                      constraints: BoxConstraints(maxWidth: 200), // Ancho máximo para el Row
                       child: Row(
                         children: [
                           Expanded(
@@ -100,7 +92,7 @@ class _RegisterScreen extends State<RegisterScreen> {
                                 width: double.infinity, // Ancho máximo del prefixWidget
                                 child: DropdownButtonFormField<String>(
                                   value: controller.selectedPrefix.value,
-                                                                          alignment: Alignment.centerRight,
+                                  alignment: Alignment.centerRight,
                                   onChanged: (String? newValue) {
                                     controller.selectedPrefix.value = newValue!;
                                   },
@@ -109,20 +101,15 @@ class _RegisterScreen extends State<RegisterScreen> {
                                     (String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
-                                        child: Text(value,
-                                            style:
-                                                TextStyle(color: Colors.grey)),
+                                        child: Text(value, style: TextStyle(color: Colors.grey)),
                                       );
                                     },
                                  ).toList(),
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     border: InputBorder.none,
-                                    contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 5.6), // Adjusts the padding
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 5.6), // Adjusts the padding
                                   ),
-                                  icon: Icon(Icons.arrow_drop_down,
-                                      color: Colors
-                                          .grey), // Icono de flecha hacia abajo
+                                  icon: const Icon(Icons.arrow_drop_down, color: Colors.grey), // Icono de flecha hacia abajo
                                 ),
                                 
                               ),
@@ -139,18 +126,14 @@ class _RegisterScreen extends State<RegisterScreen> {
                         icon: Icon(Icons.calendar_today),
                         onPressed: () => controller.selectDate(context),
                       ),
-                      editable:
-                          false, // Hace que el campo de cumpleaños no sea editable
+                      editable: false, // Hace que el campo de cumpleaños no sea editable
                     ),
                     const SizedBox(height: 4),
                     ParamTextBox(controller: controller.genderController, text: 'gender'),
                     const SizedBox(height: 4),
-                    ParamTextBox(controller: controller.contrasenaController,
-                        text: 'password'),
+                    ParamTextBox(controller: controller.contrasenaController, text: 'password'),
                     const SizedBox(height: 4),
-                    ParamTextBox(
-                        controller: controller.confirmcontrasenaController,
-                        text: 'confirm password'),
+                    ParamTextBox(controller: controller.confirmcontrasenaController, text: 'confirm password'),
                     const SizedBox(height: 4),
                     SignUpButton(
                         onPressed: () => controller.signUp(), text: 'Sign up')
@@ -171,8 +154,7 @@ class RegisterController extends GetxController {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController birthdayController = TextEditingController();
   final TextEditingController contrasenaController = TextEditingController();
-  final TextEditingController confirmcontrasenaController =
-      TextEditingController();
+  final TextEditingController confirmcontrasenaController = TextEditingController();
   final TextEditingController mailController = TextEditingController();
   late String date;
 

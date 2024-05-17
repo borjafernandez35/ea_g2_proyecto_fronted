@@ -183,7 +183,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                userService.deleteUser();
+                controller.deleteUser();
                 Get.to(TitleScreen());
               },
               child: Text('Delete account'),
@@ -302,5 +302,22 @@ class UpdateScreenController extends GetxController {
         );
       }
     }
+  }
+
+  void deleteUser() {
+    userService.deleteUser().then((statusCode) {
+      userService.logout();
+      Get.snackbar(
+        'User deleted!',
+        'User deleted successfully',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }).catchError((error) {
+      Get.snackbar(
+        'Error',
+        'Error sending user to backend: $error',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    });
   }
 }
