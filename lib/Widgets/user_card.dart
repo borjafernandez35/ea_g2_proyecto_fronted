@@ -8,11 +8,11 @@ import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Services/UserService.dart';
 
 late UserService userService;
-String? name;
+
 
 class UserCard extends StatefulWidget {
-  final String? uId;
-  const UserCard(this.uId ,{super.key,});
+  final String? name;
+  const UserCard(this.name ,{super.key,});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -25,27 +25,6 @@ class _UserCard extends State<UserCard> {
   @override
   void initState() {
     super.initState();
-    userService = UserService();
-    getData();
-  }
-
-  void getData() async {
-    try {
-      user = await userService.getAnotherUser(widget.uId);
-      print(user.name);
-      setState(() {
-        isLoading = false; // Cambiar el estado de carga cuando los datos están disponibles
-      });
-    } catch (error) {
-      Get.snackbar(
-        'Error',
-        'No se han podido obtener los datos.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      if (kDebugMode) {
-        print('Error al comunicarse con el backend: $error');
-      }
-    }
   }
 
   @override
@@ -56,11 +35,12 @@ class _UserCard extends State<UserCard> {
         Card(
           surfaceTintColor: Pallete.accentColor,
           elevation: 5,
-          margin: EdgeInsets.all(10),
+          margin: EdgeInsets.all(5),
           child: Row(
             children: [
               // Left side: Image
               Container(
+                margin: EdgeInsets.all(5),
                 width: 75,
                 height: 75,
                 child: Image.network(
@@ -71,7 +51,7 @@ class _UserCard extends State<UserCard> {
               // Right side: Title, Description, and Value
               const SizedBox(width: 15),
               Text(
-                user.name,
+                widget.name ?? 'NAME',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 20

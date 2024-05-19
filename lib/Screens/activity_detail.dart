@@ -12,6 +12,7 @@ import 'package:spotfinder/Resources/pallete.dart';
 
 late ActivityService activityService;
 late UserService userService;
+late List<User> users = [];
 late User user;
 
 class ActivityDetail extends StatefulWidget {
@@ -32,8 +33,11 @@ class _ActivityDetail extends State<ActivityDetail> {
   @override
   void initState() {
     super.initState();
+    userService = UserService();
     activityService = ActivityService();
     userService = UserService();
+    final listLength = widget.activity.listUsers?.length ?? 0;
+    print(listLength);
     user = User(
       name: '',
       email: '',
@@ -41,11 +45,37 @@ class _ActivityDetail extends State<ActivityDetail> {
       gender: '',
       password: ''
     ); 
+    getData(listLength);
+  }
+  void getData(int length) async {
+    try {
+      for (var i = 0; i < length; i++) {
+        user = await userService.getAnotherUser(widget.activity.listUsers?[i]);
+        users.add(user);
+        print(user.name);
+      }
+      setState(() {
+        isLoading = false; // Cambiar el estado de carga cuando los datos están disponibles
+      });
+    } catch (error) {
+      Get.snackbar(
+        'Error',
+        'No se han podido obtener los datos.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      if (kDebugMode) {
+        print('Error al comunicarse con el backend: $error');
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    if (isLoading) {
+      // Muestra un indicador de carga mientras se cargan los datos
+      return Center(child: CircularProgressIndicator());
+    } else {
+      return Scaffold(
         appBar: AppBar(
           backgroundColor: Pallete.whiteColor,
           title: Center(
@@ -65,7 +95,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                 color: Pallete.backgroundColor,
               ),
               onPressed: () {
-                Get.to(HomePage());
+                Get.to(() => HomePage());
               },
             ),
           ),
@@ -123,9 +153,10 @@ class _ActivityDetail extends State<ActivityDetail> {
                             shrinkWrap: true,
                             itemCount: widget.activity.listUsers?.length ?? 0,
                             itemBuilder: (BuildContext context, int index) {
+                              print(users[index].name);
                               return Card(
                                 color: Pallete.whiteColor,
-                                child: UserCard(widget.activity.listUsers?[index]),
+                                child: UserCard(users[index].name),
                               );
                             },
                           ),
@@ -141,6 +172,7 @@ class _ActivityDetail extends State<ActivityDetail> {
           ),
         ),
       );
+    }
   }
 }
 

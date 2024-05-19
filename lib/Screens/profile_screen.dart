@@ -6,7 +6,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/detalles_user.dart';
-import 'package:spotfinder/Screens/my_comments_screen.dart';
+//import 'package:spotfinder/Screens/my_comments_screen.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:get/get.dart';

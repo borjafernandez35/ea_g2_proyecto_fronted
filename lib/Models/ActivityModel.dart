@@ -1,5 +1,4 @@
-import 'package:spotfinder/Models/UserModel.dart';
-import 'package:spotfinder/Screens/profile_screen.dart';
+import 'package:flutter/foundation.dart';
 
 class Activity {
   final String? id;
@@ -7,10 +6,10 @@ class Activity {
   final String description;
   final double? rate;
   final String idUser;
-  final String date;
+  final DateTime date; // Cambiado el tipo de dato a DateTime
   final List<String>? listUsers;
   final List<String>? comments;
-    
+  final String? imageUrl; // Asegurado que imageUrl sea de tipo String
 
   Activity({
     this.id,
@@ -21,7 +20,17 @@ class Activity {
     required this.date,
     this.listUsers,
     this.comments,
+    this.imageUrl,
   });
+
+    Map<String, dynamic> toJson() {
+    return {
+      'idUser': idUser,
+      'name': name,
+      'description': description,
+      'date': date,
+    };
+  }
 
   factory Activity.fromJson(Map<String, dynamic> json) {
     return Activity(
@@ -30,9 +39,10 @@ class Activity {
       description: json['description'],
       rate: json['rate'],
       idUser: json['owner'],
-      date: json['date'],
+      date: DateTime.parse(json['date']), // Parsear la fecha desde String a DateTime
       listUsers: (json['listUsers'] as List<dynamic>?)?.cast<String>(),
       comments: (json['comments'] as List<dynamic>?)?.cast<String>(),
+      imageUrl: json['imageUrl'], // Asignar imageUrl desde JSON si está disponible
     );
   }
 }
