@@ -1,3 +1,6 @@
+import 'package:spotfinder/Models/UserModel.dart';
+import 'package:spotfinder/Screens/profile_screen.dart';
+
 class Activity {
   final String? id;
   final String name;
@@ -21,7 +24,8 @@ class Activity {
   });
 
   factory Activity.fromJson(Map<String, dynamic> json) {
-    return Activity(
+    try{
+      return Activity(
       id: json['_id'],
       name: json['name'],
       description: json['description'],
@@ -31,5 +35,9 @@ class Activity {
       listUsers: (json['listUsers'] as List<dynamic>?)?.cast<String>(),
       comments: (json['comments'] as List<dynamic>?)?.cast<String>(),
     );
+    } catch (e) {
+      print('Error fetching data: $e');
+      throw e;
+    }
   }
 }

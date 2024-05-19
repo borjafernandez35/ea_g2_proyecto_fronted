@@ -29,7 +29,7 @@ class UserService {
     return box.read('id');
   }
 
-   void logout() {
+  void logout() {
     final box = GetStorage();
     box.remove('token');
     box.remove('id');
@@ -140,6 +140,31 @@ class UserService {
     }
   }
 
+  Future<User> getAnotherUser(String? id) async {
+
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = getToken();
+
+        if (token != null) {
+          options.headers['x-access-token'] = token;
+        }
+        return handler.next(options);
+      },
+    ));
+    try {
+      Response res = await dio.get('$baseUrl/user/$id');
+      print(res.data['data']);
+      User user = User.fromJson(res.data['data']);
+      print('user from api: ${user.name}');
+      return user;
+    } catch (e) {
+      // Manejar cualquier error que pueda ocurrir durante la solicitud
+      print('Error fetching data: $e');
+      throw e; // Relanzar el error para que el llamador pueda manejarlo
+    }
+  }
+
   Future<List<Activity>> getData() async {
     print('getData');
     // Interceptor para agregar el token a la cabecera 'x-access-token'
@@ -178,8 +203,7 @@ class UserService {
   Future<int> logIn(logIn) async {
     print('LogIn');
 
-    Response response =
-        await dio.post('$baseUrl/signin', data: logInToJson(logIn));
+    Response response = await dio.post('$baseUrl/signin', data: logInToJson(logIn));
 
     data = response.data.toString();
     print('Data: $data');

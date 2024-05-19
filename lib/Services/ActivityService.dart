@@ -14,7 +14,10 @@ class ActivityService {
     final box = GetStorage();
     return box.read('token');
   }
-  //Función createUser
+  String? getId() {
+    final box = GetStorage();
+    return box.read('id');
+  }
 
   Future<List<Activity>> getData() async {
   print('getData');
@@ -36,15 +39,47 @@ class ActivityService {
     
     try {
       var res = await dio.get('$baseUrl/activity/1/10');
-      print("data: ");
-      print(res.data['activities']);
       final List<dynamic> responseData = res.data['activities']; // Obtener los datos de la respuesta
-      print("peta aqui");
-    
       // Convertir los datos en una lista de objetos Place
       List<Activity> activities = responseData.map((data) => Activity.fromJson(data)).toList();
-    
+      
       return activities; // Devolver la lista de actividadess
+    } catch (e) {
+      // Manejar cualquier error que pueda ocurrir durante la solicitud
+      print('Error fetching data: $e');
+      throw e; // Relanzar el error para que el llamador pueda manejarlo
+    }
+  }
+
+  Future<int> joinActivity(String? aId) async {
+    // Interceptor para agregar el token a la cabecera 'x-access-token'
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        // Obtener el token guardado
+        final token = getToken();
+
+        print(token);
+        
+        // Si el token está disponible, agregarlo a la cabecera 'x-access-token'
+        if (token != null) {
+          options.headers['x-access-token'] = token;
+        }
+        return handler.next(options);
+      },
+    ));
+    
+    try {
+      final id = getId();
+      var res = await dio.put('$baseUrl/activity/$id/$aId');
+      
+      data = res.data.toString();
+      print('Data: $data');
+
+      statusCode = res.statusCode;
+      print('Status code: $statusCode');
+
+      return statusCode;
+    
     } catch (e) {
       // Manejar cualquier error que pueda ocurrir durante la solicitud
       print('Error fetching data: $e');

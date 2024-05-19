@@ -20,7 +20,7 @@ class ParamTextBox extends StatelessWidget {
         fillColor: Colors.white, // Establece el color de fondo blanco
           enabledBorder: OutlineInputBorder(
           borderSide: const BorderSide(
-            color: Pallete.salmonColor,
+            color: Pallete.backgroundColor,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(50),

@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
+import 'package:spotfinder/Screens/activity_detail.dart';
 import 'package:spotfinder/Screens/home_page.dart';
 import 'package:get/get.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
@@ -59,12 +60,20 @@ class _ActivityListPage extends State<ActivityListPage> {
       // Muestra la lista de usuarios cuando los datos están disponibles
       return Scaffold(
         appBar: AppBar(
-          title: Center(child: Text('Places List')),
+          backgroundColor: Pallete.whiteColor,
+          title: Center(
+            child: Text('Places List',
+              style: TextStyle(
+                color: Pallete.backgroundColor
+              ),
+            )
+          ),
           elevation: 0,
           leading: Builder(
             builder: (context) => IconButton(
               icon: Icon(
-                Icons.turn_left,
+                Icons.arrow_back,
+                color: Pallete.backgroundColor,
               ),
               onPressed: () {
                 Get.to(HomePage());
@@ -76,8 +85,13 @@ class _ActivityListPage extends State<ActivityListPage> {
           itemBuilder: (BuildContext context, int index) {
             return Card(
               color: Pallete.backgroundColor,
-              child:
-                ActivityCard(lista_activities[index]),
+              child: InkWell(
+                onTap: () {
+                  print(lista_activities[index]);
+                  Get.to(() => ActivityDetail(lista_activities[index]));
+                },
+                child: ActivityCard(lista_activities[index]),
+              ),
             );
           },
           itemCount: lista_activities.length,

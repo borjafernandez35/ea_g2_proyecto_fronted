@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Necesario para usar inputFormatters
+import 'package:spotfinder/Resources/pallete.dart';
 
 class ParamTextBox extends StatelessWidget {
   final String text;
@@ -40,14 +41,14 @@ class ParamTextBox extends StatelessWidget {
               fillColor: Colors.white,
               enabledBorder: OutlineInputBorder(
                 borderSide: const BorderSide(
-                  color: Color(0xFFE57373),
+                  color: Pallete.backgroundColor,
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(50),
               ),
               focusedBorder: OutlineInputBorder(
                 borderSide: const BorderSide(
-                  color: Color(0xFFE57373),
+                  color: Pallete.salmonColor,
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(50),

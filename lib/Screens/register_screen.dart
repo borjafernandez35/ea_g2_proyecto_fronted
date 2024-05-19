@@ -135,8 +135,7 @@ class _RegisterScreen extends State<RegisterScreen> {
                     const SizedBox(height: 4),
                     ParamTextBox(controller: controller.confirmcontrasenaController, text: 'confirm password'),
                     const SizedBox(height: 4),
-                    SignUpButton(
-                        onPressed: () => controller.signUp(), text: 'Sign up')
+                    SignUpButton(onPressed: () => controller.signUp(), text: 'Sign up')
                   ],
                 ),
               ),
