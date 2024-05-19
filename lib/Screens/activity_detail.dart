@@ -123,11 +123,9 @@ class _ActivityDetail extends State<ActivityDetail> {
                             shrinkWrap: true,
                             itemCount: widget.activity.listUsers?.length ?? 0,
                             itemBuilder: (BuildContext context, int index) {
-                              controllerActivityDetail.getUsers(widget.activity.listUsers?[index]);
-                              print('user name: ${user.name}');
                               return Card(
                                 color: Pallete.whiteColor,
-                                child: UserCard(user.name),
+                                child: UserCard(widget.activity.listUsers?[index]),
                               );
                             },
                           ),
@@ -151,10 +149,5 @@ class ActivityDetailController extends GetxController {
   
   void joinActivity(String? id) {
     activityService.joinActivity(id);
-  }
-
-  void getUsers(String? id) async {
-    user = await userService.getAnotherUser(id);
-    print('user name: ${user.name}');
   }
 }

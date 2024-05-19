@@ -8,9 +8,9 @@ class User {
   final String phone_number;
   final String gender;
   final String? birthday;
-  final List<Activity>? activities;
-  final List<Activity>? listActivities;
-  final List<Comment>? comments;
+  final List<String>? activities;
+  final List<String>? listActivities;
+  final List<String>? comments;
   final bool? active;
   final String password;
 
@@ -51,15 +51,9 @@ class User {
       active: json['active'],
       password: json['password'],
       birthday: json['birthday'],
-      activities: (json['activities'] as List<dynamic>)
-          .map((activityJson) => Activity.fromJson(activityJson))
-          .toList(),
-      listActivities: (json['listActivities'] as List<dynamic>)
-          .map((activityJson) => Activity.fromJson(activityJson))
-          .toList(),
-      comments: (json['comments'] as List<dynamic>)
-          .map((commentJson) => Comment.fromJson(commentJson))
-          .toList(),
+      activities: (json['Activities'] as List<dynamic>?)?.cast<String>(),
+      listActivities: (json['listActivities'] as List<dynamic>?)?.cast<String>(),
+      comments: (json['comments'] as List<dynamic>?)?.cast<String>(),
     );
   }
 }

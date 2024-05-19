@@ -214,7 +214,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                         SizedBox(height: 20.0),
                         TextButton(
                           onPressed: () {
-                            Get.to(() => MyCommentsScreen(user!, onUpdate: getData));
+                            //Get.to(() => MyCommentsScreen(user!, onUpdate: getData));
                           },
                           child: const Align(
                             alignment: Alignment.centerLeft,

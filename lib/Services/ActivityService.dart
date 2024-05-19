@@ -40,8 +40,10 @@ class ActivityService {
     try {
       var res = await dio.get('$baseUrl/activity/1/10');
       final List<dynamic> responseData = res.data['activities']; // Obtener los datos de la respuesta
+      print(res.data);
       // Convertir los datos en una lista de objetos Place
       List<Activity> activities = responseData.map((data) => Activity.fromJson(data)).toList();
+      print("aqui aun funciona");
       
       return activities; // Devolver la lista de actividadess
     } catch (e) {
@@ -51,7 +53,6 @@ class ActivityService {
     }
   }
 
-<<<<<<< HEAD
   Future<int> joinActivity(String? aId) async {
     // Interceptor para agregar el token a la cabecera 'x-access-token'
     dio.interceptors.add(InterceptorsWrapper(
@@ -62,21 +63,12 @@ class ActivityService {
         print(token);
         
         // Si el token está disponible, agregarlo a la cabecera 'x-access-token'
-=======
- Future<Activity> getActivity(String id) async {
-
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = getToken();
-
->>>>>>> eacbd50bbceb0f850854ad0de8097e91562ac797
         if (token != null) {
           options.headers['x-access-token'] = token;
         }
         return handler.next(options);
       },
     ));
-<<<<<<< HEAD
     
     try {
       final id = getId();
@@ -90,22 +82,33 @@ class ActivityService {
 
       return statusCode;
     
-=======
-
-    try {
-      Response res = await dio.get('$baseUrl/activity/$id');
-      Activity activity = Activity.fromJson(res.data['data']);
-      return activity;
->>>>>>> eacbd50bbceb0f850854ad0de8097e91562ac797
     } catch (e) {
       // Manejar cualquier error que pueda ocurrir durante la solicitud
       print('Error fetching data: $e');
       throw e; // Relanzar el error para que el llamador pueda manejarlo
     }
   }
-<<<<<<< HEAD
-=======
+  Future<Activity> getActivity(String id) async {
 
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = getToken();
 
->>>>>>> eacbd50bbceb0f850854ad0de8097e91562ac797
+        if (token != null) {
+          options.headers['x-access-token'] = token;
+        }
+        return handler.next(options);
+      },
+    ));
+
+    try {
+      Response res = await dio.get('$baseUrl/activity/$id');
+      Activity activity = Activity.fromJson(res.data['data']);
+      return activity;
+    } catch (e) {
+      // Manejar cualquier error que pueda ocurrir durante la solicitud
+      print('Error fetching data: $e');
+      throw e; // Relanzar el error para que el llamador pueda manejarlo
+    }
+  }
 }

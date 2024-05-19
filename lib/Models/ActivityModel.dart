@@ -24,20 +24,15 @@ class Activity {
   });
 
   factory Activity.fromJson(Map<String, dynamic> json) {
-    try{
-      return Activity(
+    return Activity(
       id: json['_id'],
       name: json['name'],
       description: json['description'],
       rate: json['rate'],
-      idUser: json['owner']['name'],
+      idUser: json['owner'],
       date: json['date'],
       listUsers: (json['listUsers'] as List<dynamic>?)?.cast<String>(),
       comments: (json['comments'] as List<dynamic>?)?.cast<String>(),
     );
-    } catch (e) {
-      print('Error fetching data: $e');
-      throw e;
-    }
   }
 }
