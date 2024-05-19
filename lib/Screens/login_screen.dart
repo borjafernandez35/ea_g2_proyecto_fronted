@@ -17,14 +17,21 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreen extends State<LoginScreen> {
   final Controller controller = Get.put(Controller());
+  bool _obscureText = true;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     userService = UserService();
   }
 
-  @override 
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -51,29 +58,50 @@ class _LoginScreen extends State<LoginScreen> {
                 height: 150,
                 width: 150,
               ),
-              const SizedBox(height: 20), // Separación entre el logo y el cuadro negro
+              const SizedBox(
+                  height: 20), // Separación entre el logo y el cuadro negro
               // Cuadro negro con el formulario de inicio de sesión
               Container(
-                margin: const EdgeInsets.all(20), // Ajusta el margen del cuadro negro aquí
-                padding: const EdgeInsets.all(20), // Ajusta el padding del cuadro negro aquí
+                margin: const EdgeInsets.all(
+                    20), // Ajusta el margen del cuadro negro aquí
+                padding: const EdgeInsets.all(
+                    20), // Ajusta el padding del cuadro negro aquí
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7), // Color del cuadro negro con opacidad
-                  borderRadius: BorderRadius.circular(20), // Bordes redondeados del cuadro
+                  color: Colors.black
+                      .withOpacity(0.7), // Color del cuadro negro con opacidad
+                  borderRadius: BorderRadius.circular(
+                      20), // Bordes redondeados del cuadro
                 ),
                 child: Column(
                   children: [
-                    const Text('Welcome', style: TextStyle(
+                    const Text(
+                      'Welcome',
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 30,
                         color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 10),
-                    ParamTextBox(controller: controller.mailController, text: 'e-mail'),
+                    ParamTextBox(
+                        controller: controller.mailController, text: 'e-mail'),
                     const SizedBox(height: 10),
-                    ParamTextBox(controller: controller.contrasenaController, text: 'Password'),
+                    ParamTextBox(
+                      controller: controller.contrasenaController,
+                      text: 'Password',
+                      obscureText: _obscureText,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureText
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: _togglePasswordVisibility,
+                      ),
+                    ),
                     const SizedBox(height: 10),
-                    SignInButton(onPressed: () => controller.logIn(), text: 'Sign in'),
+                    SignInButton(
+                        onPressed: () => controller.logIn(), text: 'Sign in'),
                     const SizedBox(height: 10),
                     // Nuevo texto para olvidar la contraseña
                     GestureDetector(
@@ -107,15 +135,14 @@ class Controller extends GetxController {
   bool parameters = false;
 
   void logIn() {
-    if(contrasenaController.text.isEmpty || mailController.text.isEmpty){
+    if (contrasenaController.text.isEmpty || mailController.text.isEmpty) {
       Get.snackbar(
-        'Error', 
+        'Error',
         'Campos vacios',
         snackPosition: SnackPosition.BOTTOM,
       );
-    }
-    else{
-      if(GetUtils.isEmail(mailController.text)==true){
+    } else {
+      if (GetUtils.isEmail(mailController.text) == true) {
         final logIn = (
           email: mailController.text,
           password: contrasenaController.text,
@@ -133,10 +160,9 @@ class Controller extends GetxController {
           );
           print('Error al enviar log in al backend: $error');
         });
-      }
-      else{
+      } else {
         Get.snackbar(
-          'Error', 
+          'Error',
           'e-mail no valido',
           snackPosition: SnackPosition.BOTTOM,
         );

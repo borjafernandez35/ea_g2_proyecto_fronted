@@ -51,4 +51,30 @@ class ActivityService {
       throw e; // Relanzar el error para que el llamador pueda manejarlo
     }
   }
+
+ Future<Activity> getActivity(String id) async {
+
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = getToken();
+
+        if (token != null) {
+          options.headers['x-access-token'] = token;
+        }
+        return handler.next(options);
+      },
+    ));
+
+    try {
+      Response res = await dio.get('$baseUrl/activity/$id');
+      Activity activity = Activity.fromJson(res.data['data']);
+      return activity;
+    } catch (e) {
+      // Manejar cualquier error que pueda ocurrir durante la solicitud
+      print('Error fetching data: $e');
+      throw e; // Relanzar el error para que el llamador pueda manejarlo
+    }
+  }
+
+
 }

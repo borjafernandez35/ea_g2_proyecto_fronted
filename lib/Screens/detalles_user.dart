@@ -6,6 +6,7 @@ import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:spotfinder/Utils/phone_utils.dart';
+import 'package:spotfinder/Widgets/paramTextBox_edit.dart';
 
 late UserService userService;
 
@@ -53,116 +54,138 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: ThemeData.light(), // Establecer el tema en modo claro
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('User details'),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Pallete.whiteColor,
+        iconTheme: IconThemeData(color: Pallete.backgroundColor), 
+        title: const Text(
+          'User details',
+          style: TextStyle(color: Pallete.backgroundColor), // Color del texto del app bar
         ),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 20),
-              ParamTextBox(
-                controller: controller.nombreController,
-                text: 'Name',
-              ),
-              SizedBox(height: 15),
-              ParamTextBox(
-                controller: controller.mailController,
-                text: 'E-Mail',
-              ),
-              Visibility(
-                visible: controller.invalid,
-                child: Text(
-                  'Invalid',
-                  style: TextStyle(
-                    color: Pallete.salmonColor,
-                    fontSize: 15,
-                  ),
+      ),
+      backgroundColor: Pallete.whiteColor,
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 20),
+            ParamTextBox(
+              controller: controller.nombreController,
+              text: 'Name',
+            ),
+            SizedBox(height: 15),
+            ParamTextBox(
+              controller: controller.mailController,
+              text: 'E-Mail',
+            ),
+            Visibility(
+              visible: controller.invalid,
+              child: const Text(
+                'Invalid',
+                style: TextStyle(
+                  color: Pallete.salmonColor,
+                  fontSize: 15,
                 ),
               ),
-              SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Obx(
-                      () => DropdownButtonFormField<String>(
-                        value: controller.selectedPrefix.value,
-                        onChanged: (String? newValue) {
-                          controller.selectedPrefix.value = newValue!;
-                        },
-                        items: PhoneUtils.phonePrefixes
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        decoration: InputDecoration(
-                          labelText: 'Prefix',
-                          border: OutlineInputBorder(),
+            ),
+            SizedBox(height: 15),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Obx(
+                    () => DropdownButtonFormField<String>(
+                      value: controller.selectedPrefix.value,
+                      onChanged: (String? newValue) {
+                        controller.selectedPrefix.value = newValue!;
+                      },
+                      items: PhoneUtils.phonePrefixes
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: const TextStyle(
+                              color: Pallete.backgroundColor,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      decoration: const InputDecoration(
+                        labelText: 'Prefix',
+                        labelStyle: TextStyle(
+                          color:
+                              Pallete.accentColor, // Color del texto del label
                         ),
+                        border: OutlineInputBorder(),
                       ),
+                      icon: const Icon(Icons.arrow_drop_down, color: Pallete.backgroundColor), // Color de la flecha de desplegar
                     ),
                   ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    flex: 5,
-                    child: ParamTextBox(
-                      controller: controller.telController,
-                      text: 'Phone number',
-                      keyboardType: TextInputType.phone,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[\d\s]')),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    child: ParamTextBox(
-                      controller: controller.cumpleController,
-                      text: 'Birthdate',
-                      editable: false,
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.calendar_today),
-                    onPressed: () => controller.selectDate(context),
-                  ),
-                ],
-              ),
-              SizedBox(height: 15),
-              ParamTextBox(
-                controller: controller.generoController,
-                text: 'Gender',
-              ),
-              SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: () {
-                  controller.updateUser(widget.user);
-                  widget.onUpdate();
-                },
-                child: const Text('Update'),
-              ),
-              SizedBox(height: 15),
-              ElevatedButton(
-                onPressed: () => _confirmDeleteAccount(context),
-                child: const Text('Delete account'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
                 ),
-              ),
-              SizedBox(height: 40),
-            ],
-          ),
+                SizedBox(width: 10),
+                Expanded(
+                  flex: 5,
+                  child: ParamTextBox(
+                    controller: controller.telController,
+                    text: 'Phone number',
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[\d\s]')),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 15),
+            Row(
+              children: [
+                Expanded(
+                  child: ParamTextBox(
+                    controller: controller.cumpleController,
+                    text: ('Birthdate'),
+                    editable: false,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.calendar_today,
+                      color: Pallete.accentColor), // Color del icono de la fecha
+                  onPressed: () => controller.selectDate(context),
+                ),
+              ],
+            ),
+            SizedBox(height: 15),
+            ParamTextBox(
+              controller: controller.generoController,
+              text: 'Gender',
+            ),
+            SizedBox(height: 40),
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    controller.updateUser(widget.user);
+                    widget.onUpdate();
+                  },
+                  child: const Text('Update'),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Pallete.primaryColor,
+                  ),
+                ),
+                SizedBox(width: 25),
+                ElevatedButton(
+                  onPressed: () => _confirmDeleteAccount(context),
+                  child: const Text('Delete account'),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Pallete.salmonColor,
+                  ),
+                ),
+              ],
+            )
+          ],
         ),
       ),
     );
@@ -173,8 +196,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirm Deletion'),
-          content: Text('Are you sure you want to delete your account?'),
+          title: const Text('Confirm Deletion'),
+          content: const Text('Are you sure you want to delete your account?'),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -195,35 +218,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   }
 }
 
-class ParamTextBox extends StatelessWidget {
-  final TextEditingController controller;
-  final String text;
-  final TextInputType keyboardType;
-  final bool? editable;
-  final List<TextInputFormatter>? inputFormatters;
-
-  const ParamTextBox({
-    required this.controller,
-    required this.text,
-    this.keyboardType = TextInputType.text,
-    this.inputFormatters,
-    this.editable = true,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      readOnly: !editable!,
-      decoration: InputDecoration(
-        labelText: text,
-        border: OutlineInputBorder(),
-      ),
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
-    );
-  }
-}
 
 class UpdateScreenController extends GetxController {
   final TextEditingController nombreController = TextEditingController();
