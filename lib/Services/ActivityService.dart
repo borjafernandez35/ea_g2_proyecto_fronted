@@ -91,6 +91,28 @@ class ActivityService {
     }
   }
 
+  Future<List<Activity>> getUserActivities() async {
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = getToken();
+        if (token != null) {
+          options.headers['x-access-token'] = token;
+        }
+        return handler.next(options);
+      },
+    ));
+    try {
+      final id = getId();
+      Response res = await dio.get('$baseUrl/activities/$id');
+      final List<dynamic> responseData = res.data['data'];
+      List<Activity> activities = responseData.map((data) => Activity.fromJson(data)).toList();
+      return activities;
+    } catch (e) {
+      print('Error fetching data: $e');
+      throw e;
+    }
+  }
+
   Future<void> addActivity(Activity activity) async {
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
@@ -101,10 +123,7 @@ class ActivityService {
         return handler.next(options);
       },
     ));
-
     try {
-
-
       var res = await dio.post('$baseUrl/activity', data: activity.toJson());
       statusCode = res.statusCode;
       print('Status code: $statusCode');

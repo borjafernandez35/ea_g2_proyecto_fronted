@@ -5,9 +5,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Resources/pallete.dart';
+import 'package:spotfinder/Screens/activity_list_page.dart';
 import 'package:spotfinder/Screens/detalles_user.dart';
+import 'package:spotfinder/Screens/my_reviews.dart';
 //import 'package:spotfinder/Screens/my_comments_screen.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
+import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:get/get.dart';
 
@@ -201,7 +204,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                         SizedBox(height: 20.0),
                         TextButton(
                           onPressed: () {
-                            // Navegar a otra pantalla (puedes reemplazar esta función)
+                            Get.to(() => MyReviews());
                           },
                           child: const Align(
                             alignment: Alignment.centerLeft,

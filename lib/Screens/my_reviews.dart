@@ -13,14 +13,14 @@ import 'package:spotfinder/Resources/pallete.dart';
 
 late ActivityService activityService;
 
-class ActivityListPage extends StatefulWidget {
-  const ActivityListPage({Key? key}) : super(key: key);
+class MyReviews extends StatefulWidget {
+  const MyReviews({Key? key}) : super(key: key);
 
   @override
-  _ActivityListPage createState() => _ActivityListPage();
+  _MyReviews createState() => _MyReviews();
 }
 
-class _ActivityListPage extends State<ActivityListPage> {
+class _MyReviews extends State<MyReviews> {
   late List<Activity> lista_activities;
   bool isLoading = true;
 
@@ -33,7 +33,7 @@ class _ActivityListPage extends State<ActivityListPage> {
 
   void getData() async {
     try {
-      lista_activities = await activityService.getData();
+      lista_activities = await activityService.getUserActivities();
       setState(() {
         isLoading = false;
       });
@@ -58,7 +58,7 @@ class _ActivityListPage extends State<ActivityListPage> {
         appBar: AppBar(
           backgroundColor: Pallete.whiteColor,
           title: Center(
-            child: Text('Activities',
+            child: Text('Your activities',
               style: TextStyle(
                 color: Pallete.backgroundColor,
               ),
@@ -72,7 +72,7 @@ class _ActivityListPage extends State<ActivityListPage> {
                 color: Pallete.backgroundColor,
               ),
               onPressed: () {
-                Get.to(() => HomePage());
+                Get.to(HomePage());
               },
             ),
           ),
