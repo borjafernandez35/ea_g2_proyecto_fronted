@@ -51,6 +51,7 @@ class ActivityService {
     }
   }
 
+<<<<<<< HEAD
   Future<int> joinActivity(String? aId) async {
     // Interceptor para agregar el token a la cabecera 'x-access-token'
     dio.interceptors.add(InterceptorsWrapper(
@@ -61,12 +62,21 @@ class ActivityService {
         print(token);
         
         // Si el token está disponible, agregarlo a la cabecera 'x-access-token'
+=======
+ Future<Activity> getActivity(String id) async {
+
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = getToken();
+
+>>>>>>> eacbd50bbceb0f850854ad0de8097e91562ac797
         if (token != null) {
           options.headers['x-access-token'] = token;
         }
         return handler.next(options);
       },
     ));
+<<<<<<< HEAD
     
     try {
       final id = getId();
@@ -80,10 +90,22 @@ class ActivityService {
 
       return statusCode;
     
+=======
+
+    try {
+      Response res = await dio.get('$baseUrl/activity/$id');
+      Activity activity = Activity.fromJson(res.data['data']);
+      return activity;
+>>>>>>> eacbd50bbceb0f850854ad0de8097e91562ac797
     } catch (e) {
       // Manejar cualquier error que pueda ocurrir durante la solicitud
       print('Error fetching data: $e');
       throw e; // Relanzar el error para que el llamador pueda manejarlo
     }
   }
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> eacbd50bbceb0f850854ad0de8097e91562ac797
 }

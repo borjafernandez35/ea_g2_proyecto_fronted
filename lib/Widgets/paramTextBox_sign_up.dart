@@ -10,6 +10,7 @@ class ParamTextBox extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final Widget? prefixWidget;
   final TextInputType? keyboardType;
+  final bool obscureText;
 
   const ParamTextBox({
     Key? key,
@@ -19,7 +20,7 @@ class ParamTextBox extends StatelessWidget {
     this.editable = true,
     this.inputFormatters,
     this.prefixWidget,
-    this.keyboardType,
+    this.keyboardType, this.obscureText=false,
   }) : super(key: key);
 
   @override
@@ -33,6 +34,7 @@ class ParamTextBox extends StatelessWidget {
           return TextFormField(
             controller: controller,
             readOnly: !editable,
+            obscureText: obscureText,
             style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
             inputFormatters: inputFormatters,
             keyboardType: keyboardType,
