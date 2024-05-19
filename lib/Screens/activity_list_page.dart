@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Screens/activity_detail.dart';
 import 'package:spotfinder/Screens/home_page.dart';
+import 'package:spotfinder/Screens/new_activity.dart'; // Importa la nueva pantalla
 import 'package:get/get.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Widgets/activity_card.dart';
@@ -16,15 +17,12 @@ class ActivityListPage extends StatefulWidget {
   const ActivityListPage({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _ActivityListPage createState() => _ActivityListPage();
 }
 
 class _ActivityListPage extends State<ActivityListPage> {
-  // ignore: non_constant_identifier_names
   late List<Activity> lista_activities;
-
-  bool isLoading = true; // Nuevo estado para indicar si se están cargando los datos
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -37,7 +35,7 @@ class _ActivityListPage extends State<ActivityListPage> {
     try {
       lista_activities = await activityService.getData();
       setState(() {
-        isLoading = false; // Cambiar el estado de carga cuando los datos están disponibles
+        isLoading = false;
       });
     } catch (error) {
       Get.snackbar(
@@ -54,19 +52,17 @@ class _ActivityListPage extends State<ActivityListPage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      // Muestra un indicador de carga mientras se cargan los datos
       return Center(child: CircularProgressIndicator());
     } else {
-      // Muestra la lista de usuarios cuando los datos están disponibles
       return Scaffold(
         appBar: AppBar(
           backgroundColor: Pallete.whiteColor,
           title: Center(
             child: Text('Places List',
               style: TextStyle(
-                color: Pallete.backgroundColor
+                color: Pallete.backgroundColor,
               ),
-            )
+            ),
           ),
           elevation: 0,
           leading: Builder(
@@ -96,9 +92,17 @@ class _ActivityListPage extends State<ActivityListPage> {
           },
           itemCount: lista_activities.length,
         ),
+        floatingActionButton: Tooltip(
+          message: 'Add new activity',
+          child: FloatingActionButton(
+            backgroundColor: Pallete.backgroundColor,
+            child: Icon(Icons.add),
+            onPressed: () {
+              Get.to(() => NewActivityScreen());
+            },
+          ),
+        ),
       );
     }
   }
 }
-
-  
