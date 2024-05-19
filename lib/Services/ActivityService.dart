@@ -88,6 +88,7 @@ class ActivityService {
       throw e; // Relanzar el error para que el llamador pueda manejarlo
     }
   }
+  
   Future<Activity> getActivity(String id) async {
 
     dio.interceptors.add(InterceptorsWrapper(

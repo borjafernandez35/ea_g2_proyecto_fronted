@@ -72,4 +72,27 @@ Future<int> updateComment(Comment comment) async {
     }
   }
 
+ Future<Comment> getComment(String id) async {
+
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = getToken();
+
+        if (token != null) {
+          options.headers['x-access-token'] = token;
+        }
+        return handler.next(options);
+      },
+    ));
+
+    try {
+      Response res = await dio.get('$baseUrl/comment/$id');
+      Comment comment = Comment.fromJson(res.data['data']);
+      return comment;
+    } catch (e) {
+      // Manejar cualquier error que pueda ocurrir durante la solicitud
+      print('Error fetching data: $e');
+      throw e; // Relanzar el error para que el llamador pueda manejarlo
+    }
+  }
 }
