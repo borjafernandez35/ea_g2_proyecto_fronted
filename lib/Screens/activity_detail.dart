@@ -107,7 +107,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                 margin: const EdgeInsets.only(left: 30),
                 child: Column(children: [
                     const Text(
-                      'Description:',
+                      'Description',
                       style: TextStyle(
                         color: Pallete.backgroundColor,
                         fontWeight: FontWeight.bold,

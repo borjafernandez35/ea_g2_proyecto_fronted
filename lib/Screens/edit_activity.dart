@@ -8,16 +8,17 @@ import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:spotfinder/Widgets/button_sign_up.dart';
 
-class NewActivityScreen extends StatefulWidget {
+class EditActivity extends StatefulWidget {
   @override
   final VoidCallback onUpdate;
+  final String? id;
 
-  const NewActivityScreen({required this.onUpdate});
+  const EditActivity({required this.onUpdate, required this.id});
 
-  _NewActivityScreenState createState() => _NewActivityScreenState();
+  _EditActivity createState() => _EditActivity();
 }
 
-class _NewActivityScreenState extends State<NewActivityScreen> {
+class _EditActivity extends State<EditActivity> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -75,7 +76,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
         date: _selectedDate,
         idUser: _userId,
       );
-      await ActivityService().addActivity(newActivity);
+      await ActivityService().editActivity(newActivity, widget.id);
       widget.onUpdate();
       print('Actividad enviada correctamente.');
       Get.back();
@@ -260,7 +261,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                 ],
               ),
               const Spacer(),
-              SignUpButton(onPressed: _submitForm, text: 'Post activity')
+              SignUpButton(onPressed: _submitForm, text: 'Edit')
             ],
           ),
         ),
