@@ -73,21 +73,19 @@ class _ActivityDetail extends State<ActivityDetail> {
   Widget build(BuildContext context) {
     if (isLoading) {
       // Muestra un indicador de carga mientras se cargan los datos
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     } else {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: Pallete.whiteColor,
-          title: Center(
-            widthFactor: 5,
-            child: Text(widget.activity.name,
-              style: const TextStyle(
-                color: Pallete.backgroundColor,
-                fontWeight: FontWeight.bold,
-              ),
-            )
+        title: Text(
+          widget.activity.name,
+          style: const TextStyle(
+            color: Pallete.backgroundColor,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
           ),
-          elevation: 0,
+        ),
+        backgroundColor: Colors.transparent,
           leading: Builder(
             builder: (context) => IconButton(
               icon: const Icon(
@@ -95,7 +93,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                 color: Pallete.backgroundColor,
               ),
               onPressed: () {
-                Get.to(() => HomePage());
+                Get.back();
               },
             ),
           ),

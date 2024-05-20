@@ -56,27 +56,16 @@ class _ActivityListPage extends State<ActivityListPage> {
     } else {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: Pallete.whiteColor,
-          title: Center(
-            child: Text('Activities',
-              style: TextStyle(
-                color: Pallete.backgroundColor,
-              ),
-            ),
-          ),
-          elevation: 0,
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: Icon(
-                Icons.arrow_back,
-                color: Pallete.backgroundColor,
-              ),
-              onPressed: () {
-                Get.to(() => HomePage());
-              },
-            ),
+        title: const Text(
+          'Your feed',
+          style: TextStyle(
+            color: Pallete.backgroundColor,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        backgroundColor: Colors.transparent,
+      ),
         body: ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return Card(

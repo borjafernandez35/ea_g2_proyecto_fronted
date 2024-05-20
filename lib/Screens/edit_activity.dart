@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:spotfinder/Resources/pallete.dart';
+import 'package:spotfinder/Screens/my_activities.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Services/UserService.dart';
@@ -98,14 +99,25 @@ class _EditActivity extends State<EditActivity> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'New activity',
+          'Edit Activity',
           style: TextStyle(
-            color: Colors.white,
+            color: Pallete.backgroundColor,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.black.withOpacity(0.7),
+        backgroundColor: Colors.transparent,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+              color: Pallete.backgroundColor,
+            ),
+            onPressed: () {
+              Get.to(() => MyActivities());
+            },
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
