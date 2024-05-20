@@ -24,7 +24,8 @@ late User user;
 
 class ActivityDetail extends StatefulWidget {
   final Activity activity;
-  const ActivityDetail(this.activity, {Key? key}) : super(key: key);
+  final VoidCallback onUpdate;
+  const ActivityDetail(this.activity, {Key? key, required this.onUpdate}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
@@ -269,8 +270,10 @@ class _ActivityDetail extends State<ActivityDetail> {
                               height: 20,
                             ),
                             SignUpButton(
-                              onPressed: () => controllerActivityDetail
-                                  .joinActivity(widget.activity.id),
+                              onPressed: () { 
+                                controllerActivityDetail.joinActivity(widget.activity.id);
+                                widget.onUpdate();
+                                },
                               text: 'Join',
                             ),
                           ],
@@ -424,7 +427,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                                                 getUsers();
                                                 showReviewForm =!showReviewForm;
                                               }); 
-                                                                                
+                                              widget.onUpdate();                                 
                                             });
                                           },
                                           child: Text('Submit'),
