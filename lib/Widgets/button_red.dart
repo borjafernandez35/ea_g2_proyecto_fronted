@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:spotfinder/Resources/pallete.dart';
 
-class SignUpButton extends StatelessWidget {
+class RedButton extends StatelessWidget {
   final String text; 
   final VoidCallback onPressed;
-  const SignUpButton({super.key, required this.onPressed, required this.text});
+  const RedButton({Key? key, required this.onPressed, required this.text}) : super(key: key);
 
   @override 
   Widget build(BuildContext context){
@@ -12,11 +11,11 @@ class SignUpButton extends StatelessWidget {
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         fixedSize: const Size(200, 55),
-        backgroundColor: Pallete.salmonColor,
+        backgroundColor: const Color.fromARGB(255, 245, 54, 41),
         foregroundColor: Colors.white,
       ),
       child: Text(text, style: const TextStyle(
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         fontSize: 27,
       ),),
     );

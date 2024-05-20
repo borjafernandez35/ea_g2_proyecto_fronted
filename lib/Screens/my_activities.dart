@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Screens/activity_detail.dart';
+import 'package:spotfinder/Screens/edit_activity.dart';
 import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Screens/new_activity.dart'; // Importa la nueva pantalla
 import 'package:get/get.dart';
@@ -13,14 +14,14 @@ import 'package:spotfinder/Resources/pallete.dart';
 
 late ActivityService activityService;
 
-class MyReviews extends StatefulWidget {
-  const MyReviews({Key? key}) : super(key: key);
+class MyActivities extends StatefulWidget {
+  const MyActivities({Key? key}) : super(key: key);
 
   @override
-  _MyReviews createState() => _MyReviews();
+  _MyActivities createState() => _MyActivities();
 }
 
-class _MyReviews extends State<MyReviews> {
+class _MyActivities extends State<MyActivities> {
   late List<Activity> lista_activities;
   bool isLoading = true;
 
@@ -56,27 +57,27 @@ class _MyReviews extends State<MyReviews> {
     } else {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: Pallete.whiteColor,
-          title: Center(
-            child: Text('Your activities',
-              style: TextStyle(
-                color: Pallete.backgroundColor,
-              ),
-            ),
-          ),
-          elevation: 0,
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: Icon(
-                Icons.arrow_back,
-                color: Pallete.backgroundColor,
-              ),
-              onPressed: () {
-                Get.to(HomePage());
-              },
-            ),
+        title: const Text(
+          'My activities',
+          style: TextStyle(
+            color: Pallete.backgroundColor,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        backgroundColor: Colors.transparent,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+              color: Pallete.backgroundColor,
+            ),
+            onPressed: () {
+              Get.to(() => HomePage());
+            },
+          ),
+        ),
+      ),
         body: ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return Card(
@@ -84,7 +85,7 @@ class _MyReviews extends State<MyReviews> {
               child: InkWell(
                 onTap: () {
                   print(lista_activities[index]);
-                  Get.to(() => ActivityDetail(lista_activities[index]));
+                  Get.to(() => EditActivity(onUpdate: getData, id: lista_activities[index].id));
                 },
                 child: ActivityCard(lista_activities[index]),
               ),

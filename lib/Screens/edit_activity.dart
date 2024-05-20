@@ -3,21 +3,24 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:spotfinder/Resources/pallete.dart';
+import 'package:spotfinder/Screens/my_activities.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Services/UserService.dart';
+import 'package:spotfinder/Widgets/button_red.dart';
 import 'package:spotfinder/Widgets/button_sign_up.dart';
 
-class NewActivityScreen extends StatefulWidget {
+class EditActivity extends StatefulWidget {
   @override
   final VoidCallback onUpdate;
+  final String? id;
 
-  const NewActivityScreen({required this.onUpdate});
+  const EditActivity({required this.onUpdate, required this.id});
 
-  _NewActivityScreenState createState() => _NewActivityScreenState();
+  _EditActivity createState() => _EditActivity();
 }
 
-class _NewActivityScreenState extends State<NewActivityScreen> {
+class _EditActivity extends State<EditActivity> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -75,7 +78,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
         date: _selectedDate,
         idUser: _userId,
       );
-      await ActivityService().addActivity(newActivity);
+      await ActivityService().editActivity(newActivity, widget.id);
       widget.onUpdate();
       print('Actividad enviada correctamente.');
       Get.back();
@@ -84,19 +87,37 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     }
   }
 
+  Future<void> _deleteActivity() async {
+    await ActivityService().deleteActivity(widget.id);
+    widget.onUpdate();
+    print('Actividad enviada correctamente.');
+    Get.back();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'New activity',
+          'Edit Activity',
           style: TextStyle(
-            color: Colors.white,
+            color: Pallete.backgroundColor,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.black.withOpacity(0.7),
+        backgroundColor: Colors.transparent,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+              color: Pallete.backgroundColor,
+            ),
+            onPressed: () {
+              Get.to(() => MyActivities());
+            },
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -260,7 +281,9 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                 ],
               ),
               const Spacer(),
-              SignUpButton(onPressed: _submitForm, text: 'Post activity')
+              SignUpButton(onPressed: _submitForm, text: 'Edit'),
+              const SizedBox(height: 10,),
+              RedButton(onPressed: _deleteActivity, text: 'Delete'),
             ],
           ),
         ),

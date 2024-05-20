@@ -111,7 +111,6 @@ class _ActivityDetail extends State<ActivityDetail> {
     });
   }
 
-
   void confirmDeleteComment(BuildContext context, String id, int index) async {
     // Añadido async
     showDialog(
@@ -174,22 +173,19 @@ class _ActivityDetail extends State<ActivityDetail> {
   Widget build(BuildContext context) {
     if (isLoading) {
       // Muestra un indicador de carga mientras se cargan los datos
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     } else {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: Pallete.whiteColor,
-          title: Center(
-            widthFactor: 5,
-            child: Text(
-              widget.activity.name,
-              style: const TextStyle(
-                color: Pallete.backgroundColor,
-                fontWeight: FontWeight.bold,
-              ),
+          title: Text(
+            widget.activity.name,
+            style: const TextStyle(
+              color: Pallete.backgroundColor,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          elevation: 0,
+          backgroundColor: Colors.transparent,
           leading: Builder(
             builder: (context) => IconButton(
               icon: const Icon(
@@ -197,7 +193,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                 color: Pallete.backgroundColor,
               ),
               onPressed: () {
-                Get.to(() => HomePage());
+                Get.back();
               },
             ),
           ),
@@ -408,7 +404,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                                       ),
                                       onRatingUpdate: (rating) {
                                         setState(() {
-                                          controllerActivityDetail.ratingValue = rating;
+                                          controllerActivityDetail.ratingValue =
+                                              rating;
                                         });
                                       },
                                     ),
@@ -420,13 +417,14 @@ class _ActivityDetail extends State<ActivityDetail> {
                                         // Botón de enviar
                                         ElevatedButton(
                                           onPressed: () {
-                                            controllerActivityDetail.activityId = widget.activity.id!;
+                                            controllerActivityDetail.activityId =widget.activity.id!;
                                             controllerActivityDetail.addComment().then((_) {
                                               setState(() {
                                                 alreadyCommented = true;
                                                 getUsers();
-                                                showReviewForm = !showReviewForm;
-                                              });
+                                                showReviewForm =!showReviewForm;
+                                              }); 
+                                                                                
                                             });
                                           },
                                           child: Text('Submit'),
@@ -515,10 +513,11 @@ class ActivityDetailController extends GetxController {
         activity: activityId,
         review: ratingValue,
       );
-      await commentService.createComment(newComment).then((comment) {
+      try {
+        final comment = await commentService.createComment(newComment);
         comments.add(comment!);
         print(comments);
-      }).catchError((error) {
+      } catch (error) {
         Get.snackbar(
           'Error',
           'Los datos introducidos son incorrectos. Prueba otra vez.',
@@ -527,7 +526,7 @@ class ActivityDetailController extends GetxController {
         if (kDebugMode) {
           print('Error al enviar create in al backend: $error');
         }
-      });
+      }
     }
   }
 }

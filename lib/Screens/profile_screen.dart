@@ -7,7 +7,7 @@ import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/detalles_user.dart';
 import 'package:spotfinder/Screens/my_comments_screen.dart';
-import 'package:spotfinder/Screens/my_reviews.dart';
+import 'package:spotfinder/Screens/my_activities.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:get/get.dart';
@@ -202,7 +202,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                         SizedBox(height: 20.0),
                         TextButton(
                           onPressed: () {
-                            Get.to(() => MyReviews());
+                            Get.to(() => MyActivities());
                           },
                           child: const Align(
                             alignment: Alignment.centerLeft,
