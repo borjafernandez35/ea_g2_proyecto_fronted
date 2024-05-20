@@ -47,13 +47,9 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: const Text('SpotFinder'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()),
-              (route) => false,
-            );
+            manualDisconnect();
           },
         ),
         bottom: PreferredSize(
@@ -155,6 +151,16 @@ class _ChatScreenState extends State<ChatScreen> {
       chatController.connectedUser.value = data;
     });
   }
+void manualDisconnect() {
+    socket.emit('manual-disconnect');
+    socket.disconnect();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => HomePage()),
+      (route) => false,
+    );
+  }
+
 }
 
 class MessageItem extends StatelessWidget {
