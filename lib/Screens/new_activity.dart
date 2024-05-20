@@ -9,6 +9,11 @@ import 'package:spotfinder/Services/UserService.dart';
 
 class NewActivityScreen extends StatefulWidget {
   @override
+    
+    final VoidCallback onUpdate;
+
+  const NewActivityScreen({required this.onUpdate });
+
   _NewActivityScreenState createState() => _NewActivityScreenState();
 }
 
@@ -71,6 +76,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
       idUser: _userId,
     );
     await ActivityService().addActivity(newActivity);
+    widget.onUpdate();
     print('Actividad enviada correctamente.');
     Get.back();
   } else {

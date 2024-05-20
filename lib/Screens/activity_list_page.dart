@@ -98,7 +98,7 @@ class _ActivityListPage extends State<ActivityListPage> {
             backgroundColor: Pallete.backgroundColor,
             child: Icon(Icons.add),
             onPressed: () {
-              Get.to(() => NewActivityScreen());
+              Get.to(() => NewActivityScreen(onUpdate: getData));
             },
           ),
         ),
