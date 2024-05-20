@@ -9,10 +9,9 @@ import 'package:spotfinder/Services/UserService.dart';
 
 class NewActivityScreen extends StatefulWidget {
   @override
-    
-    final VoidCallback onUpdate;
+  final VoidCallback onUpdate;
 
-  const NewActivityScreen({required this.onUpdate });
+  const NewActivityScreen({required this.onUpdate});
 
   _NewActivityScreenState createState() => _NewActivityScreenState();
 }
@@ -54,9 +53,9 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+      initialDate: DateTime.now(), 
+      firstDate: DateTime.now(), 
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -65,48 +64,38 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     }
   }
 
- Future<void> _submitForm() async {
-  if (_formKey.currentState!.validate()) {
-    print('Formulario válido. Enviando actividad...');
-    Activity newActivity = Activity(
-      name: _nameController.text,
-      description: _descriptionController.text,
-      imageUrl: _image?.path,
-      date: _selectedDate,
-      idUser: _userId,
-    );
-    await ActivityService().addActivity(newActivity);
-    widget.onUpdate();
-    print('Actividad enviada correctamente.');
-    Get.back();
-  } else {
-    print('Formulario inválido. No se puede enviar la actividad.');
+  Future<void> _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      print('Formulario válido. Enviando actividad...');
+      Activity newActivity = Activity(
+        name: _nameController.text,
+        description: _descriptionController.text,
+        imageUrl: _image?.path,
+        date: _selectedDate,
+        idUser: _userId,
+      );
+      await ActivityService().addActivity(newActivity);
+      widget.onUpdate();
+      print('Actividad enviada correctamente.');
+      Get.back();
+    } else {
+      print('Formulario inválido. No se puede enviar la actividad.');
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Pallete.whiteColor,
-        title: const Center(
-          child: Text(
-            'New activity',
-            style: TextStyle(
-              color: Pallete.backgroundColor,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+        title: const Text(
+          'New activity',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Pallete.backgroundColor),
-          onPressed: () {
-            Get.back();
-          },
-        ),
+        backgroundColor: Colors.black.withOpacity(0.7),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -127,11 +116,16 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                               ? Container(
                                   height: 150,
                                   decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey),
+                                    color: Colors.black.withOpacity(0.7),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.white),
                                   ),
                                   child: const Center(
                                     child: Text(
-                                        'Tap to select an image\nAccepted formats: JPG, PNG'),
+                                      'Tap to select an image\nAccepted formats: JPG, PNG',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                                   ),
                                 )
                               : Image.file(_image!, height: 150),
@@ -148,10 +142,31 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                           controller: _nameController,
                           decoration: InputDecoration(
                             labelText: 'Activity Name',
+                            labelStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            fillColor: Colors.black.withOpacity(0.7),
+                            filled: true,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.white),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.white),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Pallete.salmonColor),
+                            ),
+                            floatingLabelStyle: const TextStyle(
+                              color: Pallete.salmonColor,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                          style: const TextStyle(color: Colors.white),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter the activity name';
@@ -159,16 +174,37 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                         TextFormField(
                           controller: _descriptionController,
                           maxLines: 5,
                           decoration: InputDecoration(
                             labelText: 'Description',
+                            labelStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            fillColor: Colors.black.withOpacity(0.7),
+                            filled: true,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.white),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.white),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Pallete.salmonColor),
+                            ),
+                            floatingLabelStyle: const TextStyle(
+                              color: Pallete.salmonColor,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                          style: const TextStyle(color: Colors.white),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a description';
@@ -176,45 +212,59 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                readOnly: true,
-                                controller: TextEditingController(
-                                  text:
-                                      '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                                ),
-                                decoration: InputDecoration(
-                                  labelText: 'Date',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                onTap: () => _selectDate(context),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please select a date';
-                                  }
-                                  return null;
-                                },
-                              ),
+                        const SizedBox(height: 24), 
+                        TextFormField(
+                          readOnly: true,
+                          controller: TextEditingController(
+                            text: '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Date',
+                            labelStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                             ),
-                          ],
+                            fillColor: Colors.black.withOpacity(0.7),
+                            filled: true,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.white),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.white),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Pallete.salmonColor),
+                            ),
+                            floatingLabelStyle: const TextStyle(
+                              color: Pallete.salmonColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.white),
+                          onTap: () => _selectDate(context),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please select a date';
+                            }
+                            return null;
+                          },
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-              Spacer(),
+              const Spacer(),
               ElevatedButton(
                 onPressed: _submitForm,
-                child: Text('Registrar actividad'),
+                child: const Text('Registrar actividad'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Pallete.backgroundColor,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
               ),
             ],
