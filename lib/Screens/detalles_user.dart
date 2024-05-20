@@ -57,10 +57,11 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Pallete.whiteColor,
-        iconTheme: IconThemeData(color: Pallete.backgroundColor), 
+        iconTheme: IconThemeData(color: Pallete.backgroundColor),
         title: const Text(
           'User details',
-          style: TextStyle(color: Pallete.backgroundColor), // Color del texto del app bar
+          style: TextStyle(
+              color: Pallete.backgroundColor), // Color del texto del app bar
         ),
       ),
       backgroundColor: Pallete.whiteColor,
@@ -120,7 +121,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                         ),
                         border: OutlineInputBorder(),
                       ),
-                      icon: const Icon(Icons.arrow_drop_down, color: Pallete.backgroundColor), // Color de la flecha de desplegar
+                      icon: const Icon(Icons.arrow_drop_down,
+                          color: Pallete
+                              .backgroundColor), // Color de la flecha de desplegar
                     ),
                   ),
                 ),
@@ -150,7 +153,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.calendar_today,
-                      color: Pallete.accentColor), // Color del icono de la fecha
+                      color:
+                          Pallete.accentColor), // Color del icono de la fecha
                   onPressed: () => controller.selectDate(context),
                 ),
               ],
@@ -218,7 +222,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   }
 }
 
-
 class UpdateScreenController extends GetxController {
   final TextEditingController nombreController = TextEditingController();
   final TextEditingController generoController = TextEditingController();
@@ -250,6 +253,11 @@ class UpdateScreenController extends GetxController {
     }
   }
 
+  TextStyle textStyleError = const TextStyle(
+    color: Pallete.salmonColor, // Define el color del texto
+    fontWeight: FontWeight.bold, // Aplica negrita al texto
+  );
+
   void updateUser(User updatedUser) {
     if (nombreController.text.isEmpty ||
         generoController.text.isEmpty ||
@@ -261,6 +269,15 @@ class UpdateScreenController extends GetxController {
         'Error',
         'Empty fields',
         snackPosition: SnackPosition.BOTTOM,
+        titleText: Text(
+          'Error',
+          style: textStyleError, // Cambia el color del título
+        ),
+        messageText: const Text(
+          'Empty fields',
+          style: TextStyle(
+              color: Pallete.backgroundColor), // Cambia el color del mensaje
+        ),
       );
     } else {
       if (GetUtils.isEmail(mailController.text) == true &&
@@ -277,15 +294,38 @@ class UpdateScreenController extends GetxController {
         userService.updateUser(user).then((statusCode) {
           print('User successfully edited');
           Get.snackbar(
+            'Successful',
             'User edited!',
-            'User edited successfully',
             snackPosition: SnackPosition.BOTTOM,
+            titleText: const Text(
+              'Successful',
+              style: TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            messageText: const Text(
+              'User edited!',
+              style: TextStyle(
+                  color:
+                      Pallete.backgroundColor), // Cambia el color del mensaje
+            ),
           );
         }).catchError((error) {
           Get.snackbar(
             'Error',
             'Error sending user to backend: $error',
             snackPosition: SnackPosition.BOTTOM,
+            titleText: Text(
+              'Error',
+              style: textStyleError, // Cambia el color del título
+            ),
+            messageText: Text(
+              'Error sending user to backend: $error',
+              style: const TextStyle(
+                  color:
+                      Pallete.backgroundColor), // Cambia el color del mensaje
+            ),
           );
         });
       } else {
@@ -293,6 +333,15 @@ class UpdateScreenController extends GetxController {
           'Error',
           'Invalid email or phone number',
           snackPosition: SnackPosition.BOTTOM,
+          titleText: Text(
+            'Error',
+            style: textStyleError, // Cambia el color del título
+          ),
+          messageText: const Text(
+            'Invalid email or phone number',
+            style: TextStyle(
+                color: Pallete.backgroundColor), // Cambia el color del mensaje
+          ),
         );
       }
     }

@@ -74,8 +74,6 @@ Future<int> updateComment(Comment comment) async {
 
  Future<Comment> getComment(String id) async {
 
-    print('$baseUrl/comment/$id');
-
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = getToken();
@@ -90,6 +88,19 @@ Future<int> updateComment(Comment comment) async {
     try {
       Response res = await dio.get('$baseUrl/comment/$id');
       Comment comment = Comment.fromJson(res.data['data']);
+      return comment;
+    } catch (e) {
+      // Manejar cualquier error que pueda ocurrir durante la solicitud
+      print('Error fetching data: $e');
+      throw e; // Relanzar el error para que el llamador pueda manejarlo
+    }
+  }
+
+  Future<Comment?> createComment (Comment newComment) async {
+
+    try {
+      Response response = await dio.post('$baseUrl/comment', data: newComment.toJson());
+      Comment comment = Comment.fromJson(response.data['comment']);
       return comment;
     } catch (e) {
       // Manejar cualquier error que pueda ocurrir durante la solicitud
