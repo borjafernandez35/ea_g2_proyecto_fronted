@@ -6,6 +6,7 @@ import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Services/UserService.dart';
+import 'package:spotfinder/Widgets/button_red.dart';
 import 'package:spotfinder/Widgets/button_sign_up.dart';
 
 class EditActivity extends StatefulWidget {
@@ -83,6 +84,13 @@ class _EditActivity extends State<EditActivity> {
     } else {
       print('Formulario inválido. No se puede enviar la actividad.');
     }
+  }
+
+  Future<void> _deleteActivity() async {
+    await ActivityService().deleteActivity(widget.id);
+    widget.onUpdate();
+    print('Actividad enviada correctamente.');
+    Get.back();
   }
 
   @override
@@ -261,7 +269,9 @@ class _EditActivity extends State<EditActivity> {
                 ],
               ),
               const Spacer(),
-              SignUpButton(onPressed: _submitForm, text: 'Edit')
+              SignUpButton(onPressed: _submitForm, text: 'Edit'),
+              const SizedBox(height: 10,),
+              RedButton(onPressed: _deleteActivity, text: 'Delete'),
             ],
           ),
         ),

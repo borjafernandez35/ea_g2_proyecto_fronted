@@ -145,8 +145,28 @@ class ActivityService {
       },
     ));
     try {
-      print (activity.toJson());
       var res = await dio.put('$baseUrl/activity/$id', data: activity.toJson());
+      statusCode = res.statusCode;
+      print('Status code: $statusCode');
+    } catch (e) {
+      print('Error adding activity: $e');
+      throw e;
+    }
+  }
+
+  Future<void> deleteActivity(String? id) async {
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = getToken();
+        if (token != null) {
+          options.headers['x-access-token'] = token;
+        }
+        return handler.next(options);
+      },
+    ));
+    try {
+      print("deleting activity");
+      var res = await dio.put('$baseUrl/activity/delete/$id');
       statusCode = res.statusCode;
       print('Status code: $statusCode');
     } catch (e) {
