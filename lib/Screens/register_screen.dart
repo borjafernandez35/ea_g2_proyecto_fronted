@@ -30,7 +30,7 @@ class _RegisterScreen extends State<RegisterScreen> {
     userService = UserService();
   }
 
-    void _togglePasswordVisibility() {
+  void _togglePasswordVisibility() {
     setState(() {
       _obscureText = !_obscureText;
     });
@@ -53,20 +53,18 @@ class _RegisterScreen extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Logo de la empresa
               Image.asset(
                 'assets/spotfinder.png',
                 height: 90,
                 width: 90,
               ),
-              const SizedBox(height: 5), // Separación entre el logo y el cuadro negro
-              // Cuadro negro con el formulario de inicio de sesión
+              const SizedBox(height: 5), 
               Container(
-                margin: const EdgeInsets.all(3), // Ajusta el margen del cuadro negro aquí
-                padding: const EdgeInsets.all(3), // Ajusta el padding del cuadro negro aquí
+                margin: const EdgeInsets.all(3), 
+                padding: const EdgeInsets.all(3), 
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7), // Color del cuadro negro con opacidad
-                  borderRadius: BorderRadius.circular(20), // Bordes redondeados del cuadro
+                  color: Colors.black.withOpacity(0.7), 
+                  borderRadius: BorderRadius.circular(20), 
                 ),
                 child: Column(
                   children: [
@@ -84,7 +82,7 @@ class _RegisterScreen extends State<RegisterScreen> {
                     ParamTextBox(controller: controller.mailController, text: 'e-mail'),
                     const SizedBox(height: 4),
                     ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: 200), // Ancho máximo para el Row
+                      constraints: BoxConstraints(maxWidth: 200), 
                       child: Row(
                         children: [
                           Expanded(
@@ -97,7 +95,7 @@ class _RegisterScreen extends State<RegisterScreen> {
                                     RegExp(r'[\d\s]')),
                               ],
                               prefixWidget: Container(
-                                width: double.infinity, // Ancho máximo del prefixWidget
+                                width: double.infinity, 
                                 child: DropdownButtonFormField<String>(
                                   value: controller.selectedPrefix.value,
                                   alignment: Alignment.centerRight,
@@ -127,7 +125,7 @@ class _RegisterScreen extends State<RegisterScreen> {
                       ),
                     ), 
                     const SizedBox(height: 4),
-                      ParamTextBox(
+                    ParamTextBox(
                       controller: controller.birthdayController,
                       text: 'birthday',
                       suffixIcon: IconButton(
@@ -147,11 +145,12 @@ class _RegisterScreen extends State<RegisterScreen> {
                         icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off,),
                         onPressed: _togglePasswordVisibility,
                       ),
-                      ),
+                    ),
                     const SizedBox(height: 4),
-                    ParamTextBox(controller: controller.confirmcontrasenaController, 
-                    text: 'confirm password', 
-                    obscureText: _obscureText,
+                    ParamTextBox(
+                      controller: controller.confirmcontrasenaController, 
+                      text: 'confirm password', 
+                      obscureText: _obscureText,
                       suffixIcon: IconButton(
                         icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off,),
                         onPressed: _togglePasswordVisibility,
@@ -205,7 +204,13 @@ class RegisterController extends GetxController {
     if (contrasenaController.text.isEmpty || mailController.text.isEmpty) {
       Get.snackbar(
         'Error',
-        'Campos vacios',
+        'Campos vacíos',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } else if (contrasenaController.text != confirmcontrasenaController.text) {
+      Get.snackbar(
+        'Error',
+        'Las contraseñas no coinciden',
         snackPosition: SnackPosition.BOTTOM,
       );
     } else {
@@ -220,11 +225,9 @@ class RegisterController extends GetxController {
           gender: genderController.text,
         );
         userService.createUser(newUser).then((statusCode) {
-          // La solicitud se completó exitosamente, puedes realizar acciones adicionales si es necesario
           print('Usuario creado exitosamente');
           Get.to(() => const LoginScreen());
         }).catchError((error) {
-          // Manejar errores de solicitud HTTP
           Get.snackbar(
             'Error',
             'Los datos introducidos son incorrectos. Prueba otra vez.',
@@ -244,3 +247,4 @@ class RegisterController extends GetxController {
     }
   }
 }
+
