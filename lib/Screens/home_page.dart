@@ -23,34 +23,38 @@ class _nameState extends State<HomePage> {
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
-    Align(
-      alignment: Alignment.topCenter,
-      child: Column(
-        children: [
-          SizedBox(
-            height: 20,
-          ),
-          Row(
-            mainAxisAlignment:
-                MainAxisAlignment.center, // Centers widgets horizontally
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ParamTextBox(
+    Scaffold(
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 20,
+            ),
+            Row(
+              mainAxisAlignment:
+              MainAxisAlignment.center, // Centers widgets horizontally
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ParamTextBox(
                   controller: homeController.searchBarController,
-                  text: 'Scaperoom...'),
-              IconButton(
-                icon: const Icon(
+                  text: 'Scaperoom...'
+                ),
+                IconButton(
+                  icon: const Icon(
                     size: 40,
                     color: Pallete.backgroundColor,
-                    LineIcons.searchLocation),
-                onPressed: () {},
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-        ],
+                    LineIcons.searchLocation
+                  ),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+          ],
+        ),
       ),
     ),
     const ActivityListPage(),
@@ -60,14 +64,6 @@ class _nameState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    const gradientStart = Colors.black;
-    const gradientEnd = Colors.transparent;
-
-    final _gradient = LinearGradient(
-        colors: [gradientStart, gradientEnd],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        stops: [0, 0.3]);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -86,33 +82,38 @@ class _nameState extends State<HomePage> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 25, vertical: 8),
             child: GNav(
               tabBorderRadius: 10,
               rippleColor: Colors.grey[300]!,
               hoverColor: Colors.grey[100]!,
+              padding: EdgeInsets.all(10),
               gap: 8,
               activeColor: Pallete.salmonColor,
-              iconSize: 24,
+              iconSize: 28,
               tabBackgroundColor: Colors.grey[100]!,
               color: Pallete.whiteColor,
               tabs: const [
                 GButton(
-                    iconColor: Colors.white,
-                    icon: LineIcons.mapMarker,
-                    text: "Home"),
+                  iconColor: Colors.white,
+                  icon: LineIcons.mapMarker,
+                  text: "Home"
+                ),
                 GButton(
-                    iconColor: Colors.white,
-                    icon: LineIcons.hiking,
-                    text: "Activities"),
+                  iconColor: Colors.white,
+                  icon: LineIcons.hiking,
+                  text: "Activities"
+                ),
                 GButton(
-                    iconColor: Colors.white,
-                    icon: LineIcons.comment,
-                    text: "Chats"),
+                  iconColor: Colors.white,
+                  icon: LineIcons.comment,
+                  text: "Chats"
+                ),
                 GButton(
-                    iconColor: Colors.white,
-                    icon: LineIcons.user,
-                    text: "Profile"),
+                  iconColor: Colors.white,
+                  icon: LineIcons.user,
+                  text: "Profile"
+                ),
               ],
               selectedIndex: _selectedIndex,
               onTabChange: (index) {

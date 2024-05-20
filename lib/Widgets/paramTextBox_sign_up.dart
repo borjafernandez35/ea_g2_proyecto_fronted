@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Necesario para usar inputFormatters
+import 'package:spotfinder/Resources/pallete.dart';
 
 class ParamTextBox extends StatelessWidget {
   final String text;
@@ -9,6 +10,7 @@ class ParamTextBox extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final Widget? prefixWidget;
   final TextInputType? keyboardType;
+  final bool obscureText;
 
   const ParamTextBox({
     Key? key,
@@ -18,7 +20,7 @@ class ParamTextBox extends StatelessWidget {
     this.editable = true,
     this.inputFormatters,
     this.prefixWidget,
-    this.keyboardType,
+    this.keyboardType, this.obscureText=false,
   }) : super(key: key);
 
   @override
@@ -32,6 +34,7 @@ class ParamTextBox extends StatelessWidget {
           return TextFormField(
             controller: controller,
             readOnly: !editable,
+            obscureText: obscureText,
             style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
             inputFormatters: inputFormatters,
             keyboardType: keyboardType,
@@ -40,14 +43,14 @@ class ParamTextBox extends StatelessWidget {
               fillColor: Colors.white,
               enabledBorder: OutlineInputBorder(
                 borderSide: const BorderSide(
-                  color: Color(0xFFE57373),
+                  color: Pallete.backgroundColor,
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(50),
               ),
               focusedBorder: OutlineInputBorder(
                 borderSide: const BorderSide(
-                  color: Color(0xFFE57373),
+                  color: Pallete.salmonColor,
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(50),

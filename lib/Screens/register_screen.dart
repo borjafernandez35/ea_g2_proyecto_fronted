@@ -22,10 +22,18 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreen extends State<RegisterScreen> {
   final RegisterController controller = Get.put(RegisterController());
 
+  bool _obscureText = true;
+
   @override
   void initState() {
     super.initState();
     userService = UserService();
+  }
+
+    void _togglePasswordVisibility() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
   }
 
   @override
@@ -131,12 +139,26 @@ class _RegisterScreen extends State<RegisterScreen> {
                     const SizedBox(height: 4),
                     ParamTextBox(controller: controller.genderController, text: 'gender'),
                     const SizedBox(height: 4),
-                    ParamTextBox(controller: controller.contrasenaController, text: 'password'),
+                    ParamTextBox(
+                      controller: controller.contrasenaController, 
+                      text: 'password',
+                      obscureText: _obscureText,
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off,),
+                        onPressed: _togglePasswordVisibility,
+                      ),
+                      ),
                     const SizedBox(height: 4),
-                    ParamTextBox(controller: controller.confirmcontrasenaController, text: 'confirm password'),
+                    ParamTextBox(controller: controller.confirmcontrasenaController, 
+                    text: 'confirm password', 
+                    obscureText: _obscureText,
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off,),
+                        onPressed: _togglePasswordVisibility,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    SignUpButton(
-                        onPressed: () => controller.signUp(), text: 'Sign up')
+                    SignUpButton(onPressed: () => controller.signUp(), text: 'Sign up')
                   ],
                 ),
               ),
