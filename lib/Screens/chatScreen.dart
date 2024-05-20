@@ -3,6 +3,11 @@ import 'package:spotfinder/Controller/chat_controller.dart';
 import 'package:spotfinder/Models/ChatModel.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:spotfinder/Models/UserModel.dart';
+import 'home_page.dart';
+import 'package:spotfinder/Services/UserService.dart';
+
+User? user;
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -18,6 +23,7 @@ class _ChatScreenState extends State<ChatScreen> {
   TextEditingController msgInputController = TextEditingController();
   late IO.Socket socket;
   ChatController chatController = ChatController();
+  UserService user = UserService();
 
   @override
   void initState() {
@@ -26,6 +32,7 @@ class _ChatScreenState extends State<ChatScreen> {
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()
+            .setAuth({'token': "${user.getToken()}"})
             .build());
     socket.connect();
     setUpsocketListener();
@@ -34,46 +41,74 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MaterialApp(
+        home: Scaffold(
       backgroundColor: black,
-      body: Column(
-        children: [
-          Expanded(
-              child: Obx(() => Container(
-                    padding: const EdgeInsets.all(10),
-                    child: Text(
-                      "Connected User ${chatController.connectedUser}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15.0,
-                      ),
-                    ),
-                  ))),
-          Expanded(
-              flex: 9,
+      appBar: AppBar(
+        title: const Text('SpotFinder'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => HomePage()),
+              (route) => false,
+            );
+          },
+        ),
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(kToolbarHeight),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Obx(
+                () => Text(
+                  "Connected User: ${chatController.connectedUser}",
+                  style: const TextStyle(
+                    color: Color.fromARGB(255, 11, 37, 167),
+                    fontSize: 15.0,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Column(
+          children: [
+            Expanded(
               child: Obx(
                 () => ListView.builder(
-                    itemCount: chatController.chatMessages.length,
-                    itemBuilder: (context, index) {
-                      var currentItem = chatController.chatMessages[index];
-                      return MessageItem(
-                        sentByMe: currentItem.sentByMe == socket.id,
-                        message: currentItem.message,
-                      );
-                    }),
-              )),
-          Expanded(
-              child: Container(
-            padding: const EdgeInsets.all(10),
-            color: Colors.red,
-            child: TextField(
-              style: const TextStyle(color: Colors.white),
-              cursorColor: purple,
-              controller: msgInputController,
-              decoration: InputDecoration(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  itemCount: chatController.chatMessages.length,
+                  itemBuilder: (context, index) {
+                    //var currentUser = chatController.userMessage;
+                    var currentItem = chatController.chatMessages[index];
+                    //var currenteHour = chatController.hourMessage;
+                    return MessageItem(
+                      sentByMe: currentItem.sentByMe == socket.id,
+                      message: currentItem.message,
+                      userName: currentItem.userName,
+                    );
+                  },
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(10),
+              color: Colors.red,
+              child: TextField(
+                style: const TextStyle(color: Colors.white),
+                cursorColor: purple,
+                controller: msgInputController,
+                decoration: InputDecoration(
                   enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.white),
-                      borderRadius: BorderRadius.circular(10)),
+                    borderSide: const BorderSide(color: Colors.white),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   suffixIcon: Container(
                     margin: const EdgeInsets.only(right: 10),
                     decoration: BoxDecoration(
@@ -81,21 +116,31 @@ class _ChatScreenState extends State<ChatScreen> {
                       color: purple,
                     ),
                     child: IconButton(
-                        onPressed: () {
-                          sendMessage(msgInputController.text);
-                          msgInputController.text = "";
-                        },
-                        icon: const Icon(Icons.send)),
-                  )),
+                      onPressed: () {
+                        sendMessage(msgInputController.text);
+                        msgInputController.text = "";
+                      },
+                      icon: const Icon(Icons.send),
+                    ),
+                  ),
+                ),
+              ),
             ),
-          )),
-        ],
+          ],
+        ),
       ),
-    );
+    ));
   }
 
   void sendMessage(String text) {
-    var messageJSON = {"message": text, "sentByMe": socket.id};
+    var messageJSON = {
+      "message": text,
+      "sentByMe": socket.id,
+      "userName": '',
+      //"hora": '',
+      "id": user.getId()
+    };
+
     socket.emit('message', messageJSON);
     chatController.chatMessages.add(Message.fromJson(messageJSON));
   }
@@ -113,22 +158,32 @@ class _ChatScreenState extends State<ChatScreen> {
 }
 
 class MessageItem extends StatelessWidget {
-  const MessageItem({super.key, required this.sentByMe, required this.message});
+  const MessageItem({
+    super.key,
+    required this.sentByMe,
+    required this.message,
+    required this.userName,
+    //required this.hora
+  });
   final bool sentByMe;
   final String message;
+  final String userName;
+  //final String hora;
 
   @override
   Widget build(BuildContext context) {
     Color purple = const Color(0xFF6c5ce7);
     Color black = Color(0xFF191919);
     Color white = Colors.white;
+
     return Align(
         alignment: sentByMe ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
             padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
             margin: const EdgeInsets.symmetric(vertical: 3, horizontal: 10),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(5),
-            color: sentByMe ? purple : white,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              color: sentByMe ? purple : white,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -136,17 +191,16 @@ class MessageItem extends StatelessWidget {
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(
+                  "${userName}:",
+                  style:
+                      TextStyle(color: sentByMe ? white : black, fontSize: 18),
+                ),
+                Text(
                   message,
                   style:
                       TextStyle(color: sentByMe ? white : purple, fontSize: 18),
                 ),
                 const SizedBox(width: 5),
-                Text(
-                  "1:10AM",
-                  style: TextStyle(
-                      color: (sentByMe ? white : purple).withOpacity(0.7),
-                      fontSize: 10),
-                ),
               ],
             )));
   }
