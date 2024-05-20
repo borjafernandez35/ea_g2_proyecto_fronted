@@ -1,5 +1,3 @@
-import 'package:spotfinder/Models/ActivityModel.dart';
-import 'package:spotfinder/Models/CommentModel.dart';
 
 class User {
   final String? id;

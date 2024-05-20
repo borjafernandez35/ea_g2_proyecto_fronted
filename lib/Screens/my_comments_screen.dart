@@ -41,17 +41,26 @@ class _MyCommentsScreen extends State<MyCommentsScreen> {
   }
 
   void getData() async {
-    List<Activity> fetchedActivities = [];
+    lista_comments = [];
     List<Comment> fetchedComments = [];
     for (var com in comments_id) {
       Comment comment = await commentService.getComment(com);
-      fetchedComments.add(comment);
+      fetchedComments.add(comment);     
+    }
+    setState(() {
+      lista_comments = fetchedComments;
+    });
+    getActivities();
+  }
+
+  void getActivities() async {
+    List<Activity> fetchedActivities = [];
+    lista_activities = [];
+    for (var comment in lista_comments) {
       Activity activity = await activityService.getActivity(comment.activity);
       fetchedActivities.add(activity);
     }
-
     setState(() {
-      lista_comments = fetchedComments;
       lista_activities = fetchedActivities;
       isLoading = false;
     });
@@ -75,12 +84,12 @@ class _MyCommentsScreen extends State<MyCommentsScreen> {
                 // Añadido async
                 Navigator.of(context).pop();
                 await commentService.deleteComment(id);
-                widget.onUpdate;
                 setState(() {
                   lista_comments.removeAt(index);
                   isLoading = true;
                 });
-                getData();
+                getActivities();
+                widget.onUpdate();
               },
               child: const Text('Delete review'),
             ),
@@ -109,7 +118,7 @@ class _MyCommentsScreen extends State<MyCommentsScreen> {
           lista_comments[index] = updatedComment;
           isLoading = true;
         });
-        getData();
+        getActivities();
       }).catchError((error) {
         Get.snackbar(
           'Error',

@@ -74,6 +74,8 @@ Future<int> updateComment(Comment comment) async {
 
  Future<Comment> getComment(String id) async {
 
+    print('$baseUrl/comment/$id');
+
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = getToken();

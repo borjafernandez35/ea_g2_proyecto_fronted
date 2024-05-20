@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 
 class Activity {
   final String? id;
@@ -25,10 +24,10 @@ class Activity {
 
     Map<String, dynamic> toJson() {
     return {
-      'idUser': idUser,
+      'owner': idUser,
       'name': name,
       'description': description,
-      'date': date,
+      'date': date.toIso8601String(),
     };
   }
 

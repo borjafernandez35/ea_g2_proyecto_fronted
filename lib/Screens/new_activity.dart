@@ -66,7 +66,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     Activity newActivity = Activity(
       name: _nameController.text,
       description: _descriptionController.text,
-      //imageUrl: _image?.path,
+      imageUrl: _image?.path,
       date: _selectedDate,
       idUser: _userId,
     );

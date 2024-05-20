@@ -124,6 +124,7 @@ class ActivityService {
       },
     ));
     try {
+      print (activity.toJson());
       var res = await dio.post('$baseUrl/activity', data: activity.toJson());
       statusCode = res.statusCode;
       print('Status code: $statusCode');
