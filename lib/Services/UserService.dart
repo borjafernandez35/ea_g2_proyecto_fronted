@@ -153,9 +153,7 @@ class UserService {
     ));
     try {
       Response res = await dio.get('$baseUrl/user/$id');
-      print(res.data['data']);
       User user = User.fromJson(res.data['data']);
-      print('user from api: ${user.name}');
       return user;
     } catch (e) {
       // Manejar cualquier error que pueda ocurrir durante la solicitud

@@ -41,7 +41,7 @@ class Activity {
       date: DateTime.parse(json['date']), // Parsear la fecha desde String a DateTime
       listUsers: (json['listUsers'] as List<dynamic>?)?.cast<String>(),
       comments: (json['comments'] as List<dynamic>?)?.cast<String>(),
-      imageUrl: json['imageUrl'], // Asignar imageUrl desde JSON si está disponible
+      imageUrl: json['image'], // Asignar imageUrl desde JSON si está disponible
     );
   }
 }

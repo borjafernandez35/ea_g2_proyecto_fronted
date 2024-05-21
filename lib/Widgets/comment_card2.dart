@@ -2,24 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Models/CommentModel.dart';
+import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Widgets/paramTextBox_edit.dart';
 
 class CommentCard extends StatefulWidget {
   final Comment comment;
-  final Activity activity;
+  final User user;
   final Function(BuildContext, String, int) onDelete;
   final Function(Comment, int) onUpdate;
   final int index;
+  final bool isOwner;
 
   const CommentCard({
     required this.comment,
-    required this.activity,
+    required this.user,
     required this.onDelete,
     required this.onUpdate,
     required this.index,
+    required this.isOwner,
     Key? key,
   }) : super(key: key);
 
@@ -66,6 +68,8 @@ class _CommentCardState extends State<CommentCard> {
     return comment;
   }
 
+  bool _isHovering = false;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -82,35 +86,26 @@ class _CommentCardState extends State<CommentCard> {
                 width: double.infinity,
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.fromLTRB(10.0, 10.0, 0, 8),
-                child: GestureDetector(
-                  child: Text(
-                    widget.activity.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Pallete.paleBlueColor,
-                    ),
+                child: Text(
+                  widget.user.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Pallete.paleBlueColor,
+                    decoration: _isHovering
+                        ? TextDecoration.underline
+                        : TextDecoration.none,
                   ),
                 ),
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    padding: EdgeInsets.fromLTRB(6, 0, 0, 0),
-                    child: Image.network(
-                      'https://via.placeholder.com/100',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
                   Expanded(
                     child: Card(
                       color: Pallete.whiteColor,
                       elevation: 0,
-                      margin: EdgeInsets.fromLTRB(0, 0, 8, 8),
+                      margin: EdgeInsets.fromLTRB(8, 0, 8, 8),
                       child: Stack(
                         children: [
                           Padding(
@@ -205,6 +200,7 @@ class _CommentCardState extends State<CommentCard> {
                               ),
                             ),
                           ),
+                          if(widget.isOwner)
                           Positioned(
                             top: 0,
                             right: 0,

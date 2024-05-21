@@ -72,7 +72,7 @@ class _ActivityListPage extends State<ActivityListPage> {
               color: Pallete.backgroundColor,
               child: InkWell(
                 onTap: () {
-                  Get.to(() => ActivityDetail(lista_activities[index]));
+                  Get.to(() => ActivityDetail(lista_activities[index], onUpdate: getData));
                 },
                 child: ActivityCard(lista_activities[index]),
               ),

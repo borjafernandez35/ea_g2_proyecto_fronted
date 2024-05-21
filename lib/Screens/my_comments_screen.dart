@@ -50,10 +50,10 @@ class _MyCommentsScreen extends State<MyCommentsScreen> {
     setState(() {
       lista_comments = fetchedComments;
     });
-    getActivities();
+    await getActivities();
   }
 
-  void getActivities() async {
+  Future<void> getActivities() async {
     List<Activity> fetchedActivities = [];
     lista_activities = [];
     for (var comment in lista_comments) {
