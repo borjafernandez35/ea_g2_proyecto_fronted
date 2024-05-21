@@ -25,7 +25,8 @@ late User user;
 class ActivityDetail extends StatefulWidget {
   final Activity activity;
   final VoidCallback onUpdate;
-  const ActivityDetail(this.activity, {Key? key, required this.onUpdate}) : super(key: key);
+  const ActivityDetail(this.activity, {Key? key, required this.onUpdate})
+      : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
@@ -270,10 +271,11 @@ class _ActivityDetail extends State<ActivityDetail> {
                               height: 20,
                             ),
                             SignUpButton(
-                              onPressed: () { 
-                                controllerActivityDetail.joinActivity(widget.activity.id);
+                              onPressed: () {
+                                controllerActivityDetail
+                                    .joinActivity(widget.activity.id);
                                 widget.onUpdate();
-                                },
+                              },
                               text: 'Join',
                             ),
                           ],
@@ -392,7 +394,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                                     ),
                                     SizedBox(height: 8),
                                     RatingBar.builder(
-                                      initialRating: 0,
+                                      initialRating: 0.0,
                                       allowHalfRating: true,
                                       itemCount: 5,
                                       itemSize: 25.0,
@@ -420,14 +422,19 @@ class _ActivityDetail extends State<ActivityDetail> {
                                         // Botón de enviar
                                         ElevatedButton(
                                           onPressed: () {
-                                            controllerActivityDetail.activityId =widget.activity.id!;
-                                            controllerActivityDetail.addComment().then((_) {
-                                              setState(() {
-                                                alreadyCommented = true;
-                                                getUsers();
-                                                showReviewForm =!showReviewForm;
-                                              }); 
-                                              widget.onUpdate();                                 
+                                            controllerActivityDetail.activityId = widget.activity.id!;
+                                            controllerActivityDetail.addComment().then((success) {
+                                              if (success) {
+                                                setState(() {
+                                                  alreadyCommented = true;
+                                                  getUsers();
+                                                  showReviewForm = !showReviewForm;
+                                                  controllerActivityDetail.contentController.clear();
+                                                  controllerActivityDetail.titleController.clear();
+                                                  controllerActivityDetail.ratingValue = 0; 
+                                                });
+                                                widget.onUpdate();
+                                              }
                                             });
                                           },
                                           child: Text('Submit'),
@@ -501,13 +508,16 @@ class ActivityDetailController extends GetxController {
     activityService.joinActivity(id);
   }
 
-  Future<void> addComment() async {
-    if (titleController.text.isEmpty || contentController.text.isEmpty) {
+  Future<bool> addComment() async {
+    if (titleController.text.isEmpty ||
+        contentController.text.isEmpty ||
+        ratingValue == 0.0) {
       Get.snackbar(
         'Error',
         'Campos vacíos',
         snackPosition: SnackPosition.BOTTOM,
       );
+      return false;
     } else {
       Comment newComment = Comment(
         title: titleController.text,
@@ -519,7 +529,7 @@ class ActivityDetailController extends GetxController {
       try {
         final comment = await commentService.createComment(newComment);
         comments.add(comment!);
-        print(comments);
+        return true;
       } catch (error) {
         Get.snackbar(
           'Error',
@@ -529,6 +539,7 @@ class ActivityDetailController extends GetxController {
         if (kDebugMode) {
           print('Error al enviar create in al backend: $error');
         }
+        return false;
       }
     }
   }
