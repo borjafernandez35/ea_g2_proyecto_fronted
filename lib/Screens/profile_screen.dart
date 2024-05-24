@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:spotfinder/Models/UserModel.dart';
@@ -11,11 +12,14 @@ import 'package:spotfinder/Screens/my_activities.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:get/get.dart';
+import 'package:spotfinder/Screens/Signin.dart';
 
 late UserService userService;
 User? user;
 
 class ProfileScreen extends StatefulWidget {
+
+
   const ProfileScreen({super.key});
 
   @override
@@ -26,6 +30,7 @@ class _ProfileScreen extends State<ProfileScreen> {
   final GetStorage _storage = GetStorage();
   String? _imagePath;
   Uint8List? _webImage;
+  late final GoogleSignIn googleSignIn;
 
   bool isLoading = true;
 
@@ -243,7 +248,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                         TextButton(
                           onPressed: () {
                             userService.logout();
-                            Get.to(() => TitleScreen());
+                            Get.to(() => TitleScreen(googleSignIn: googleSignIn,));
                           },
                           style: TextButton.styleFrom(
                             foregroundColor:

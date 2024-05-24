@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
@@ -23,6 +24,7 @@ class UserDetailsPage extends StatefulWidget {
 
 class _UserDetailsPageState extends State<UserDetailsPage> {
   final UpdateScreenController controller = Get.put(UpdateScreenController());
+  late final GoogleSignIn googleSignIn;
 
   @override
   void initState() {
@@ -211,7 +213,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               onPressed: () {
                 Navigator.of(context).pop();
                 controller.deleteUser();
-                Get.to(TitleScreen());
+                Get.to(TitleScreen(googleSignIn: googleSignIn));
               },
               child: Text('Delete account'),
             ),

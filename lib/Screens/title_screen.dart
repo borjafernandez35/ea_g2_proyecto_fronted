@@ -3,8 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/login_screen.dart';
 import 'package:spotfinder/Screens/register_screen.dart';
+import 'package:spotfinder/Screens/Signin.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class TitleScreen extends StatelessWidget {
+
+    final GoogleSignIn googleSignIn; // Agrega este campo
+
+  const TitleScreen({Key? key, required this.googleSignIn}) : super(key: key); 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,12 +36,19 @@ class TitleScreen extends StatelessWidget {
                 margin: const EdgeInsets.all(
                   20,
                 ),
-                child: ElevatedButton(
+                child: Column(
+                  children: [
+                    // Botón de inicio de sesión con Google
+                    SignIn(googleSignIn: googleSignIn),
+                    SizedBox(height: 20),
+                ElevatedButton(
                   onPressed: () {
                     // Acción al presionar el botón
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()), // Navega a la pantalla de inicio de sesión
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              const LoginScreen()), // Navega a la pantalla de inicio de sesión
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -49,6 +62,8 @@ class TitleScreen extends StatelessWidget {
                       color: Colors.white, // Cambia el color del texto a blanco
                     ),
                   ),
+                ),
+                 ],
                 ),
               ),
               RichText(
@@ -64,16 +79,17 @@ class TitleScreen extends StatelessWidget {
                     TextSpan(
                       text: "Sign up",
                       style: const TextStyle(
-                        color: Pallete
-                            .salmonColor,
+                        color: Pallete.salmonColor,
                         fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline, // Subraya el texto "Sign up"
+                        decoration: TextDecoration
+                            .underline, // Subraya el texto "Sign up"
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                            MaterialPageRoute(
+                                builder: (context) => const RegisterScreen()),
                           );
                         },
                     ),
