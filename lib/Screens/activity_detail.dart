@@ -4,8 +4,8 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Models/CommentModel.dart';
 import 'package:spotfinder/Models/UserModel.dart';
-import 'package:spotfinder/Screens/home_page.dart';
 import 'package:get/get.dart';
+import 'package:spotfinder/Screens/activity_list_page.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Services/CommentService.dart';
 import 'package:spotfinder/Services/UserService.dart';
@@ -13,6 +13,7 @@ import 'package:spotfinder/Widgets/button_sign_up.dart';
 import 'package:spotfinder/Widgets/comment_card2.dart';
 import 'package:spotfinder/Widgets/user_card.dart';
 import 'package:spotfinder/Resources/pallete.dart';
+import 'package:share_plus/share_plus.dart';
 
 late ActivityService activityService;
 late CommentService commentService;
@@ -21,14 +22,14 @@ late List<User> users = [];
 late List<User> commentUser = [];
 late List<Comment> comments = [];
 late User user;
+late Activity activity;
+late VoidCallback? onUpdate;
 
 class ActivityDetail extends StatefulWidget {
-  final Activity activity;
-  final VoidCallback onUpdate;
-  const ActivityDetail(this.activity, {Key? key, required this.onUpdate})
-      : super(key: key);
+  const ActivityDetail({Key? key}) : super(key: key);
 
   @override
+
   // ignore: library_private_types_in_public_api
   _ActivityDetail createState() => _ActivityDetail();
 }
@@ -41,6 +42,8 @@ class _ActivityDetail extends State<ActivityDetail> {
   bool isLoading = true;
   bool showReviewForm = false;
   bool alreadyCommented = false;
+  late String activityId;
+  bool isLoggedIn = false;
 
   @override
   void initState() {
@@ -49,22 +52,44 @@ class _ActivityDetail extends State<ActivityDetail> {
     userService = UserService();
     activityService = ActivityService();
     commentService = CommentService();
-    final listLength = widget.activity.listUsers?.length ?? 0;
-    user =
-        User(name: '', email: '', phone_number: '', gender: '', password: '');
-    getData(listLength);
+    activityId = Get.parameters['id']!;
+    onUpdate = Get.arguments?['onUpdate'];
+    getActivity();
   }
 
-  void getData(int length) async {
+  Future<void> getActivity() async {
     try {
+      activity = await activityService.getActivity(activityId);
+      await getData(activity.listUsers?.length ?? 0);
+    } catch (error) {
+      Get.snackbar(
+        'Error',
+        'No se han podido obtener los datos.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      if (kDebugMode) {
+        print('Error al comunicarse con el backend: $error');
+      }
+    }
+  }
+
+  Future<void> getData(int length) async {
+    List<User> fetchedUsers = [];
+    try {
+      if (userService.getToken() != null) {
+        setState(() {
+          isLoggedIn = true;
+        });
+      }
+
       for (var i = 0; i < length; i++) {
-        user = await userService.getAnotherUser(widget.activity.listUsers?[i]);
-        users.add(user);
+        final user = await userService.getAnotherUser(activity.listUsers?[i]);
+        fetchedUsers.add(user);
       }
       await getComments();
       setState(() {
-        isLoading =
-            false; // Cambiar el estado de carga cuando los datos están disponibles
+        users = fetchedUsers;
+        isLoading = false;
       });
     } catch (error) {
       Get.snackbar(
@@ -82,7 +107,7 @@ class _ActivityDetail extends State<ActivityDetail> {
     List<Comment> fetchedComments = [];
     List<User> fetchedUsers = [];
 
-    for (var com in widget.activity.comments!) {
+    for (var com in activity.comments!) {
       Comment comment = await commentService.getComment(com);
       fetchedComments.add(comment);
       User user = await userService.getAnotherUser(comment.user);
@@ -179,25 +204,45 @@ class _ActivityDetail extends State<ActivityDetail> {
     } else {
       return Scaffold(
         appBar: AppBar(
-          title: Text(
-            widget.activity.name,
-            style: const TextStyle(
-              color: Pallete.backgroundColor,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
           backgroundColor: Colors.transparent,
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: const Icon(
-                Icons.arrow_back,
-                color: Pallete.backgroundColor,
+          leading: isLoggedIn
+              ? Builder(
+                  builder: (context) => IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Pallete.backgroundColor,
+                    ),
+                    onPressed: () {
+                      Get.to(ActivityListPage());
+                    },
+                  ),
+                )
+              : null,
+          title: Row(
+            children: [
+              Text(
+                activity.name,
+                style: const TextStyle(
+                  color: Pallete.backgroundColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              onPressed: () {
-                Get.back();
-              },
-            ),
+              IconButton(
+                icon: const Icon(Icons.share),
+                iconSize: 30,
+                color: Pallete.salmonColor,
+                onPressed: () {
+                  final formattedDate = '${activity.date.day}/${activity.date.month}/${activity.date.year}';
+                  final message =
+                      'Echa un vistazo a este evento: *${activity.name}*\n'
+                      'Fecha: 📅 ${formattedDate}\n'
+                      'Más información: 🔗 ${Uri.base} ';
+                  Share.share(message);
+                },
+                tooltip: 'Share',
+              ),
+            ],
           ),
         ),
         body: SingleChildScrollView(
@@ -221,7 +266,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        widget.activity.name,
+                        activity.name,
                         style: const TextStyle(
                           color: Pallete.backgroundColor,
                           fontWeight: FontWeight.bold,
@@ -230,7 +275,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        '${widget.activity.rate} ⭐',
+                        '${activity.rate} ⭐',
                         style: const TextStyle(
                           color: Pallete.backgroundColor,
                           fontWeight: FontWeight.bold,
@@ -246,38 +291,70 @@ class _ActivityDetail extends State<ActivityDetail> {
                         ),
                         child: Column(
                           children: [
-                            const Text(
-                              'Users participating',
-                              style: TextStyle(
-                                color: Pallete.whiteColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                            if (isLoggedIn)
+                              Column(
+                                children: [
+                                  const Text(
+                                    'Users participating',
+                                    style: TextStyle(
+                                      color: Pallete.whiteColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: activity.listUsers?.length ?? 0,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      return Card(
+                                        color: Pallete.whiteColor,
+                                        child: UserCard(users[index].name),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SignUpButton(
+                                    onPressed: () {
+                                      controllerActivityDetail
+                                          .joinActivity(activity.id);
+                                      onUpdate!();
+                                    },
+                                    text: 'Join',
+                                  ),
+                                ],
+                              )
+                            else
+                              // Contenido alternativo si el usuario no ha iniciado sesión
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  children: [
+                                    const Text(
+                                      'Sign in or register to participate!',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 15),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Get.toNamed('/', arguments: {'id' : activityId});
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Pallete.salmonColor,
+                                      ),
+                                      child: const Text('Sign In/Register'),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: widget.activity.listUsers?.length ?? 0,
-                              itemBuilder: (BuildContext context, int index) {
-                                return Card(
-                                  color: Pallete.whiteColor,
-                                  child: UserCard(users[index].name),
-                                );
-                              },
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            SignUpButton(
-                              onPressed: () {
-                                controllerActivityDetail
-                                    .joinActivity(widget.activity.id);
-                                widget.onUpdate();
-                              },
-                              text: 'Join',
-                            ),
                           ],
                         ),
                       ),
@@ -292,7 +369,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          if (!alreadyCommented)
+                          if (!alreadyCommented && isLoggedIn)
                             GestureDetector(
                               onTap: () {
                                 setState(() {
@@ -422,18 +499,27 @@ class _ActivityDetail extends State<ActivityDetail> {
                                         // Botón de enviar
                                         ElevatedButton(
                                           onPressed: () {
-                                            controllerActivityDetail.activityId = widget.activity.id!;
-                                            controllerActivityDetail.addComment().then((success) {
+                                            controllerActivityDetail
+                                                .activityId = activity.id!;
+                                            controllerActivityDetail
+                                                .addComment()
+                                                .then((success) {
                                               if (success) {
                                                 setState(() {
                                                   alreadyCommented = true;
                                                   getUsers();
-                                                  showReviewForm = !showReviewForm;
-                                                  controllerActivityDetail.contentController.clear();
-                                                  controllerActivityDetail.titleController.clear();
-                                                  controllerActivityDetail.ratingValue = 0; 
+                                                  showReviewForm =
+                                                      !showReviewForm;
+                                                  controllerActivityDetail
+                                                      .contentController
+                                                      .clear();
+                                                  controllerActivityDetail
+                                                      .titleController
+                                                      .clear();
+                                                  controllerActivityDetail
+                                                      .ratingValue = 0;
                                                 });
-                                                widget.onUpdate();
+                                                onUpdate!();
                                               }
                                             });
                                           },

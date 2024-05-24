@@ -3,9 +3,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
-import 'package:spotfinder/Screens/activity_detail.dart';
 import 'package:spotfinder/Screens/home_page.dart';
-import 'package:spotfinder/Screens/new_activity.dart'; // Importa la nueva pantalla
+import 'package:spotfinder/Screens/new_activity.dart';
 import 'package:get/get.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Widgets/activity_card.dart';
@@ -14,7 +13,9 @@ import 'package:spotfinder/Resources/pallete.dart';
 late ActivityService activityService;
 
 class ActivityListPage extends StatefulWidget {
-  const ActivityListPage({Key? key,}) : super(key: key);
+  const ActivityListPage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   _ActivityListPage createState() => _ActivityListPage();
@@ -56,23 +57,37 @@ class _ActivityListPage extends State<ActivityListPage> {
     } else {
       return Scaffold(
         appBar: AppBar(
-        title: const Text(
-          'Your feed',
-          style: TextStyle(
-            color: Pallete.backgroundColor,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+          title: const Text(
+            'Your feed',
+            style: TextStyle(
+              color: Pallete.backgroundColor,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+          backgroundColor: Colors.transparent,
+          leading:  Builder(
+                  builder: (context) => IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Pallete.backgroundColor,
+                    ),
+                    onPressed: () {
+                      Get.to(HomePage());
+                    },
+                  ),
+                )
         ),
-        backgroundColor: Colors.transparent,
-      ),
         body: ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return Card(
               color: Pallete.backgroundColor,
               child: InkWell(
                 onTap: () {
-                  Get.to(() => ActivityDetail(lista_activities[index], onUpdate: getData));
+                  Get.toNamed(
+                    '/activity/${lista_activities[index].id}',
+                    arguments: {'onUpdate': getData},
+                  );
                 },
                 child: ActivityCard(lista_activities[index]),
               ),

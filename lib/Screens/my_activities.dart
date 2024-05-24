@@ -3,7 +3,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
-import 'package:spotfinder/Screens/activity_detail.dart';
 import 'package:spotfinder/Screens/edit_activity.dart';
 import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Screens/new_activity.dart'; // Importa la nueva pantalla

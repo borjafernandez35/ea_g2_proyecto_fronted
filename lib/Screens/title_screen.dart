@@ -1,12 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:spotfinder/Resources/pallete.dart';
-import 'package:spotfinder/Screens/login_screen.dart';
-import 'package:spotfinder/Screens/register_screen.dart';
 
 class TitleScreen extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
+    final String? id = Get.arguments?['id'];
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -33,10 +34,7 @@ class TitleScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     // Acción al presionar el botón
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()), // Navega a la pantalla de inicio de sesión
-                    );
+                    Get.toNamed('/login',  arguments: {'id' : id});
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Pallete
@@ -71,10 +69,7 @@ class TitleScreen extends StatelessWidget {
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                          );
+                           Get.toNamed('/register',  arguments: {'id' : id});
                         },
                     ),
                   ],
