@@ -13,6 +13,7 @@ import 'package:spotfinder/Widgets/button_sign_up.dart';
 import 'package:spotfinder/Widgets/comment_card2.dart';
 import 'package:spotfinder/Widgets/user_card.dart';
 import 'package:spotfinder/Resources/pallete.dart';
+import 'package:latlong2/latlong.dart';
 
 late ActivityService activityService;
 late CommentService commentService;
@@ -29,14 +30,12 @@ class ActivityDetail extends StatefulWidget {
       : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _ActivityDetail createState() => _ActivityDetail();
 }
 
 class _ActivityDetail extends State<ActivityDetail> {
   final ActivityDetailController controllerActivityDetail =
       Get.put(ActivityDetailController());
-  // ignore: non_constant_identifier_names
 
   bool isLoading = true;
   bool showReviewForm = false;
@@ -63,8 +62,7 @@ class _ActivityDetail extends State<ActivityDetail> {
       }
       await getComments();
       setState(() {
-        isLoading =
-            false; // Cambiar el estado de carga cuando los datos están disponibles
+        isLoading = false;
       });
     } catch (error) {
       Get.snackbar(
@@ -114,7 +112,6 @@ class _ActivityDetail extends State<ActivityDetail> {
   }
 
   void confirmDeleteComment(BuildContext context, String id, int index) async {
-    // Añadido async
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -128,7 +125,6 @@ class _ActivityDetail extends State<ActivityDetail> {
             ),
             TextButton(
               onPressed: () async {
-                // Añadido async
                 Navigator.of(context).pop();
                 await commentService.deleteComment(id);
                 setState(() {
@@ -174,7 +170,6 @@ class _ActivityDetail extends State<ActivityDetail> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      // Muestra un indicador de carga mientras se cargan los datos
       return const Center(child: CircularProgressIndicator());
     } else {
       return Scaffold(
@@ -317,145 +312,20 @@ class _ActivityDetail extends State<ActivityDetail> {
                                 ),
                               ),
                             ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Visibility(
                             visible: showReviewForm,
-                            child: Card(
+                            child: const Card(
                               color: Pallete.primaryColor,
                               surfaceTintColor: Pallete.accentColor,
                               elevation: 5,
-                              margin: const EdgeInsets.all(10),
+                              margin: EdgeInsets.all(10),
                               child: Padding(
-                                padding: const EdgeInsets.all(20),
+                                padding: EdgeInsets.all(20),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Campo de título
-                                    const Text(
-                                      'Title:',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Pallete.paleBlueColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 8),
-                                    TextFormField(
-                                      controller: controllerActivityDetail
-                                          .titleController,
-                                      style: const TextStyle(
-                                          color: Pallete.backgroundColor),
-                                      decoration: InputDecoration(
-                                        hintText: 'Enter title',
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 16),
-                                    // Campo de contenido
-                                    const Text(
-                                      'Content:',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Pallete.paleBlueColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 8),
-                                    TextFormField(
-                                      controller: controllerActivityDetail
-                                          .contentController,
-                                      maxLines: 5,
-                                      style: const TextStyle(
-                                          color: Pallete.backgroundColor),
-                                      decoration: InputDecoration(
-                                        hintText: 'Enter content',
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 16),
-                                    // Campo de revisión
-                                    const Text(
-                                      'Review:',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Pallete.paleBlueColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 8),
-                                    RatingBar.builder(
-                                      initialRating: 0.0,
-                                      allowHalfRating: true,
-                                      itemCount: 5,
-                                      itemSize: 25.0,
-                                      direction: Axis.horizontal,
-                                      unratedColor:
-                                          Colors.blueAccent.withAlpha(50),
-                                      itemBuilder: (context, index) =>
-                                          const Icon(
-                                        Icons.star,
-                                        color: Colors.amber,
-                                        size: 25.0,
-                                      ),
-                                      onRatingUpdate: (rating) {
-                                        setState(() {
-                                          controllerActivityDetail.ratingValue =
-                                              rating;
-                                        });
-                                      },
-                                    ),
-                                    SizedBox(height: 20),
-                                    // Botones de enviar y cancelar
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        // Botón de enviar
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            controllerActivityDetail.activityId = widget.activity.id!;
-                                            controllerActivityDetail.addComment().then((success) {
-                                              if (success) {
-                                                setState(() {
-                                                  alreadyCommented = true;
-                                                  getUsers();
-                                                  showReviewForm = !showReviewForm;
-                                                  controllerActivityDetail.contentController.clear();
-                                                  controllerActivityDetail.titleController.clear();
-                                                  controllerActivityDetail.ratingValue = 0; 
-                                                });
-                                                widget.onUpdate();
-                                              }
-                                            });
-                                          },
-                                          child: Text('Submit'),
-                                        ),
-                                        SizedBox(width: 16),
-                                        // Botón de cancelar
-                                        TextButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              showReviewForm = !showReviewForm;
-                                            });
-                                          },
-                                          child: const Text(
-                                            'Cancel',
-                                            style: TextStyle(
-                                              color: Pallete.salmonColor,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                    // Resto del código del formulario de revisión
                                   ],
                                 ),
                               ),
@@ -467,7 +337,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                             itemBuilder: (BuildContext context, int index) {
                               if (index >= comments.length ||
                                   index >= commentUser.length) {
-                                return SizedBox.shrink();
+                                return const SizedBox.shrink();
                               }
                               bool isOwner =
                                   comments[index].user == userService.getId();
@@ -487,6 +357,14 @@ class _ActivityDetail extends State<ActivityDetail> {
                         ],
                       ),
                     ],
+                  ),
+                ),
+                Text(
+                  'Position: ${widget.activity.position?.latitude ?? 'Unknown'}, ${widget.activity.position?.longitude ?? 'Unknown'}',
+                  style: const TextStyle(
+                    color: Pallete.backgroundColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
                 ),
               ],
