@@ -1,3 +1,4 @@
+import 'package:latlong2/latlong.dart';
 
 class Activity {
   final String? id;
@@ -5,10 +6,11 @@ class Activity {
   final String description;
   final double? rate;
   final String idUser;
-  final DateTime date; // Cambiado el tipo de dato a DateTime
+  final DateTime date; 
   final List<String>? listUsers;
   final List<String>? comments;
-  final String? imageUrl; // Asegurado que imageUrl sea de tipo String
+  final String? imageUrl;
+  final LatLng? position; // Nuevo campo para la posición
 
   Activity({
     this.id,
@@ -20,14 +22,16 @@ class Activity {
     this.listUsers,
     this.comments,
     this.imageUrl,
+    this.position, // Incluido el argumento para la posición
   });
 
-    Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'owner': idUser,
       'name': name,
       'description': description,
       'date': date.toIso8601String(),
+      'position': position?.toJson(), // Convertir la posición a JSON si está disponible
     };
   }
 
@@ -38,10 +42,34 @@ class Activity {
       description: json['description'],
       rate: json['rate'],
       idUser: json['owner'],
-      date: DateTime.parse(json['date']), // Parsear la fecha desde String a DateTime
+      date: DateTime.parse(json['date']),
       listUsers: (json['listUsers'] as List<dynamic>?)?.cast<String>(),
       comments: (json['comments'] as List<dynamic>?)?.cast<String>(),
-      imageUrl: json['image'], // Asignar imageUrl desde JSON si está disponible
+      imageUrl: json['image'],
+      position: json['position'] != null
+          ? LatLng.fromJson(json['position']) // Convertir la posición desde JSON
+          : null,
+    );
+  }
+}
+
+class LatLng {
+  final double latitude;
+  final double longitude;
+
+  LatLng({required this.latitude, required this.longitude});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'latitude': latitude,
+      'longitude': longitude,
+    };
+  }
+
+  factory LatLng.fromJson(Map<String, dynamic> json) {
+    return LatLng(
+      latitude: json['latitude'],
+      longitude: json['longitude'],
     );
   }
 }
