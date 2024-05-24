@@ -7,6 +7,7 @@ import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:spotfinder/Widgets/button_sign_up.dart';
+import 'package:geolocator/geolocator.dart';
 
 class NewActivityScreen extends StatefulWidget {
   @override
@@ -21,6 +22,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController(); // Nuevo controlador para la ubicación
   File? _image;
   DateTime _selectedDate = DateTime.now();
   String _userId = '';
@@ -65,15 +67,28 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     }
   }
 
+  Future<void> _selectLocation() async {
+    Position? position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    if (position != null) {
+      setState(() {
+        _locationController.text = '${position.latitude},${position.longitude}';
+      });
+    } else {
+      print('No se pudo obtener la ubicación actual.');
+    }
+  }
+
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       print('Formulario válido. Enviando actividad...');
+      String location = _locationController.text;
       Activity newActivity = Activity(
         name: _nameController.text,
         description: _descriptionController.text,
         imageUrl: _image?.path,
         date: _selectedDate,
         idUser: _userId,
+        position: LatLng.fromJson(_parseLocation(location)), // Convertir la ubicación a LatLng
       );
       await ActivityService().addActivity(newActivity);
       widget.onUpdate();
@@ -82,6 +97,13 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     } else {
       print('Formulario inválido. No se puede enviar la actividad.');
     }
+  }
+
+  Map<String, dynamic> _parseLocation(String location) {
+    List<String> parts = location.split(',');
+    double latitude = double.parse(parts[0]);
+    double longitude = double.parse(parts[1]);
+    return {'latitude': latitude, 'longitude': longitude};
   }
 
   @override
@@ -209,6 +231,45 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a description';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24), 
+                        TextFormField(
+                          readOnly: true,
+                          controller: _locationController,
+                          decoration: InputDecoration(
+                            labelText: 'Location',
+                            labelStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            fillColor: Colors.black.withOpacity(0.7),
+                            filled: true,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.white),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.white),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Pallete.salmonColor),
+                            ),
+                            floatingLabelStyle: const TextStyle(
+                              color: Pallete.salmonColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.white),
+                          onTap: _selectLocation,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a location';
                             }
                             return null;
                           },
