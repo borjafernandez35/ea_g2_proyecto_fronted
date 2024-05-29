@@ -82,6 +82,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     if (_formKey.currentState!.validate()) {
       print('Formulario válido. Enviando actividad...');
       String location = _locationController.text;
+
+      print('Ubicación obtenida: $location');
       Activity newActivity = Activity(
         name: _nameController.text,
         description: _descriptionController.text,
