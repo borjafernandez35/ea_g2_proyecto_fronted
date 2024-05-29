@@ -98,7 +98,7 @@ Future<int> updateComment(Comment comment) async {
 
   Future<Comment?> createComment (Comment newComment) async {
 
-    try {
+    try {      
       Response response = await dio.post('$baseUrl/comment', data: newComment.toJson());
       Comment comment = Comment.fromJson(response.data['comment']);
       return comment;

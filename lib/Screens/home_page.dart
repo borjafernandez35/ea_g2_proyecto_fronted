@@ -25,40 +25,6 @@ class _nameState extends State<HomePage> {
 
   static final List<Widget> _widgetOptions = <Widget>[
     const MapScreen(),
-    /* Scaffold(
-      body: Align(
-        alignment: Alignment.topCenter,
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 20,
-            ),
-            Row(
-              mainAxisAlignment:
-              MainAxisAlignment.center, // Centers widgets horizontally
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ParamTextBox(
-                  controller: homeController.searchBarController,
-                  text: 'Scaperoom...'
-                ),
-                IconButton(
-                  icon: const Icon(
-                    size: 40,
-                    color: Pallete.backgroundColor,
-                    LineIcons.searchLocation
-                  ),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-          ],
-        ),
-      ),
-    ), */
     const ActivityListPage(),
     const ChatScreen(),
     const ProfileScreen()

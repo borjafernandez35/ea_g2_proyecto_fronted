@@ -6,6 +6,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:spotfinder/Models/UserModel.dart';
 import 'home_page.dart';
 import 'package:spotfinder/Services/UserService.dart';
+import 'package:intl/intl.dart';
 
 User? user;
 
@@ -88,6 +89,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       sentByMe: currentItem.sentByMe == socket.id,
                       message: currentItem.message,
                       userName: currentItem.userName,
+                      hora: currentItem.hora,
                     );
                   },
                 ),
@@ -133,7 +135,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "message": text,
       "sentByMe": socket.id,
       "userName": '',
-      //"hora": '',
+      "hora": DateTime.now().toIso8601String(),
       "id": user.getId()
     };
 
@@ -151,7 +153,11 @@ class _ChatScreenState extends State<ChatScreen> {
       chatController.connectedUser.value = data;
     });
   }
-void manualDisconnect() {
+
+// ignore: non_constant_identifier_names
+
+
+  void manualDisconnect() {
     socket.emit('manual-disconnect');
     socket.disconnect();
     Navigator.pushAndRemoveUntil(
@@ -160,27 +166,28 @@ void manualDisconnect() {
       (route) => false,
     );
   }
-
 }
 
 class MessageItem extends StatelessWidget {
-  const MessageItem({
-    super.key,
-    required this.sentByMe,
-    required this.message,
-    required this.userName,
-    //required this.hora
-  });
+  const MessageItem(
+      {super.key,
+      required this.sentByMe,
+      required this.message,
+      required this.userName,
+      required this.hora});
   final bool sentByMe;
   final String message;
   final String userName;
-  //final String hora;
+  final DateTime hora;
+
+  
 
   @override
   Widget build(BuildContext context) {
     Color purple = const Color(0xFF6c5ce7);
     Color black = Color(0xFF191919);
     Color white = Colors.white;
+    var newDate = DateFormat.jm().format(hora);
 
     return Align(
         alignment: sentByMe ? Alignment.centerRight : Alignment.centerLeft,
@@ -207,6 +214,13 @@ class MessageItem extends StatelessWidget {
                       TextStyle(color: sentByMe ? white : purple, fontSize: 18),
                 ),
                 const SizedBox(width: 5),
+                Text(
+                  newDate,
+                  style: TextStyle(
+                    color: (sentByMe ? white : purple).withOpacity(0.7),
+                    fontSize: 10,
+                  ),
+                )
               ],
             )));
   }
