@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Resources/pallete.dart';
+import 'package:spotfinder/Screens/map.dart';
 import 'package:spotfinder/Widgets/paramTextBox.dart';
 import 'package:spotfinder/Screens/activity_list_page.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -23,7 +24,8 @@ class _nameState extends State<HomePage> {
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
-    Scaffold(
+    const MapScreen(),
+    /* Scaffold(
       body: Align(
         alignment: Alignment.topCenter,
         child: Column(
@@ -56,7 +58,7 @@ class _nameState extends State<HomePage> {
           ],
         ),
       ),
-    ),
+    ), */
     const ActivityListPage(),
     const ChatScreen(),
     const ProfileScreen()

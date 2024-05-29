@@ -77,6 +77,8 @@ class _EditActivity extends State<EditActivity> {
         imageUrl: _image?.path,
         date: _selectedDate,
         idUser: _userId,
+        latitude: 0,
+        longitude: 0
       );
       await ActivityService().editActivity(newActivity, widget.id);
       widget.onUpdate();
