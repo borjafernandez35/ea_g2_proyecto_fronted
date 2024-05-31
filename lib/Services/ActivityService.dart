@@ -18,7 +18,7 @@ class ActivityService {
     return box.read('id');
   }
 
-  Future<List<Activity>> getData() async {
+  Future<List<Activity>> getData(double selectedDistance) async {
     print('getData');
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
