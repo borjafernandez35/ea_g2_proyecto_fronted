@@ -11,6 +11,7 @@ class User {
   final List<String>? comments;
   final bool? active;
   final String password;
+  final LatLng? position;
 
   User({
     this.id,
@@ -24,6 +25,7 @@ class User {
     this.activities,
     this.listActivities,
     this.comments,
+    this.position,
   });
 
   Map<String, dynamic> toJson() {
@@ -35,6 +37,7 @@ class User {
       'active': active,
       'password': password,
       'birthday': birthday,
+      'position': position?.toJson(),
     };
   }
 
@@ -52,6 +55,30 @@ class User {
       activities: (json['Activities'] as List<dynamic>?)?.cast<String>(),
       listActivities: (json['listActivities'] as List<dynamic>?)?.cast<String>(),
       comments: (json['comments'] as List<dynamic>?)?.cast<String>(),
+      position: json['position'] != null
+          ? LatLng.fromJson(json['position']) // Convertir la posición desde JSON
+          : null,
+    );
+  }
+}
+
+class LatLng {
+  final double latitude;
+  final double longitude;
+
+  LatLng({required this.latitude, required this.longitude});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'latitude': latitude,
+      'longitude': longitude,
+    };
+  }
+
+  factory LatLng.fromJson(Map<String, dynamic> json) {
+    return LatLng(
+      latitude: json['latitude'],
+      longitude: json['longitude'],
     );
   }
 }
