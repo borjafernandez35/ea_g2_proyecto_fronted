@@ -1,3 +1,4 @@
+import 'package:latlong2/latlong.dart';
 
 class User {
   final String? id;
@@ -11,7 +12,7 @@ class User {
   final List<String>? comments;
   final bool? active;
   final String password;
-  final LatLng? position;
+  final LatLng? location;
 
   User({
     this.id,
@@ -25,7 +26,7 @@ class User {
     this.activities,
     this.listActivities,
     this.comments,
-    this.position,
+    this.location,
   });
 
   Map<String, dynamic> toJson() {
@@ -37,7 +38,12 @@ class User {
       'active': active,
       'password': password,
       'birthday': birthday,
-      'position': position?.toJson(),
+      'location': location != null
+          ? {
+              'coordinates': [location!.longitude, location!.latitude],
+              'type': 'Point',
+            }
+          : null,
     };
   }
 
@@ -55,8 +61,8 @@ class User {
       activities: (json['Activities'] as List<dynamic>?)?.cast<String>(),
       listActivities: (json['listActivities'] as List<dynamic>?)?.cast<String>(),
       comments: (json['comments'] as List<dynamic>?)?.cast<String>(),
-      position: json['position'] != null
-          ? LatLng.fromJson(json['position']) // Convertir la posición desde JSON
+      location: json['location'] != null && json['location']['coordinates'] != null
+          ? LatLng.fromCoordinates(json['location']['coordinates'])
           : null,
     );
   }
@@ -79,6 +85,13 @@ class LatLng {
     return LatLng(
       latitude: json['latitude'],
       longitude: json['longitude'],
+    );
+  }
+
+    factory LatLng.fromCoordinates(List<dynamic> coordinates) {
+    return LatLng(
+      latitude: coordinates[1],
+      longitude: coordinates[0],
     );
   }
 }
