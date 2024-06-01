@@ -56,8 +56,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(), 
-      firstDate: DateTime.now(), 
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
     );
     if (picked != null && picked != _selectedDate) {
@@ -90,7 +90,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
         imageUrl: _image?.path,
         date: _selectedDate,
         idUser: _userId,
-        position: LatLng.fromJson(_parseLocation(location)), // Convertir la ubicación a LatLng
+        location: LatLng.fromJson(_parseLocation(location)), // Convertir la ubicación a LatLng
       );
       await ActivityService().addActivity(newActivity);
       widget.onUpdate();
@@ -237,7 +237,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 24), 
+                        const SizedBox(height: 24),
                         TextFormField(
                           readOnly: true,
                           controller: _locationController,
@@ -276,7 +276,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 24), 
+                        const SizedBox(height: 24),
                         TextFormField(
                           readOnly: true,
                           controller: TextEditingController(

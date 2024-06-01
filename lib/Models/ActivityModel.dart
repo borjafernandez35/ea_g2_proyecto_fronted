@@ -6,11 +6,11 @@ class Activity {
   final String description;
   final double? rate;
   final String idUser;
-  final DateTime date; 
+  final DateTime date;
   final List<String>? listUsers;
   final List<String>? comments;
   final String? imageUrl;
-  final LatLng? position; // Nuevo campo para la posición
+  final LatLng? location;
 
   Activity({
     this.id,
@@ -22,16 +22,26 @@ class Activity {
     this.listUsers,
     this.comments,
     this.imageUrl,
-    this.position, // Incluido el argumento para la posición
+    this.location,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'owner': idUser,
+      '_id': id,
       'name': name,
       'description': description,
+      'rate': rate ?? 0,
+      'owner': idUser,
       'date': date.toIso8601String(),
-      'position': position?.toJson(), // Convertir la posición a JSON si está disponible
+      'listUsers': listUsers ?? [],
+      'comments': comments ?? [],
+      'active': true,
+      'location': location != null
+          ? {
+              'coordinates': [location!.longitude, location!.latitude],
+              'type': 'Point',
+            }
+          : null,
     };
   }
 
@@ -46,8 +56,8 @@ class Activity {
       listUsers: (json['listUsers'] as List<dynamic>?)?.cast<String>(),
       comments: (json['comments'] as List<dynamic>?)?.cast<String>(),
       imageUrl: json['image'],
-      position: json['position'] != null
-          ? LatLng.fromJson(json['position']) // Convertir la posición desde JSON
+      location: json['location'] != null && json['location']['coordinates'] != null
+          ? LatLng.fromCoordinates(json['location']['coordinates'])
           : null,
     );
   }
@@ -72,4 +82,12 @@ class LatLng {
       longitude: json['longitude'],
     );
   }
+
+  factory LatLng.fromCoordinates(List<dynamic> coordinates) {
+    return LatLng(
+      latitude: coordinates[1],
+      longitude: coordinates[0],
+    );
+  }
 }
+

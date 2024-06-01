@@ -216,7 +216,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        widget.activity.name,
+                        widget.activity.description,
                         style: const TextStyle(
                           color: Pallete.backgroundColor,
                           fontWeight: FontWeight.bold,
@@ -360,7 +360,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                   ),
                 ),
                 Text(
-                  'Position: ${widget.activity.position?.latitude ?? 'Unknown'}, ${widget.activity.position?.longitude ?? 'Unknown'}',
+                  'Position: ${widget.activity.location?.latitude}, ${widget.activity.location?.longitude}',
                   style: const TextStyle(
                     color: Pallete.backgroundColor,
                     fontWeight: FontWeight.bold,

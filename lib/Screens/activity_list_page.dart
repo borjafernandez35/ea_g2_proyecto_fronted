@@ -18,7 +18,7 @@ class ActivityListPage extends StatefulWidget {
 }
 
 class _ActivityListPageState extends State<ActivityListPage> {
-  late List<Activity> lista_activities;
+  late List<Activity> listaActivities;
   bool isLoading = true;
   double selectedDistance = 5.0; // Distancia inicial seleccionada
 
@@ -34,7 +34,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
       isLoading = true; // Mostrar indicador de carga mientras se obtienen los datos
     });
     try {
-      lista_activities = await activityService.getData(selectedDistance); // Filtrar por distancia
+      listaActivities = await activityService.getData(selectedDistance); // Filtrar por distancia
       setState(() {
         isLoading = false;
       });
@@ -62,7 +62,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     } else {
       return Scaffold(
         appBar: AppBar(
@@ -78,7 +78,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 decoration: BoxDecoration(
                   color: Colors.black,
                   borderRadius: BorderRadius.circular(8.0),
@@ -88,11 +88,11 @@ class _ActivityListPageState extends State<ActivityListPage> {
                     value: selectedDistance,
                     onChanged: _onDistanceChanged,
                     dropdownColor: Colors.black,
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                     items: <double>[5.0, 10.0, 20.0, 50.0, 100.0].map((double value) {
                       return DropdownMenuItem<double>(
                         value: value,
-                        child: Text('Hasta $value km', style: TextStyle(color: Colors.white)),
+                        child: Text('Hasta $value km', style: const TextStyle(color: Colors.white)),
                       );
                     }).toList(),
                   ),
@@ -111,15 +111,15 @@ class _ActivityListPageState extends State<ActivityListPage> {
                     color: Pallete.backgroundColor,
                     child: InkWell(
                       onTap: () {
-                        Get.to(() => ActivityDetail(lista_activities[index], onUpdate: getData));
+                        Get.to(() => ActivityDetail(listaActivities[index], onUpdate: getData));
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ListTile(
-                            title: Text(lista_activities[index].name),
+                            title: Text(listaActivities[index].name),
                             subtitle: Text(
-                              'Position: ${lista_activities[index].position?.latitude ?? 'Unknown'}, ${lista_activities[index].position?.longitude ?? 'Unknown'}',
+                              'Position: ${listaActivities[index].location?.latitude ?? 'Unknown'}, ${listaActivities[index].location?.longitude ?? 'Unknown'}',
                             ),
                           ),
                           // Otros detalles de la actividad...
@@ -128,7 +128,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
                     ),
                   );
                 },
-                itemCount: lista_activities.length,
+                itemCount: listaActivities.length,
               ),
             ),
           ],
@@ -137,7 +137,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
           message: 'Add new activity',
           child: FloatingActionButton(
             backgroundColor: Pallete.backgroundColor,
-            child: Icon(Icons.add),
+            child: const Icon(Icons.add),
             onPressed: () {
               Get.to(() => NewActivityScreen(onUpdate: getData));
             },
