@@ -262,4 +262,53 @@ class UserService {
       throw e; // Relanzar el error para que el llamador pueda manejarlo
     }
   }
+
+  Future<int> updateUserLocation(String userId, double latitude, double longitude) async {
+  dio.interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) async {
+      final token = getToken();
+      if (token != null) {
+        options.headers['x-access-token'] = token;
+      }
+      return handler.next(options);
+    },
+  ));
+
+  final data = {
+    'latitude': latitude,
+    'longitude': longitude,
+  };
+
+  try {
+    Response response = await dio.put('$baseUrl/user/location/$userId', data: data);
+    statusCode = response.statusCode;
+    return statusCode;
+  } catch (e) {
+    print('Error updating user location: $e');
+    return -1;
+  }
+}
+
+Future<User> getCurrentUser() async {
+  dio.interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) async {
+      final token = getToken();
+      if (token != null) {
+        options.headers['x-access-token'] = token;
+      }
+      return handler.next(options);
+    },
+  ));
+
+  final id = getId();
+  try {
+    Response res = await dio.get('$baseUrl/user/$id');
+    User user = User.fromJson(res.data['data']);
+    return user;
+  } catch (e) {
+    print('Error fetching user data: $e');
+    throw e;
+  }
+}
+
 }
