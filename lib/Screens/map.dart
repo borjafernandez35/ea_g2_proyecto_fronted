@@ -34,6 +34,7 @@ class _MapScreen extends State<MapScreen> {
   void initState() {
     super.initState();
     activityService = ActivityService();
+    userService =UserService();
     getData();
   }
 
@@ -42,6 +43,7 @@ class _MapScreen extends State<MapScreen> {
       position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+      await userService.updateLocation(position);
       lista_activities = await activityService.getData();
       markers.add(
         Marker(

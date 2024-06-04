@@ -1,4 +1,6 @@
 
+import 'package:latlong2/latlong.dart';
+
 class User {
   final String? id;
   final String name;
@@ -11,6 +13,7 @@ class User {
   final List<String>? comments;
   final bool? active;
   final String password;
+  final LatLng? location;
 
   User({
     this.id,
@@ -24,6 +27,7 @@ class User {
     this.activities,
     this.listActivities,
     this.comments,
+    this.location,
   });
 
   Map<String, dynamic> toJson() {
@@ -37,7 +41,6 @@ class User {
       'birthday': birthday,
     };
   }
-
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
