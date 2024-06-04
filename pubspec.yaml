@@ -23,6 +23,7 @@ dependencies:
   image_picker_for_web: ^2.1.7
   flutter_map: ^6.1.0
   latlong2: ^0.9.1
+  geolocator: ^7.0.3
 
 
   flutter_rating_bar: ^4.0.1
