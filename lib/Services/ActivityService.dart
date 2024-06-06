@@ -35,7 +35,6 @@ class ActivityService {
       var res = await dio.get('$baseUrl/activity/1/10');
       final List<dynamic> responseData = res.data['activities'];
       List<Activity> activities = responseData.map((data) => Activity.fromJson(data)).toList();
-      print("aqui aun funciona");
       return activities;
     } catch (e) {
       print('Error fetching data: $e');

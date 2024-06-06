@@ -26,6 +26,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   File? _image;
   DateTime _selectedDate = DateTime.now();
   String _userId = '';
+  double _latitude = 0;
+  double _longitude = 0;
 
   @override
   void initState() {
@@ -90,7 +92,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
         imageUrl: _image?.path,
         date: _selectedDate,
         idUser: _userId,
-        location: LatLng.fromJson(_parseLocation(location)), // Convertir la ubicación a LatLng
+        latitude: _latitude,
+        longitude: _longitude
       );
       await ActivityService().addActivity(newActivity);
       widget.onUpdate();

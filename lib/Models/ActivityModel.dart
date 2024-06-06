@@ -6,7 +6,9 @@ class Activity {
   final String description;
   final double? rate;
   final String idUser;
-  final DateTime date;
+  final DateTime date; // Cambiado el tipo de dato a DateTime
+  final double latitude;
+  final double longitude;
   final List<String>? listUsers;
   final List<String>? comments;
   final String? imageUrl;
@@ -19,6 +21,8 @@ class Activity {
     this.rate,
     required this.idUser,
     required this.date,
+    required this.latitude,
+    required this.longitude,
     this.listUsers,
     this.comments,
     this.imageUrl,
@@ -52,7 +56,9 @@ class Activity {
       description: json['description'],
       rate: json['rate'],
       idUser: json['owner'],
-      date: DateTime.parse(json['date']),
+      date: DateTime.parse(json['date']), // Parsear la fecha desde String a DateTime
+      latitude: json['latitude'] as double,
+      longitude: json['longitude'] as double,
       listUsers: (json['listUsers'] as List<dynamic>?)?.cast<String>(),
       comments: (json['comments'] as List<dynamic>?)?.cast<String>(),
       imageUrl: json['image'],
