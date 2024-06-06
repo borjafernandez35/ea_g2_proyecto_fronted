@@ -2,6 +2,7 @@ import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 
+
 class ActivityService {
   final String baseUrl = "http://127.0.0.1:3000";
   final Dio dio = Dio();

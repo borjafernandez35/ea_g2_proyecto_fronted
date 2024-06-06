@@ -28,6 +28,9 @@ dependencies:
 
   flutter_rating_bar: ^4.0.1
   intl: ^0.19.0
+  fluro: ^2.0.5
+  flutter_routing: ^0.1.11
+  share_plus: ^9.0.0
 
 
 dev_dependencies:

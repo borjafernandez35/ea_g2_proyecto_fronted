@@ -1,5 +1,7 @@
 import 'package:latlong2/latlong.dart';
 
+import 'dart:html';
+
 class Activity {
   final String? id;
   final String name;

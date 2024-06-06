@@ -13,3 +13,4 @@
   <li>La localización la coge correctamente y se visualiza, pero a la hora de enviar estos datos al backend, no lo hace correctamente y no se almacenan los datos en Mongo.</li>
   <li>Debido al error anterior, la localización no se muestra correctamente en el listado, apareciendo "Unknown"</li>
 </ul>
+

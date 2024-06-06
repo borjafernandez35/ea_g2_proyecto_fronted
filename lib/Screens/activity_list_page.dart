@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
-import 'package:spotfinder/Screens/activity_detail.dart';
+import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Screens/new_activity.dart';
 import 'package:get/get.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
@@ -31,10 +31,12 @@ class _ActivityListPageState extends State<ActivityListPage> {
 
   void getData() async {
     setState(() {
-      isLoading = true; // Mostrar indicador de carga mientras se obtienen los datos
+      isLoading =
+          true; // Mostrar indicador de carga mientras se obtienen los datos
     });
     try {
-      listaActivities = await activityService.getData(selectedDistance); // Filtrar por distancia
+      listaActivities = await activityService
+          .getData(selectedDistance); // Filtrar por distancia
       setState(() {
         isLoading = false;
       });
@@ -66,6 +68,17 @@ class _ActivityListPageState extends State<ActivityListPage> {
     } else {
       return Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(
+              Icons
+                  .arrow_back, // Puedes cambiar este icono por otro si lo deseas
+              color:
+                  Pallete.backgroundColor, // Ajusta el color a tu preferencia
+            ),
+            onPressed: () {
+              Get.to(HomePage()); // Acción personalizada para el botón
+            },
+          ),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -89,10 +102,12 @@ class _ActivityListPageState extends State<ActivityListPage> {
                     onChanged: _onDistanceChanged,
                     dropdownColor: Colors.black,
                     style: const TextStyle(color: Colors.white),
-                    items: <double>[5.0, 10.0, 20.0, 50.0, 100.0].map((double value) {
+                    items: <double>[5.0, 10.0, 20.0, 50.0, 100.0]
+                        .map((double value) {
                       return DropdownMenuItem<double>(
                         value: value,
-                        child: Text('Hasta $value km', style: const TextStyle(color: Colors.white)),
+                        child: Text('Hasta $value km',
+                            style: const TextStyle(color: Colors.white)),
                       );
                     }).toList(),
                   ),
@@ -111,7 +126,10 @@ class _ActivityListPageState extends State<ActivityListPage> {
                     color: Pallete.backgroundColor,
                     child: InkWell(
                       onTap: () {
-                        Get.to(() => ActivityDetail(listaActivities[index], onUpdate: getData));
+                        Get.toNamed(
+                          '/activity/${listaActivities[index].id}',
+                          arguments: {'onUpdate': getData},
+                        );
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

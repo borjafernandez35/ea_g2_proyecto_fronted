@@ -6,6 +6,7 @@ import 'package:spotfinder/Services/UserService.dart';
 import 'package:get/get.dart';
 
 late UserService userService;
+late String? id;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,6 +24,7 @@ class _LoginScreen extends State<LoginScreen> {
   void initState() {
     super.initState();
     userService = UserService();
+    id = Get.arguments?['id'];
   }
 
   void _togglePasswordVisibility() {
@@ -147,10 +149,15 @@ class Controller extends GetxController {
           email: mailController.text,
           password: contrasenaController.text,
         );
+
         userService.logIn(logIn).then((statusCode) {
           // La solicitud se completó exitosamente, puedes realizar acciones adicionales si es necesario
           print('Usuario logeado exitosamente');
-          Get.to(() => HomePage());
+          if (id != null) {
+            Get.toNamed('/activity/$id');
+          } else {
+            Get.toNamed('/home');
+          }
         }).catchError((error) {
           // Manejar errores de solicitud HTTP
           Get.snackbar(

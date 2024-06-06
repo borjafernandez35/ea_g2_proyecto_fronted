@@ -1,10 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Resources/pallete.dart';
-import 'package:spotfinder/Models/UserModel.dart';
-import 'package:get/get.dart';
-import 'package:spotfinder/Screens/activity_detail.dart';
-import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Services/UserService.dart';
 
 late UserService userService;
