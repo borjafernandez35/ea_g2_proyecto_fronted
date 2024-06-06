@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/map.dart';
-import 'package:spotfinder/Widgets/paramTextBox.dart';
 import 'package:spotfinder/Screens/activity_list_page.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:get/get.dart';

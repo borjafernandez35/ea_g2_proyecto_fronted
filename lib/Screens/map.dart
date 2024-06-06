@@ -57,7 +57,7 @@ class _MapScreen extends State<MapScreen> {
       for(var actividad in lista_activities){
         markers.add(
         Marker(
-          point: ltlg.LatLng(actividad.latitude, actividad.longitude),
+          point: ltlg.LatLng(actividad.location!.latitude, actividad.location!.longitude),
           width: 60,
           height: 60,
           alignment: Alignment.centerLeft,
@@ -145,6 +145,7 @@ class _MapScreen extends State<MapScreen> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {

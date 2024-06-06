@@ -84,6 +84,9 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     if (_formKey.currentState!.validate()) {
       print('Formulario válido. Enviando actividad...');
       String location = _locationController.text;
+      Map<String, dynamic> parsedLocation = _parseLocation(location);
+      double latitude = parsedLocation['latitude'];
+      double longitude = parsedLocation['longitude'];
 
       print('Ubicación obtenida: $location');
       Activity newActivity = Activity(
@@ -92,8 +95,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
         imageUrl: _image?.path,
         date: _selectedDate,
         idUser: _userId,
-        latitude: _latitude,
-        longitude: _longitude
+        location: LatLng(latitude: latitude, longitude: longitude), // Aquí se crea el objeto LatLng
       );
       await ActivityService().addActivity(newActivity);
       widget.onUpdate();
