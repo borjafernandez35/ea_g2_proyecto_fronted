@@ -8,6 +8,8 @@ import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:spotfinder/Widgets/button_sign_up.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart' as ltld;
 
 class NewActivityScreen extends StatefulWidget {
   @override
@@ -22,7 +24,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController(); // Nuevo controlador para la ubicación
+  final TextEditingController _locationController = TextEditingController();
   File? _image;
   DateTime _selectedDate = DateTime.now();
   String _userId = '';
@@ -70,7 +72,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   }
 
   Future<void> _selectLocation() async {
-    Position? position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position? position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     if (position != null) {
       setState(() {
         _locationController.text = '${position.latitude},${position.longitude}';
@@ -95,7 +98,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
         imageUrl: _image?.path,
         date: _selectedDate,
         idUser: _userId,
-        location: LatLng(latitude: latitude, longitude: longitude), // Aquí se crea el objeto LatLng
+        location: LatLng(latitude: latitude, longitude: longitude),
       );
       await ActivityService().addActivity(newActivity);
       widget.onUpdate();
@@ -128,211 +131,248 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
         backgroundColor: Colors.black.withOpacity(0.7),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: GestureDetector(
-                      onTap: _pickImage,
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: GestureDetector(
+                        onTap: _pickImage,
+                        child: Column(
+                          children: [
+                            _image == null
+                                ? Container(
+                                    height: 150,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.7),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.white),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        'Tap to select an image\nAccepted formats: JPG, PNG',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  )
+                                : Image.file(_image!, height: 150),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 2,
                       child: Column(
                         children: [
-                          _image == null
-                              ? Container(
-                                  height: 150,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.7),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.white),
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      'Tap to select an image\nAccepted formats: JPG, PNG',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                )
-                              : Image.file(_image!, height: 150),
+                          TextFormField(
+                            controller: _nameController,
+                            decoration: InputDecoration(
+                              labelText: 'Activity Name',
+                              labelStyle: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              fillColor: Colors.black.withOpacity(0.7),
+                              filled: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 10.0, horizontal: 12.0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                    color: Pallete.salmonColor),
+                              ),
+                              floatingLabelStyle: const TextStyle(
+                                color: Pallete.salmonColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter the activity name';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          TextFormField(
+                            controller: _descriptionController,
+                            maxLines: 5,
+                            decoration: InputDecoration(
+                              labelText: 'Description',
+                              labelStyle: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              fillColor: Colors.black.withOpacity(0.7),
+                              filled: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 10.0, horizontal: 12.0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                    color: Pallete.salmonColor),
+                              ),
+                              floatingLabelStyle: const TextStyle(
+                                color: Pallete.salmonColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a description';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          TextFormField(
+                            readOnly: true,
+                            controller: _locationController,
+                            decoration: InputDecoration(
+                              labelText: 'Location',
+                              labelStyle: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              fillColor: Colors.black.withOpacity(0.7),
+                              filled: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 10.0, horizontal: 12.0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                    color: Pallete.salmonColor),
+                              ),
+                              floatingLabelStyle: const TextStyle(
+                                color: Pallete.salmonColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                            onTap: _selectLocation,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a location';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          TextFormField(
+                            readOnly: true,
+                            controller: TextEditingController(
+                              text:
+                                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'Date',
+                              labelStyle: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              fillColor: Colors.black.withOpacity(0.7),
+                              filled: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 10.0, horizontal: 12.0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                    color: Pallete.salmonColor),
+                              ),
+                              floatingLabelStyle: const TextStyle(
+                                color: Pallete.salmonColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                            onTap: () => _selectDate(context),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please select a date';
+                              }
+                              return null;
+                            },
+                          ),
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: _nameController,
-                          decoration: InputDecoration(
-                            labelText: 'Activity Name',
-                            labelStyle: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            fillColor: Colors.black.withOpacity(0.7),
-                            filled: true,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.white),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.white),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Pallete.salmonColor),
-                            ),
-                            floatingLabelStyle: const TextStyle(
-                              color: Pallete.salmonColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: const TextStyle(color: Colors.white),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter the activity name';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        TextFormField(
-                          controller: _descriptionController,
-                          maxLines: 5,
-                          decoration: InputDecoration(
-                            labelText: 'Description',
-                            labelStyle: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            fillColor: Colors.black.withOpacity(0.7),
-                            filled: true,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.white),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.white),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Pallete.salmonColor),
-                            ),
-                            floatingLabelStyle: const TextStyle(
-                              color: Pallete.salmonColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: const TextStyle(color: Colors.white),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a description';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        TextFormField(
-                          readOnly: true,
-                          controller: _locationController,
-                          decoration: InputDecoration(
-                            labelText: 'Location',
-                            labelStyle: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            fillColor: Colors.black.withOpacity(0.7),
-                            filled: true,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.white),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.white),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Pallete.salmonColor),
-                            ),
-                            floatingLabelStyle: const TextStyle(
-                              color: Pallete.salmonColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: const TextStyle(color: Colors.white),
-                          onTap: _selectLocation,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a location';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        TextFormField(
-                          readOnly: true,
-                          controller: TextEditingController(
-                            text: '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                          ),
-                          decoration: InputDecoration(
-                            labelText: 'Date',
-                            labelStyle: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            fillColor: Colors.black.withOpacity(0.7),
-                            filled: true,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.white),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.white),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Pallete.salmonColor),
-                            ),
-                            floatingLabelStyle: const TextStyle(
-                              color: Pallete.salmonColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: const TextStyle(color: Colors.white),
-                          onTap: () => _selectDate(context),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please select a date';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              SignUpButton(onPressed: _submitForm, text: 'Post activity')
-            ],
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Container(
+  height: 200,
+  child: Align(
+    alignment: Alignment.centerRight,
+    child: FlutterMap(
+      options: MapOptions(
+        center: ltld.LatLng(_latitude, _longitude),
+        zoom: 9.2,
+      ),
+      children: [
+        TileLayer(
+          urlTemplate:
+              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.example.app',
+        ),
+      ],
+    ),
+  ),
+),
+                const Spacer(),
+                SignUpButton(onPressed: _submitForm, text: 'Post activity')
+              ],
+            ),
           ),
         ),
-      ),
     );
   }
 }
