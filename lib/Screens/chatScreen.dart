@@ -46,7 +46,14 @@ class _ChatScreenState extends State<ChatScreen> {
         home: Scaffold(
       backgroundColor: black,
       appBar: AppBar(
-        title: const Text('SpotFinder'),
+        title: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'SpotFinder',
+            ),
+          ],
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -54,7 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
           },
         ),
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(kToolbarHeight),
+          preferredSize: const Size.fromHeight(kToolbarHeight),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Center(
@@ -206,7 +213,7 @@ class MessageItem extends StatelessWidget {
                 Text(
                   "${userName}:",
                   style:
-                      TextStyle(color: sentByMe ? white : black, fontSize: 18),
+                      TextStyle(color: sentByMe ? white : black, fontSize: 20),
                 ),
                 Text(
                   message,

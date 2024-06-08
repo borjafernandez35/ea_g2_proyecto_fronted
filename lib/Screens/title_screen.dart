@@ -5,12 +5,15 @@ import 'package:spotfinder/Screens/login_screen.dart';
 import 'package:spotfinder/Screens/register_screen.dart';
 import 'package:spotfinder/Screens/Signin.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:spotfinder/Widgets/button_sign_in.dart';
+import '../Resources/sign_in_button.dart';
 
 class TitleScreen extends StatelessWidget {
+ // final SignIn _signIn = SignIn(googleSignIn: GoogleSignIn,);
 
     final GoogleSignIn googleSignIn; // Agrega este campo
 
-  const TitleScreen({Key? key, required this.googleSignIn}) : super(key: key); 
+  TitleScreen({super.key, required this.googleSignIn}); 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +42,7 @@ class TitleScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     // Botón de inicio de sesión con Google
-                    SignIn(googleSignIn: googleSignIn),
+                   // SignIn(googleSignIn: googleSignIn),
                     SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
@@ -48,7 +51,8 @@ class TitleScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
-                              const LoginScreen()), // Navega a la pantalla de inicio de sesión
+                              const LoginScreen() // Navega a la pantalla de inicio de sesión
+                              ), 
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -98,6 +102,17 @@ class TitleScreen extends StatelessWidget {
               ),
             ],
           ),
+          /* Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              margin: const EdgeInsets.all(20),
+              child:  SignInButton(
+                googleSignIn: _signIn.googleSignIn,
+                onPressed: _signIn.handlesigin(),
+                text: 'Sign in with Google',
+              ),
+            ),
+          ), */
         ],
       ),
     );

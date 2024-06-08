@@ -100,8 +100,8 @@ class _LoginScreen extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    SignInButton(
-                        onPressed: () => controller.logIn(), text: 'Sign in'),
+                    /* SignInButton(
+                        onPressed: () => controller.logIn(), text: 'Sign in'), */
                     const SizedBox(height: 10),
                     // Nuevo texto para olvidar la contraseña
                     GestureDetector(

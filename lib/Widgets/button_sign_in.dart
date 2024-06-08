@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+/* import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 
-class SignInButton extends StatelessWidget {
+/* class SignInButton extends StatelessWidget {
   final String text; 
-  final VoidCallback onPressed;
-  const SignInButton({Key? key, required this.onPressed, required this.text}) : super(key: key);
+  final VoidCallback onPressed; */
+  //const SignInButton({Key? key, required this.onPressed, required this.text, required GoogleSignIn googleSignIn}) : super(key: key);
 
   @override 
   Widget build(BuildContext context){
@@ -21,4 +22,4 @@ class SignInButton extends StatelessWidget {
       ),),
     );
   }
-}
+} */

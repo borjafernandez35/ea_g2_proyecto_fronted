@@ -1,6 +1,6 @@
 {
-    "name": "flutter_seminario",
-    "short_name": "flutter_seminario",
+    "name": "SpotFinder",
+    "short_name": "SpotFinder",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

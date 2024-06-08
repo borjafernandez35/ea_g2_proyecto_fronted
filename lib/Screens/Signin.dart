@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:convert' show json;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+//import 'package:google_identity_services_web/id.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
-import '../Resources/sign_in_button.dart';
+  import '../Resources/sign_in_button.dart';
+//import 'package:google_identity_services_web/google_identity_services_web.dart';
 
 /// The scopes required by this application.
 // #docregion Initialize
@@ -13,11 +15,23 @@ const List<String> scopes = <String>[
   'https://www.googleapis.com/auth/contacts.readonly',
 ];
 
+
+
 GoogleSignIn _googleSignIn = GoogleSignIn(
   // Optional clientId
-  // clientId: 'your-client_id.apps.googleusercontent.com',
+  clientId: '435863540335-3edtkmprvlpkb3j4ea522cvndn8mc7mr.apps.googleusercontent.com',
   scopes: scopes,
+  //configuration: const IdConfiguration(useFederatedSignIn: true),
+  
 );
+
+/* IdConfiguration _idConfiguration = IdConfiguration(
+  client_id:
+      '435863540335-3edtkmprvlpkb3j4ea522cvndn8mc7mr.apps.googleusercontent.com',
+  use_fedcm_for_prompt: true,
+); */
+
+
 // #enddocregion Initialize
 
 GoogleSignIn initGoogleSignIn() {
@@ -26,6 +40,7 @@ GoogleSignIn initGoogleSignIn() {
 
 /// The SignInDemo app.
 class SignIn extends StatefulWidget {
+  
   ///
   const SignIn({super.key, required GoogleSignIn googleSignIn});
 
@@ -40,7 +55,9 @@ class _SignInState extends State<SignIn> {
 
   @override
   void initState() {
-    super.initState();
+    super.initState();  
+
+    
 
     _googleSignIn.onCurrentUserChanged
         .listen((GoogleSignInAccount? account) async {
@@ -164,7 +181,8 @@ class _SignInState extends State<SignIn> {
     if (user != null) {
       // The user is Authenticated
       return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisSize: MainAxisSize.min,
+       // mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
           ListTile(
             leading: GoogleUserCircleAvatar(
@@ -200,7 +218,8 @@ class _SignInState extends State<SignIn> {
     } else {
       // The user is NOT Authenticated
       return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisSize: MainAxisSize.min,
+       // mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
           const Text('You are not currently signed in.'),
           // This method is used to separate mobile from web code with conditional exports.
@@ -220,7 +239,10 @@ class _SignInState extends State<SignIn> {
           title: const Text('Google Sign In'),
         ),
         body: ConstrainedBox(
-          constraints: const BoxConstraints.expand(),
+          constraints: const BoxConstraints.expand(
+            width: BorderSide.strokeAlignCenter,
+            height: BorderSide.strokeAlignCenter
+          ),
           child: _buildBody(),
         ));
   }
