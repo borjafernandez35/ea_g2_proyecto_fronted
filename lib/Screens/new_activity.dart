@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -10,9 +12,10 @@ import 'package:spotfinder/Widgets/button_sign_up.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as ltld;
+import 'package:geocoding/geocoding.dart';
+
 
 class NewActivityScreen extends StatefulWidget {
-  @override
   final VoidCallback onUpdate;
 
   const NewActivityScreen({required this.onUpdate});
@@ -25,16 +28,20 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
+
   File? _image;
   DateTime _selectedDate = DateTime.now();
   String _userId = '';
   double _latitude = 0;
   double _longitude = 0;
+  bool _locationLoaded = false;
 
   @override
   void initState() {
     super.initState();
     _fetchUserId();
+    _selectLocation();
   }
 
   Future<void> _fetchUserId() async {
@@ -77,6 +84,9 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     if (position != null) {
       setState(() {
         _locationController.text = '${position.latitude},${position.longitude}';
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+        _locationLoaded = true;
       });
     } else {
       print('No se pudo obtener la ubicación actual.');
@@ -84,21 +94,26 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   }
 
   Future<void> _submitForm() async {
+    print("djkf");
+    Activity newActivity = Activity(
+      name: _nameController.text,
+      description: _descriptionController.text,
+      imageUrl: _image?.path,
+      date: _selectedDate,
+      idUser: _userId,
+      location: LatLng(latitude: _latitude, longitude: _longitude),
+    );
+    print(newActivity.location);
     if (_formKey.currentState!.validate()) {
       print('Formulario válido. Enviando actividad...');
-      String location = _locationController.text;
-      Map<String, dynamic> parsedLocation = _parseLocation(location);
-      double latitude = parsedLocation['latitude'];
-      double longitude = parsedLocation['longitude'];
-
-      print('Ubicación obtenida: $location');
+      print('Ubicación obtenida: $_latitude, $_longitude');
       Activity newActivity = Activity(
         name: _nameController.text,
         description: _descriptionController.text,
         imageUrl: _image?.path,
         date: _selectedDate,
         idUser: _userId,
-        location: LatLng(latitude: latitude, longitude: longitude),
+        location: LatLng(latitude: _latitude, longitude: _longitude),
       );
       await ActivityService().addActivity(newActivity);
       widget.onUpdate();
@@ -109,12 +124,19 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     }
   }
 
-  Map<String, dynamic> _parseLocation(String location) {
-    List<String> parts = location.split(',');
-    double latitude = double.parse(parts[0]);
-    double longitude = double.parse(parts[1]);
-    return {'latitude': latitude, 'longitude': longitude};
+  Future<void> _searchLocation(String address) async {
+  try {
+    List<Location> locations = await locationFromAddress(address);
+    if (locations.isNotEmpty) {
+      Location location = locations.first;
+      print('Coordenadas encontradas: ${location.latitude}, ${location.longitude}');
+    } else {
+      print('No se encontraron coordenadas para la dirección: $address');
+    }
+  } catch (e) {
+    print('Error al obtener las coordenadas: $e');
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -130,20 +152,23 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
         ),
         backgroundColor: Colors.black.withOpacity(0.7),
       ),
-      body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                Row(
+      body: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
+                    Flexible(
+                      fit: FlexFit.loose,
                       flex: 1,
                       child: GestureDetector(
                         onTap: _pickImage,
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             _image == null
                                 ? Container(
@@ -167,9 +192,12 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Expanded(
+                    Flexible(
+                      fit: FlexFit.loose,
                       flex: 2,
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           TextFormField(
                             controller: _nameController,
@@ -288,7 +316,6 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                               ),
                             ),
                             style: const TextStyle(color: Colors.white),
-                            onTap: _selectLocation,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter a location';
@@ -347,32 +374,97 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                Container(
-  height: 200,
-  child: Align(
-    alignment: Alignment.centerRight,
-    child: FlutterMap(
-      options: MapOptions(
-        center: ltld.LatLng(_latitude, _longitude),
-        zoom: 9.2,
-      ),
-      children: [
-        TileLayer(
-          urlTemplate:
-              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.app',
-        ),
-      ],
-    ),
-  ),
-),
-                const Spacer(),
-                SignUpButton(onPressed: _submitForm, text: 'Post activity')
-              ],
-            ),
+              ),
+              _locationLoaded
+                  ? Stack(
+                      children: [
+                        Container(
+                          height: 300,
+                          width: 300,
+                          child: FlutterMap(
+                            options: MapOptions(
+                              initialCenter: ltld.LatLng(_latitude, _longitude),
+                              initialZoom: 12,
+                              interactionOptions: const InteractionOptions(
+                                  flags: ~InteractiveFlag.doubleTapZoom),
+                              onTap: (tapPosition, point) {
+                                setState(() {
+                                  _latitude = point.latitude;
+                                  _longitude = point.longitude;
+                                  _locationController.text =
+                                      '$_latitude,$_longitude';
+                                });
+                              },
+                            ),
+                            children: [
+                              openStreetMapTileLayer,
+                              MarkerLayer(
+                                markers: [
+                                  Marker(
+                                    width: 80.0,
+                                    height: 80.0,
+                                    point: ltld.LatLng(_latitude, _longitude),
+                                    child: const Icon(
+                                      Icons.location_on,
+                                      color: Colors.red,
+                                      size: 50.0,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          top: 20,
+                          left: 20,
+                          right: 20,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _searchController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Search...',
+                                      border: InputBorder.none,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.search,
+                                    color: Colors.black,
+                                  ),
+                                  onPressed: () {
+                                    _searchLocation(_searchController.text);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Center(child: CircularProgressIndicator()),
+              Align(
+                  alignment: Alignment.center,
+                  child: SignUpButton(
+                      onPressed: _submitForm, text: 'Post activity')),
+            ],
           ),
         ),
+      ),
     );
   }
 }
+
+TileLayer get openStreetMapTileLayer => TileLayer(
+      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+    );

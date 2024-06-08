@@ -9,7 +9,6 @@ import 'package:spotfinder/Widgets/paramTextBox_sign_up.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:get/get.dart';
-import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Services/UserService.dart';
 late UserService userService;
 late ActivityService activityService;
