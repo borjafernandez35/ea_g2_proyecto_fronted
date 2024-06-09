@@ -1,7 +1,9 @@
+// ignore: file_names
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Controller/chat_controller.dart';
 import 'package:spotfinder/Models/ChatModel.dart';
 import 'package:get/get.dart';
+// ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:spotfinder/Models/UserModel.dart';
 import 'home_page.dart';
@@ -54,7 +56,7 @@ class _ChatScreenState extends State<ChatScreen> {
           },
         ),
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(kToolbarHeight),
+          preferredSize: const Size.fromHeight(kToolbarHeight),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Center(
@@ -145,10 +147,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void setUpsocketListener() {
     socket.on('message-receive', (data) {
+      // ignore: avoid_print
       print(data);
       chatController.chatMessages.add(Message.fromJson(data));
     });
     socket.on('connected-user', (data) {
+      // ignore: avoid_print
       print(data);
       chatController.connectedUser.value = data;
     });
@@ -185,7 +189,7 @@ class MessageItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color purple = const Color(0xFF6c5ce7);
-    Color black = Color(0xFF191919);
+    Color black = const Color(0xFF191919);
     Color white = Colors.white;
     var newDate = DateFormat.jm().format(hora);
 
@@ -204,6 +208,7 @@ class MessageItem extends StatelessWidget {
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(
+                  // ignore: unnecessary_brace_in_string_interps
                   "${userName}:",
                   style:
                       TextStyle(color: sentByMe ? white : black, fontSize: 18),
