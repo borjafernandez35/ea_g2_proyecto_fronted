@@ -4,7 +4,10 @@ import 'package:spotfinder/Models/ActivityModel.dart';
 
 class ActivityCard extends StatelessWidget {
   final Activity activity;
-  const ActivityCard(this.activity,{super.key,});
+  const ActivityCard(
+    this.activity, {
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,16 +21,16 @@ class ActivityCard extends StatelessWidget {
           margin: EdgeInsets.all(10),
           child: Row(
             children: [
-              // Left side: Image
+              // Lado izquierdo: Imagen
               Container(
                 width: 100,
                 height: 100,
                 child: Image.network(
-                  'https://via.placeholder.com/100', // Replace with your image URL
+                  'https://via.placeholder.com/100', // Reemplaza con la URL de tu imagen
                   fit: BoxFit.cover,
                 ),
               ),
-              // Right side: Title, Description, and Value
+              // Lado derecho: Título, Descripción y Valor
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -48,7 +51,7 @@ class ActivityCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'rate: ${activity.rate.toString()}',
+                        'Rate: ${activity.rate.toString()}',
                         style: const TextStyle(
                           color: Colors.green,
                           fontSize: 14,
@@ -61,7 +64,6 @@ class ActivityCard extends StatelessWidget {
             ],
           ),
         ),
-        // Add other widgets below if needed
       ],
     );
   }

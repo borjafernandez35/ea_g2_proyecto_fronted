@@ -1,11 +1,8 @@
-// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
-import 'package:spotfinder/Screens/activity_detail.dart';
 import 'package:spotfinder/Screens/home_page.dart';
-import 'package:spotfinder/Screens/new_activity.dart'; // Importa la nueva pantalla
+import 'package:spotfinder/Screens/new_activity.dart';
 import 'package:get/get.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Widgets/activity_card.dart';
@@ -14,15 +11,16 @@ import 'package:spotfinder/Resources/pallete.dart';
 late ActivityService activityService;
 
 class ActivityListPage extends StatefulWidget {
-  const ActivityListPage({Key? key,}) : super(key: key);
+  const ActivityListPage({Key? key}) : super(key: key);
 
   @override
-  _ActivityListPage createState() => _ActivityListPage();
+  _ActivityListPageState createState() => _ActivityListPageState();
 }
 
-class _ActivityListPage extends State<ActivityListPage> {
-  late List<Activity> lista_activities;
+class _ActivityListPageState extends State<ActivityListPage> {
+  late List<Activity> listaActivities;
   bool isLoading = true;
+  double selectedDistance = 5.0; // Distancia inicial seleccionada
 
   @override
   void initState() {
@@ -32,8 +30,13 @@ class _ActivityListPage extends State<ActivityListPage> {
   }
 
   void getData() async {
+    setState(() {
+      isLoading =
+          true; // Mostrar indicador de carga mientras se obtienen los datos
+    });
     try {
-      lista_activities = await activityService.getData();
+      listaActivities = await activityService
+          .getData(selectedDistance); // Filtrar por distancia
       setState(() {
         isLoading = false;
       });
@@ -49,42 +52,110 @@ class _ActivityListPage extends State<ActivityListPage> {
     }
   }
 
+  void _onDistanceChanged(double? newDistance) {
+    if (newDistance != null) {
+      setState(() {
+        selectedDistance = newDistance;
+        getData();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     } else {
       return Scaffold(
         appBar: AppBar(
-        title: const Text(
-          'Your feed',
-          style: TextStyle(
-            color: Pallete.backgroundColor,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+          leading: IconButton(
+            icon: const Icon(
+              Icons
+                  .arrow_back, // Puedes cambiar este icono por otro si lo deseas
+              color:
+                  Pallete.backgroundColor, // Ajusta el color a tu preferencia
+            ),
+            onPressed: () {
+              Get.to(HomePage()); // Acción personalizada para el botón
+            },
           ),
-        ),
-        backgroundColor: Colors.transparent,
-      ),
-        body: ListView.builder(
-          itemBuilder: (BuildContext context, int index) {
-            return Card(
-              color: Pallete.backgroundColor,
-              child: InkWell(
-                onTap: () {
-                  Get.to(() => ActivityDetail(lista_activities[index], onUpdate: getData));
-                },
-                child: ActivityCard(lista_activities[index]),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Your feed',
+                style: TextStyle(
+                  color: Pallete.backgroundColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            );
-          },
-          itemCount: lista_activities.length,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<double>(
+                    value: selectedDistance,
+                    onChanged: _onDistanceChanged,
+                    dropdownColor: Colors.black,
+                    style: const TextStyle(color: Colors.white),
+                    items: <double>[5.0, 10.0, 20.0, 50.0, 100.0]
+                        .map((double value) {
+                      return DropdownMenuItem<double>(
+                        value: value,
+                        child: Text('Hasta $value km',
+                            style: const TextStyle(color: Colors.white)),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.transparent,
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemBuilder: (BuildContext context, int index) {
+                  return Card(
+                    color: Pallete.backgroundColor,
+                    child: InkWell(
+                      onTap: () {
+                        Get.toNamed(
+                          '/activity/${listaActivities[index].id}',
+                          arguments: {'onUpdate': getData},
+                        );
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ListTile(
+                            title: Text(listaActivities[index].name),
+                            subtitle: Text(
+                              'Position: ${listaActivities[index].location?.latitude ?? 'Unknown'}, ${listaActivities[index].location?.longitude ?? 'Unknown'}',
+                            ),
+                          ),
+                          // Otros detalles de la actividad...
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                itemCount: listaActivities.length,
+              ),
+            ),
+          ],
         ),
         floatingActionButton: Tooltip(
           message: 'Add new activity',
           child: FloatingActionButton(
             backgroundColor: Pallete.backgroundColor,
-            child: Icon(Icons.add),
+            child: const Icon(Icons.add),
             onPressed: () {
               Get.to(() => NewActivityScreen(onUpdate: getData));
             },

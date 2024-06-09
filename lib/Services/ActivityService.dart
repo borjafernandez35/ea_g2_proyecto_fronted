@@ -2,6 +2,7 @@ import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 
+
 class ActivityService {
   final String baseUrl = "http://127.0.0.1:3000";
   final Dio dio = Dio();
@@ -18,7 +19,7 @@ class ActivityService {
     return box.read('id');
   }
 
-  Future<List<Activity>> getData() async {
+  Future<List<Activity>> getData(double selectedDistance) async {
     print('getData');
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {

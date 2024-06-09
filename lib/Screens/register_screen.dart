@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:spotfinder/Models/UserModel.dart';
-import 'package:spotfinder/Screens/login_screen.dart';
 import 'package:spotfinder/Utils/phone_utils.dart';
 import 'package:spotfinder/Widgets/button_sign_up.dart';
 import 'package:spotfinder/Widgets/paramTextBox_sign_up.dart';
@@ -10,6 +9,7 @@ import 'package:spotfinder/Services/UserService.dart';
 import 'package:get/get.dart';
 
 late UserService userService;
+late String? id;
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -28,6 +28,7 @@ class _RegisterScreen extends State<RegisterScreen> {
   void initState() {
     super.initState();
     userService = UserService();
+    id = Get.arguments?['id'];
   }
 
   void _togglePasswordVisibility() {
@@ -226,7 +227,7 @@ class RegisterController extends GetxController {
         );
         userService.createUser(newUser).then((statusCode) {
           print('Usuario creado exitosamente');
-          Get.to(() => const LoginScreen());
+          Get.toNamed('/login', arguments: {'id' : id});
         }).catchError((error) {
           Get.snackbar(
             'Error',

@@ -23,13 +23,18 @@ dependencies:
   image_picker_for_web: ^2.1.7
   flutter_map: ^6.1.0
   latlong2: ^0.9.1
-
+  geolocator: ^7.0.3
 
   flutter_rating_bar: ^4.0.1
   intl: ^0.19.0
+
   google_sign_in: ^6.2.1
   google_identity_services_web: ^0.3.1+1
   google_sign_in_web: ^0.12.4
+  fluro: ^2.0.5
+  flutter_routing: ^0.1.11
+  share_plus: ^9.0.0
+  geocoding: ^3.0.0
 
 
 dev_dependencies:

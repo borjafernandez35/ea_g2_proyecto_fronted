@@ -1,7 +1,9 @@
+import 'package:latlong2/latlong.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:dio/dio.dart'; // Usa un prefijo 'Dio' para importar la clase Response desde Dio
 import 'package:get_storage/get_storage.dart';
+import 'package:geolocator/geolocator.dart';
 
 class UserService {
   final String baseUrl = "http://127.0.0.1:3000"; // URL de tu backend
@@ -93,6 +95,50 @@ class UserService {
     statusCode = response.statusCode;
     print('Status code: $statusCode');
 
+    if (statusCode == 201) {
+      // Si el usuario se crea correctamente, retornamos el código 201
+      print('201');
+      return 201;
+    } else if (statusCode == 400) {
+      // Si hay campos faltantes, retornamos el código 400
+      print('400');
+
+      return 400;
+    } else if (statusCode == 500) {
+      // Si hay un error interno del servidor, retornamos el código 500
+      print('500');
+
+      return 500;
+    } else {
+      // Otro caso no manejado
+      print('-1');
+
+      return -1;
+    }
+  }
+
+  Future<int> updateLocation(Position? location) async {
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        // Obtener el token guardado
+        final token = getToken();
+
+        if (token != null) {
+          options.headers['x-access-token'] = token;
+        }
+        return handler.next(options);
+      },
+    ));
+
+    final json ={
+      'location': {
+        'type': 'Point',
+        'coordinates': [location!.longitude, location.latitude],
+      }
+    };
+    Response response =await dio.put('$baseUrl/user/${getId()}', data: json);
+    data = response.data.toString();
+    statusCode = response.statusCode;
     if (statusCode == 201) {
       // Si el usuario se crea correctamente, retornamos el código 201
       print('201');
@@ -262,4 +308,53 @@ class UserService {
       throw e; // Relanzar el error para que el llamador pueda manejarlo
     }
   }
+
+  Future<int> updateUserLocation(String userId, double latitude, double longitude) async {
+  dio.interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) async {
+      final token = getToken();
+      if (token != null) {
+        options.headers['x-access-token'] = token;
+      }
+      return handler.next(options);
+    },
+  ));
+
+  final data = {
+    'latitude': latitude,
+    'longitude': longitude,
+  };
+
+  try {
+    Response response = await dio.put('$baseUrl/user/location/$userId', data: data);
+    statusCode = response.statusCode;
+    return statusCode;
+  } catch (e) {
+    print('Error updating user location: $e');
+    return -1;
+  }
+}
+
+Future<User> getCurrentUser() async {
+  dio.interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) async {
+      final token = getToken();
+      if (token != null) {
+        options.headers['x-access-token'] = token;
+      }
+      return handler.next(options);
+    },
+  ));
+
+  final id = getId();
+  try {
+    Response res = await dio.get('$baseUrl/user/$id');
+    User user = User.fromJson(res.data['data']);
+    return user;
+  } catch (e) {
+    print('Error fetching user data: $e');
+    throw e;
+  }
+}
+
 }

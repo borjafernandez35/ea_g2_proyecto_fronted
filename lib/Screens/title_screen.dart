@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Widgets/button_sign_in.dart';
 import 'package:spotfinder/Screens/login_screen.dart';
@@ -136,6 +137,7 @@ class _TitleScreenState extends State<TitleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final String? id = Get.arguments?['id'];
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -162,10 +164,7 @@ class _TitleScreenState extends State<TitleScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     // Acción al presionar el botón
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()), // Navega a la pantalla de inicio de sesión
-                    );
+                    Get.toNamed('/login',  arguments: {'id' : id});
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Pallete
@@ -218,10 +217,7 @@ class _TitleScreenState extends State<TitleScreen> {
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                          );
+                           Get.toNamed('/register',  arguments: {'id' : id});
                         },
                     ),
                   ],

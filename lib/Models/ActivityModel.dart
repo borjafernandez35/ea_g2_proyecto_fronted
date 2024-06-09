@@ -1,3 +1,6 @@
+import 'package:latlong2/latlong.dart';
+
+import 'dart:html';
 
 class Activity {
   final String? id;
@@ -6,11 +9,10 @@ class Activity {
   final double? rate;
   final String idUser;
   final DateTime date; // Cambiado el tipo de dato a DateTime
-  final double latitude;
-  final double longitude;
   final List<String>? listUsers;
   final List<String>? comments;
-  final String? imageUrl; // Asegurado que imageUrl sea de tipo String
+  final String? imageUrl;
+  final LatLng? location;
 
   Activity({
     this.id,
@@ -19,19 +21,29 @@ class Activity {
     this.rate,
     required this.idUser,
     required this.date,
-    required this.latitude,
-    required this.longitude,
     this.listUsers,
     this.comments,
     this.imageUrl,
+    this.location,
   });
 
-    Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson() {
     return {
-      'owner': idUser,
+      '_id': id,
       'name': name,
       'description': description,
+      'rate': rate ?? 0,
+      'owner': idUser,
       'date': date.toIso8601String(),
+      'listUsers': listUsers ?? [],
+      'comments': comments ?? [],
+      'active': true,
+      'location': location != null
+          ? {
+              'coordinates': [location!.longitude, location!.latitude],
+              'type': 'Point',
+            }
+          : null,
     };
   }
 
@@ -43,11 +55,41 @@ class Activity {
       rate: json['rate'],
       idUser: json['owner'],
       date: DateTime.parse(json['date']), // Parsear la fecha desde String a DateTime
-      latitude: json['latitude'] as double,
-      longitude: json['longitude'] as double,
       listUsers: (json['listUsers'] as List<dynamic>?)?.cast<String>(),
       comments: (json['comments'] as List<dynamic>?)?.cast<String>(),
-      imageUrl: json['image'], // Asignar imageUrl desde JSON si está disponible
+      imageUrl: json['image'],
+      location: json['location'] != null && json['location']['coordinates'] != null
+          ? LatLng.fromCoordinates(json['location']['coordinates'])
+          : null,
     );
   }
 }
+
+class LatLng {
+  final double latitude;
+  final double longitude;
+
+  LatLng({required this.latitude, required this.longitude});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'latitude': latitude,
+      'longitude': longitude,
+    };
+  }
+
+  factory LatLng.fromJson(Map<String, dynamic> json) {
+    return LatLng(
+      latitude: json['latitude'],
+      longitude: json['longitude'],
+    );
+  }
+
+  factory LatLng.fromCoordinates(List<dynamic> coordinates) {
+    return LatLng(
+      latitude: coordinates[1],
+      longitude: coordinates[0],
+    );
+  }
+}
+
