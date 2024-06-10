@@ -1,19 +1,26 @@
-import 'package:latlong2/latlong.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:dio/dio.dart'; // Usa un prefijo 'Dio' para importar la clase Response desde Dio
 import 'package:get_storage/get_storage.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:spotfinder/Services/TokenService.dart';
 
 class UserService {
   final String baseUrl = "http://127.0.0.1:3000"; // URL de tu backend
-  final Dio dio = Dio(); // Usa el prefijo 'Dio' para referenciar la clase Dio
+  final Dio dio = DioSingleton.instance;
   var statusCode;
   var data;
+  final TokenRefreshService tokenRefreshService = TokenRefreshService(); 
 
-  void saveToken(String token) {
+  UserService(){
+        dio.interceptors.add(tokenRefreshService.dio.interceptors.first);
+  }
+
+
+  void saveToken(String token, String refreshToken) {
     final box = GetStorage();
     box.write('token', token);
+    box.write('refresh_token', refreshToken);
   }
 
   String? getToken() {
@@ -34,6 +41,7 @@ class UserService {
   void logout() {
     final box = GetStorage();
     box.remove('token');
+    box.remove('refresh_token');
     box.remove('id');
   }
 
@@ -75,19 +83,7 @@ class UserService {
   }
 
   Future<int> updateUser(User user) async {
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        // Obtener el token guardado
-        final token = getToken();
-
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
-
-    print(user.toJson());
+    
     Response response =await dio.put('$baseUrl/user/${user.id}', data: user.toJson());
 
     data = response.data.toString();
@@ -118,17 +114,7 @@ class UserService {
   }
 
   Future<int> updateLocation(Position? location) async {
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        // Obtener el token guardado
-        final token = getToken();
-
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
+   
 
     final json ={
       'location': {
@@ -162,18 +148,6 @@ class UserService {
   }
 
   Future<User> getUser() async {
-
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = getToken();
-
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
-
     final id = getId();
     try {
       Response res = await dio.get('$baseUrl/user/$id');
@@ -187,16 +161,7 @@ class UserService {
   }
   Future<User> getAnotherUser(String? id) async {
 
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = getToken();
-
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
+    
     try {
       Response res = await dio.get('$baseUrl/user/$id');
       User user = User.fromJson(res.data['data']);
@@ -209,23 +174,7 @@ class UserService {
   }
 
   Future<List<Activity>> getData() async {
-    print('getData');
-    // Interceptor para agregar el token a la cabecera 'x-access-token'
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        // Obtener el token guardado
-        final token = getToken();
-
-        print(token);
-
-        // Si el token está disponible, agregarlo a la cabecera 'x-access-token'
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
-
+   
     try {
       var res = await dio.get('$baseUrl/place');
       List<dynamic> responseData =
@@ -257,8 +206,9 @@ class UserService {
     if (statusCode == 201) {
       // Si el usuario se crea correctamente, retornamos el código 201
       var token = response.data['token'];
+      var refresh_token = response.data['refreshToken'];
       var id = response.data['id'];
-      saveToken(token);
+      saveToken(token, refresh_token);
       saveId(id);
       print('200');
       return 201;
@@ -286,17 +236,6 @@ class UserService {
 
   Future<void> deleteUser() async {
 
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = getToken();
-        print(token);
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
-
     final id = getId();
     try {
       Response response = await dio.put('$baseUrl/user/delete/$id');
@@ -310,15 +249,7 @@ class UserService {
   }
 
   Future<int> updateUserLocation(String userId, double latitude, double longitude) async {
-  dio.interceptors.add(InterceptorsWrapper(
-    onRequest: (options, handler) async {
-      final token = getToken();
-      if (token != null) {
-        options.headers['x-access-token'] = token;
-      }
-      return handler.next(options);
-    },
-  ));
+  
 
   final data = {
     'latitude': latitude,
@@ -336,15 +267,7 @@ class UserService {
 }
 
 Future<User> getCurrentUser() async {
-  dio.interceptors.add(InterceptorsWrapper(
-    onRequest: (options, handler) async {
-      final token = getToken();
-      if (token != null) {
-        options.headers['x-access-token'] = token;
-      }
-      return handler.next(options);
-    },
-  ));
+  
 
   final id = getId();
   try {

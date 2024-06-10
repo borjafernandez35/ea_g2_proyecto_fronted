@@ -1,13 +1,19 @@
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:spotfinder/Services/TokenService.dart';
 
 
 class ActivityService {
   final String baseUrl = "http://127.0.0.1:3000";
-  final Dio dio = Dio();
+  final Dio dio = DioSingleton.instance;
   var statusCode;
   var data;
+  final TokenRefreshService tokenRefreshService = TokenRefreshService(); 
+
+  ActivityService() {
+    dio.interceptors.add(tokenRefreshService.dio.interceptors.first);
+  }
 
   String? getToken() {
     final box = GetStorage();
@@ -21,16 +27,7 @@ class ActivityService {
 
   Future<List<Activity>> getData(double selectedDistance) async {
     print('getData');
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = getToken();
-        print(token);
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
+    
 
     try {
       var res = await dio.get('$baseUrl/activity/1/10');
@@ -44,16 +41,7 @@ class ActivityService {
   }
 
   Future<int> joinActivity(String? aId) async {
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = getToken();
-        print(token);
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
+    
 
     try {
       final id = getId();
@@ -70,15 +58,7 @@ class ActivityService {
   }
 
   Future<Activity> getActivity(String id) async {
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = getToken();
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
+    
 
     try {
       Response res = await dio.get('$baseUrl/activity/$id');
@@ -91,15 +71,7 @@ class ActivityService {
   }
 
   Future<List<Activity>> getUserActivities() async {
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = getToken();
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
+    
     try {
       final id = getId();
       Response res = await dio.get('$baseUrl/activities/$id');
@@ -113,15 +85,7 @@ class ActivityService {
   }
 
   Future<void> addActivity(Activity activity) async {
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = getToken();
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
+   
     try {
       print (activity.toJson());
       var res = await dio.post('$baseUrl/activity', data: activity.toJson());
@@ -134,15 +98,7 @@ class ActivityService {
   }
 
   Future<void> editActivity(Activity activity, String? id) async {
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = getToken();
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
+   
     try {
       var res = await dio.put('$baseUrl/activity/$id', data: activity.toJson());
       statusCode = res.statusCode;
@@ -154,15 +110,7 @@ class ActivityService {
   }
 
   Future<void> deleteActivity(String? id) async {
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = getToken();
-        if (token != null) {
-          options.headers['x-access-token'] = token;
-        }
-        return handler.next(options);
-      },
-    ));
+  
     try {
       print("deleting activity");
       var res = await dio.put('$baseUrl/activity/delete/$id');

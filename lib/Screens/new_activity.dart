@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,8 +13,8 @@ import 'package:spotfinder/Widgets/button_sign_up.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as ltld;
-import 'package:geocoding/geocoding.dart';
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class NewActivityScreen extends StatefulWidget {
   final VoidCallback onUpdate;
@@ -29,6 +30,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+  final MapController _mapController = MapController();
 
   File? _image;
   DateTime _selectedDate = DateTime.now();
@@ -124,19 +126,74 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     }
   }
 
-  Future<void> _searchLocation(String address) async {
-  try {
-    List<Location> locations = await locationFromAddress(address);
-    if (locations.isNotEmpty) {
-      Location location = locations.first;
-      print('Coordenadas encontradas: ${location.latitude}, ${location.longitude}');
-    } else {
-      print('No se encontraron coordenadas para la dirección: $address');
+  Future<List<double>?> getCoordinatesFromAddress(String address) async {
+    final encodedAddress = Uri.encodeComponent(address);
+    final url =
+        'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        if (data.isNotEmpty) {
+          final firstResult = data.first;
+          final double lat = double.parse(firstResult['lat']);
+          final double lon = double.parse(firstResult['lon']);
+          setState(() {
+            _latitude = lat;
+            _longitude = lon;
+            _locationController.text = '$lat,$lon';
+            _mapController.move(ltld.LatLng(_latitude, _longitude), 12);
+          });
+          return [lat, lon];
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error al obtener las coordenadas desde la dirección: $e');
+      return null;
     }
-  } catch (e) {
-    print('Error al obtener las coordenadas: $e');
   }
-}
+
+  Future<String?> getAddressFromCoordinates(
+      double latitude, double longitude) async {
+    final url =
+        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        final address = data['address'];
+        if (address != null) {
+          final road = address['road'] ?? '';
+          final houseNumber = address['house_number'] ?? '';
+          final postcode = address['postcode'] ?? '';
+          final city =address['city'] ?? address['town'] ?? address['village'] ?? '';
+          final country = address['country'] ?? '';
+
+          List<String> parts = [];
+
+          if (road.isNotEmpty) parts.add(road);
+          if (houseNumber.isNotEmpty) parts.add(houseNumber);
+          if (postcode.isNotEmpty) parts.add(postcode);
+          if (city.isNotEmpty) parts.add(city);
+          if (country.isNotEmpty) parts.add(country);
+
+          String formattedAddress = parts.join(', ');
+          setState(() {
+            _searchController.text = formattedAddress;
+          });
+          return formattedAddress;
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error al obtener la dirección desde las coordenadas: $e');
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -382,6 +439,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                           height: 300,
                           width: 300,
                           child: FlutterMap(
+                            mapController: _mapController,
                             options: MapOptions(
                               initialCenter: ltld.LatLng(_latitude, _longitude),
                               initialZoom: 12,
@@ -394,6 +452,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                                   _locationController.text =
                                       '$_latitude,$_longitude';
                                 });
+                                getAddressFromCoordinates(
+                                    _latitude, _longitude);
                               },
                             ),
                             children: [
@@ -430,19 +490,21 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                                 Expanded(
                                   child: TextFormField(
                                     controller: _searchController,
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
                                       hintText: 'Search...',
                                       border: InputBorder.none,
                                     ),
+                                    style: const TextStyle(color: Colors.black),
                                   ),
                                 ),
                                 IconButton(
-                                  icon: Icon(
+                                  icon: const Icon(
                                     Icons.search,
                                     color: Colors.black,
                                   ),
                                   onPressed: () {
-                                    _searchLocation(_searchController.text);
+                                    getCoordinatesFromAddress(
+                                        _searchController.text);
                                   },
                                 ),
                               ],

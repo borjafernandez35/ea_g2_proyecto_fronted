@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -5,7 +7,6 @@ import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/activity_detail.dart';
 import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Screens/login_screen.dart';
-import 'package:spotfinder/Screens/profile_screen.dart';
 import 'package:spotfinder/Screens/register_screen.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
@@ -28,6 +29,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (token != null) {
+        if (Get.currentRoute != '/home' && !Get.currentRoute.contains('activity')) {
+          Get.offAllNamed('/home');
+        }
+      } else {
+        if (Get.currentRoute != '/') {
+          Get.offAllNamed('/');
+        }
+      }
+    });
     return GetMaterialApp(
       title: 'SpotFinder',
       theme: ThemeData.dark().copyWith(
@@ -44,9 +56,7 @@ class MyApp extends StatelessWidget {
           transition: Transition.fade,
         ),
       ],
-      initialRoute: token != null ? '/home' : '/',
-
-      
+      initialRoute: token != null ? '/home' : '/', 
     );
   }
 }
