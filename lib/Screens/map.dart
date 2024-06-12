@@ -10,10 +10,15 @@ import 'package:line_icons/line_icons.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:get/get.dart';
 import 'package:spotfinder/Services/UserService.dart';
+
 late UserService userService;
 late ActivityService activityService;
+
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  final ltlg.LatLng defaultLocation;
+
+  const MapScreen({Key? key, required this.defaultLocation}) : super(key: key);
+
   @override
   // ignore: library_private_types_in_public_api
   _MapScreen createState() => _MapScreen();
@@ -24,25 +29,55 @@ class _MapScreen extends State<MapScreen> {
   late List<Marker> markers = [];
   bool isLoading = true;
   Position? position;
+  late ltlg.LatLng initialLocation;
+
   @override
   void initState() {
     super.initState();
     activityService = ActivityService();
-    userService =UserService();
+    userService = UserService();
     getData();
   }
 
   void getData() async {
     try {
+      bool serviceEnabled;
+      LocationPermission permission;
+
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if(!serviceEnabled) {
+        Get.snackbar('Error', 'Los servicios de ubicación están dehabilitados');
+        useDefaultLocation();
+        return;
+      }
+
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          Get.snackbar('Error', 'Permiso de ubicación denegado');
+          useDefaultLocation();
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        Get.snackbar('Error', 'Los permisos de ubicación están permanentemente denegados.');
+        useDefaultLocation();
+        return;
+      }
+
       position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
       await userService.updateLocation(position);
+
+      initialLocation = ltlg.LatLng(position!.latitude, position!.longitude);
       double distance = 10.0; // Distancia por defecto
       lista_activities = await activityService.getData(distance);
       markers.add(
         Marker(
-          point: ltlg.LatLng(position!.latitude, position!.longitude),
+          point: initialLocation,
           width: 60,
           height: 60,
           alignment: Alignment.centerLeft,
@@ -145,6 +180,26 @@ class _MapScreen extends State<MapScreen> {
     }
   }
 
+  void useDefaultLocation() {
+    setState(() {
+      initialLocation = widget.defaultLocation;
+      markers.add(
+        Marker(
+          point: initialLocation,
+          width: 60,
+          height: 60,
+          alignment: Alignment.centerLeft,
+          child: const Icon(
+            Icons.circle,
+            size:20,
+            color: Pallete.salmonColor,
+          ),
+        ),
+      );
+      isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -154,7 +209,7 @@ class _MapScreen extends State<MapScreen> {
         children: [
           FlutterMap(
             options: MapOptions(
-              initialCenter: ltlg.LatLng(position!.latitude, position!.longitude),
+              initialCenter: initialLocation,
               initialZoom: 12,
               interactionOptions: const InteractionOptions(flags: ~InteractiveFlag.doubleTapZoom),
             ),

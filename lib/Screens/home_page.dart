@@ -7,23 +7,23 @@ import 'package:get/get.dart';
 import 'package:line_icons/line_icons.dart';
 import 'profile_screen.dart';
 import 'chatScreen.dart';
-
+import 'package:latlong2/latlong.dart' as ltlg;
 
 class HomePage extends StatefulWidget {
-  // ignore: prefer_const_constructors_in_immutables
   HomePage({super.key});
 
   @override
   State<HomePage> createState() => _nameState();
 }
 
-// ignore: camel_case_types
 class _nameState extends State<HomePage> {
   static HomeController homeController = Get.put(HomeController());
   int _selectedIndex = 0;
 
+  static final ltlg.LatLng defaultLocation = ltlg.LatLng(41.27552212202214, 1.9863014220734023);
+
   static final List<Widget> _widgetOptions = <Widget>[
-    const MapScreen(),
+    MapScreen(defaultLocation: defaultLocation),
     const ActivityListPage(),
     const ChatScreen(),
     const ProfileScreen()
@@ -31,7 +31,6 @@ class _nameState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -88,7 +87,6 @@ class _nameState extends State<HomePage> {
                   _selectedIndex = index;
                 });
                 if (index == 2) {
-                  // Si se selecciona la pestaña de chats, cambiar a la pantalla de chat
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const ChatScreen()),
