@@ -32,7 +32,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   final TextEditingController _searchController = TextEditingController();
   final MapController _mapController = MapController();
 
-  File? _image;
+  String? _image;
+  Uint8List? _imageBytes;
   DateTime _selectedDate = DateTime.now();
   String _userId = '';
   double _latitude = 0;
@@ -54,16 +55,51 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   }
 
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+    final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
 
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
+    if (pickedImage != null) {
+      final bytes = await pickedImage.readAsBytes();
+      setState(() {
+        _imageBytes = bytes;
+        _image= 'data:image/png;base64,' + base64Encode(bytes);
+      });
+    } else {
+      print('No se seleccionó ninguna imagen.');
+    }
+  }
+
+  Future<String?> _uploadImage() async {
+    if (_image == null) {
+      print('No hay imagen para subir.');
+      return null;
+    }
+
+    final url =
+        Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
+    final request = http.MultipartRequest('POST', url)
+      ..fields['upload_preset'] = '<typvcah6>'
+      ..files.add(http.MultipartFile.fromBytes(
+        'file',
+        _imageBytes!,
+      ));
+
+    try {
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        final responseData = await http.Response.fromStream(response);
+        final jsonData = jsonDecode(responseData.body);
+        final imageUrl = jsonData['secure_url'];
+
+        return imageUrl;
       } else {
-        print('No image selected.');
+        print('Error al subir la imagen a Cloudinary: ${response.statusCode}');
+        return null;
       }
-    });
+    } catch (e) {
+      print('Error al enviar la solicitud: $e');
+      return null;
+    }
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -96,23 +132,12 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   }
 
   Future<void> _submitForm() async {
-    print("djkf");
-    Activity newActivity = Activity(
-      name: _nameController.text,
-      description: _descriptionController.text,
-      imageUrl: _image?.path,
-      date: _selectedDate,
-      idUser: _userId,
-      location: LatLng(latitude: _latitude, longitude: _longitude),
-    );
-    print(newActivity.location);
     if (_formKey.currentState!.validate()) {
-      print('Formulario válido. Enviando actividad...');
       print('Ubicación obtenida: $_latitude, $_longitude');
       Activity newActivity = Activity(
         name: _nameController.text,
         description: _descriptionController.text,
-        imageUrl: _image?.path,
+        imageUrl: await _uploadImage(),
         date: _selectedDate,
         idUser: _userId,
         location: LatLng(latitude: _latitude, longitude: _longitude),
@@ -170,7 +195,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
           final road = address['road'] ?? '';
           final houseNumber = address['house_number'] ?? '';
           final postcode = address['postcode'] ?? '';
-          final city =address['city'] ?? address['town'] ?? address['village'] ?? '';
+          final city =
+              address['city'] ?? address['town'] ?? address['village'] ?? '';
           final country = address['country'] ?? '';
 
           List<String> parts = [];
@@ -235,7 +261,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(color: Colors.white),
                                     ),
-                                    child: const Center(
+                                    child: Center(
                                       child: Text(
                                         'Tap to select an image\nAccepted formats: JPG, PNG',
                                         textAlign: TextAlign.center,
@@ -243,7 +269,11 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                                       ),
                                     ),
                                   )
-                                : Image.file(_image!, height: 150),
+                                : Image.memory(
+                                    base64Decode(_image!.split(',').last),
+                                    height: 150,
+                                    fit: BoxFit.cover,
+                                  ),
                           ],
                         ),
                       ),

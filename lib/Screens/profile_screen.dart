@@ -164,8 +164,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                           left: 140, // Ajusta la posición horizontal del nombre
                           top: 27,
                           child: Align(
-                            alignment: Alignment
-                                .centerLeft, // Alinea el texto a la izquierda
+                            alignment: Alignment.centerLeft, // Alinea el texto a la izquierda
                             child: Text(
                               user!.name,
                               style: const TextStyle(
@@ -179,7 +178,6 @@ class _ProfileScreen extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-
                   // Botones de navegación
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
@@ -188,14 +186,14 @@ class _ProfileScreen extends State<ProfileScreen> {
                       children: [
                         TextButton(
                           onPressed: () {
-                            Get.to(() => UserDetailsPage(user!,onUpdate: getData));
+                            Get.to(() =>
+                                UserDetailsPage(user!, onUpdate: getData));
                           },
                           child: const Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'My profile',
-                              style: TextStyle(
-                                  color: Pallete.primaryColor), 
+                              style: TextStyle(color: Pallete.primaryColor),
                             ),
                           ),
                         ),
@@ -215,7 +213,8 @@ class _ProfileScreen extends State<ProfileScreen> {
                         SizedBox(height: 20.0),
                         TextButton(
                           onPressed: () {
-                            Get.to(() => MyCommentsScreen(user!, onUpdate: getData));
+                            Get.to(() =>
+                                MyCommentsScreen(user!, onUpdate: getData));
                           },
                           child: const Align(
                             alignment: Alignment.centerLeft,
@@ -235,7 +234,8 @@ class _ProfileScreen extends State<ProfileScreen> {
                             child: Text(
                               'Preferences',
                               style: TextStyle(
-                                  color: Pallete.primaryColor), // Texto en negro
+                                  color:
+                                      Pallete.primaryColor), // Texto en negro
                             ),
                           ),
                         ),
@@ -276,31 +276,29 @@ class _ProfileScreen extends State<ProfileScreen> {
                 ],
               ),
 
-              // Botón en la parte inferior
               Padding(
                 padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
                 child: TextButton(
                   onPressed: () {
                     // Acción para el nuevo botón en la parte inferior
+                    Get.toNamed('/settings');
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.all(12.0), // Padding del botón
                   ),
-                  child: const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.settings, // Icono de configuración
-                          color: Pallete.backgroundColor,
-                        ),
-                        SizedBox(width: 8), 
-                        Text(
-                          'Settings',
-                          style: TextStyle(color: Pallete.backgroundColor),
-                        ),
-                      ],
-                    ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.settings, // Icono de configuración
+                        color: Pallete.backgroundColor,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Settings',
+                        style: TextStyle(color: Pallete.backgroundColor),
+                        textAlign: TextAlign.left,
+                      ),
+                    ],
                   ),
                 ),
               ),
