@@ -78,7 +78,7 @@ class MyApp extends StatelessWidget {
         return Stack(
           children: [
             child!,
-            if (tdah) TdahHelper(), // Mostrar TdahHelper si está activado en la configuración
+            if (tdah) TdahHelper(), 
           ],
         );
       },

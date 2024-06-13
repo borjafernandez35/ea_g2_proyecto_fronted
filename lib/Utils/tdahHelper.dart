@@ -33,16 +33,8 @@ class _TdahHelperState extends State<TdahHelper> {
               color: Colors.black.withOpacity(0.5),
             ),
           ),
-Positioned(
-            left: 0,
-            top: _position.dy ,
-            right: 0,
-            height: 50,
-            child: Container(
-              color: Colors.transparent,
-              child: AbsorbPointer(absorbing: true,),
-            ),
-          ),          Positioned(
+          // Capa inferior oscura (abajo del cursor)
+          Positioned(
             left: 0,
             top: _position.dy + 30,
             right: 0,

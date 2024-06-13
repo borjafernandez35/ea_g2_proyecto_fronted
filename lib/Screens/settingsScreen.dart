@@ -18,7 +18,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _isDyslexicFontEnabled = box.read('font') == 'Dyslexia';
-    _highlightMouseZone = box.read('tdah');
+    _highlightMouseZone = box.read('tdah') ?? false;
     _selectedTheme = box.read('theme');
   }
 

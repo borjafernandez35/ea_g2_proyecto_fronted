@@ -77,7 +77,9 @@ class _MapScreen extends State<MapScreen> {
 
       initialLocation = ltlg.LatLng(position!.latitude, position!.longitude);
       double distance = 10.0; // Distancia por defecto
-      lista_activities = await activityService.getData(distance);
+      int limit = 10; // Puedes ajustar este límite según tus necesidades
+      lista_activities = await getAllActivities(distance, limit); 
+
       markers.add(Marker(
         point: initialLocation,
         width: 60,
@@ -195,6 +197,23 @@ class _MapScreen extends State<MapScreen> {
       }
     }
   }
+
+  Future<List<Activity>> getAllActivities(double distance, int limit) async {
+    int page = 1;
+    bool hasMore = true;
+    List<Activity> allActivities = [];
+
+    while (hasMore) {
+      List<Activity> activities = await activityService.getData(distance, page, limit);
+      allActivities.addAll(activities);
+
+      hasMore = activities.length == limit;
+      page++;
+    }
+
+    return allActivities;
+  }
+
 
   void useDefaultLocation() {
     setState(() {

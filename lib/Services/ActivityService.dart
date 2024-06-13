@@ -25,12 +25,12 @@ class ActivityService {
     return box.read('id');
   }
 
-  Future<List<Activity>> getData(double selectedDistance) async {
+  Future<List<Activity>> getData(double selectedDistance, int page, int limit) async {
     print('getData');
     
 
     try {
-      var res = await dio.get('$baseUrl/activity/1/10');
+      var res = await dio.get('$baseUrl/activity/$page/$limit');
       final List<dynamic> responseData = res.data['activities'];
       List<Activity> activities = responseData.map((data) => Activity.fromJson(data)).toList();
       return activities;

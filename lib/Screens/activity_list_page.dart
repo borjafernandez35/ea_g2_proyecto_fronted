@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Screens/new_activity.dart';
@@ -24,28 +23,42 @@ class ActivityListPage extends StatefulWidget {
 class _ActivityListPageState extends State<ActivityListPage> {
   late List<Activity> listaActivities;
   bool isLoading = true;
+  bool hasMore = true; 
+  int currentPage = 1; 
   double selectedDistance = 5.0; // Distancia inicial seleccionada
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     activityService = ActivityService();
+    listaActivities = [];
     getData();
-    final box = GetStorage();
-    bool tdah = box.read('tdah') ?? false;
 
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && hasMore) {
+        currentPage++;
+        getData(page: currentPage);
+      }
+    });
   }
 
-  void getData() async {
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void getData({int page = 1, int limit = 10}) async {
     setState(() {
-      isLoading =
-          true; // Mostrar indicador de carga mientras se obtienen los datos
+      isLoading = true;
     });
     try {
-      listaActivities = await activityService
-          .getData(selectedDistance); // Filtrar por distancia
+      List<Activity> newActivities = await activityService.getData(selectedDistance, page, limit); 
       setState(() {
+        listaActivities.addAll(newActivities);
         isLoading = false;
+        hasMore = newActivities.length == limit; 
       });
     } catch (error) {
       Get.snackbar(
@@ -68,8 +81,10 @@ class _ActivityListPageState extends State<ActivityListPage> {
     }
   }
 
-  Future<String?> _getAddressFromCoordinates(double latitude, double longitude) async {
-    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+  Future<String?> _getAddressFromCoordinates(
+      double latitude, double longitude) async {
+    final url =
+        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -81,7 +96,8 @@ class _ActivityListPageState extends State<ActivityListPage> {
           final road = address['road'] ?? '';
           final houseNumber = address['house_number'] ?? '';
           final postcode = address['postcode'] ?? '';
-          final city =address['city'] ?? address['town'] ?? address['village'] ?? '';
+          final city =
+              address['city'] ?? address['town'] ?? address['village'] ?? '';
           final country = address['country'] ?? '';
 
           List<String> parts = [];
@@ -103,22 +119,20 @@ class _ActivityListPageState extends State<ActivityListPage> {
     }
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
-    if (isLoading) {
+    if (isLoading && listaActivities.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     } else {
       return Scaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(
-              Icons
-                  .arrow_back, // Puedes cambiar este icono por otro si lo deseas
-              color:
-                  Pallete.backgroundColor, // Ajusta el color a tu preferencia
+              Icons.arrow_back,
+              color:Pallete.backgroundColor, 
             ),
             onPressed: () {
-              Get.to(HomePage()); // Acción personalizada para el botón
+              Get.to(HomePage()); 
             },
           ),
           title: Row(
@@ -163,7 +177,13 @@ class _ActivityListPageState extends State<ActivityListPage> {
           children: [
             Expanded(
               child: ListView.builder(
+                controller: _scrollController, // Asignar el ScrollController
                 itemBuilder: (BuildContext context, int index) {
+                  if (index == listaActivities.length) {
+                    return isLoading
+                        ? Center(child: CircularProgressIndicator())
+                        : SizedBox(); // Mostrar un indicador de carga al final de la lista
+                  }
                   return Card(
                     color: Pallete.backgroundColor,
                     child: InkWell(
@@ -172,6 +192,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
                           '/activity/${listaActivities[index].id}',
                           arguments: {'onUpdate': getData},
                         );
+                        listaActivities=[];
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,7 +203,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
                     ),
                   );
                 },
-                itemCount: listaActivities.length,
+                itemCount: listaActivities.length + (hasMore ? 1 : 0), // Incrementar el count si hay más datos
               ),
             ),
           ],
@@ -194,6 +215,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
             child: const Icon(Icons.add),
             onPressed: () {
               Get.to(() => NewActivityScreen(onUpdate: getData));
+                    listaActivities=[];
             },
           ),
         ),

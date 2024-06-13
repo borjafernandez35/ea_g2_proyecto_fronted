@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -35,8 +34,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   Uint8List? _imageBytes;
   DateTime _selectedDate = DateTime.now();
   String _userId = '';
-  double _latitude = 0;
-  double _longitude = 0;
+  double _latitude = 41.27552212202214;
+  double _longitude = 1.9863014220734023;
   bool _locationLoaded = false;
 
   @override
@@ -116,24 +115,27 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   }
 
   Future<void> _selectLocation() async {
-    Position? position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-    if (position != null) {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
       setState(() {
-        _locationController.text = '${position.latitude},${position.longitude}';
         _latitude = position.latitude;
         _longitude = position.longitude;
+        _locationController.text = '$_latitude, $_longitude';
+        _locationLoaded = true;
+        _mapController.move(ltld.LatLng(_latitude, _longitude), 12);
+      });
+    } catch (e) {
+      print('No se pudo obtener la ubicación actual.');
+      setState(() {
         _locationLoaded = true;
       });
-    } else {
-      print('No se pudo obtener la ubicación actual.');
     }
   }
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      print('Ubicación obtenida: $_latitude, $_longitude');
       Activity newActivity = Activity(
         name: _nameController.text,
         description: _descriptionController.text,
@@ -144,7 +146,6 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
       );
       await ActivityService().addActivity(newActivity);
       widget.onUpdate();
-      print('Actividad enviada correctamente.');
       Get.back();
     } else {
       print('Formulario inválido. No se puede enviar la actividad.');
@@ -153,8 +154,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
 
   Future<List<double>?> getCoordinatesFromAddress(String address) async {
     final encodedAddress = Uri.encodeComponent(address);
-    final url =
-        'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json';
+    final url = 'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -180,23 +180,19 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     }
   }
 
-  Future<String?> getAddressFromCoordinates(
-      double latitude, double longitude) async {
-    final url =
-        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+  Future<String?> getAddressFromCoordinates(double latitude, double longitude) async {
+    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
 
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-
         final address = data['address'];
         if (address != null) {
           final road = address['road'] ?? '';
           final houseNumber = address['house_number'] ?? '';
           final postcode = address['postcode'] ?? '';
-          final city =
-              address['city'] ?? address['town'] ?? address['village'] ?? '';
+          final city = address['city'] ?? address['town'] ?? address['village'] ?? '';
           final country = address['country'] ?? '';
 
           List<String> parts = [];
