@@ -83,21 +83,43 @@ class _CommentCardState extends State<CommentCard> {
           child: Column(
             children: [
               Container(
-                width: double.infinity,
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.fromLTRB(10.0, 10.0, 0, 8),
-                child: Text(
-                  widget.user.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Pallete.paleBlueColor,
-                    decoration: _isHovering
-                        ? TextDecoration.underline
-                        : TextDecoration.none,
-                  ),
-                ),
-              ),
+                  width: double.infinity,
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.fromLTRB(10.0, 10.0, 0, 8),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 15,
+                        backgroundColor: Pallete.accentColor,
+                        child: widget.user.image == null
+                            ? const Icon(
+                                Icons.person,
+                                size: 17,
+                                color: Pallete.paleBlueColor,
+                              )
+                            : ClipOval(
+                                child: Image.network(
+                                  widget.user.image!,
+                                  fit: BoxFit.cover,
+                                  width: 30,
+                                  height: 30,
+                                ),
+                              ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        widget.user.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Pallete.paleBlueColor,
+                          decoration: _isHovering
+                              ? TextDecoration.underline
+                              : TextDecoration.none,
+                        ),
+                      ),
+                    ],
+                  )),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -200,62 +222,62 @@ class _CommentCardState extends State<CommentCard> {
                               ),
                             ),
                           ),
-                          if(widget.isOwner)
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: Row(
-                              children: [
-                                if (isEditing)
-                                  Tooltip(
-                                    message: "Update",
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(10),
+                          if (widget.isOwner)
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: Row(
+                                children: [
+                                  if (isEditing)
+                                    Tooltip(
+                                      message: "Update",
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.check),
+                                        iconSize: 30,
+                                        color: Colors.green,
+                                        onPressed: () {
+                                          toggleEdit();
+                                          widget.onUpdate(
+                                              getComment(), widget.index);
+                                        },
+                                      ),
                                     ),
-                                    child: IconButton(
-                                      icon: const Icon(Icons.check),
-                                      iconSize: 30,
-                                      color: Colors.green,
-                                      onPressed: () {
-                                        toggleEdit();
-                                        widget.onUpdate(
-                                            getComment(), widget.index);
-                                      },
+                                  if (isEditing)
+                                    Tooltip(
+                                      message: "Cancel",
+                                      decoration: BoxDecoration(
+                                        color: Colors.red.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.cancel),
+                                        iconSize: 30,
+                                        color: Colors.red,
+                                        onPressed: toggleEdit,
+                                      ),
                                     ),
-                                  ),
-                                if (isEditing)
-                                  Tooltip(
-                                    message: "Cancel",
-                                    decoration: BoxDecoration(
-                                      color: Colors.red.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: IconButton(
-                                      icon: const Icon(Icons.cancel),
-                                      iconSize: 30,
-                                      color: Colors.red,
+                                  if (!isEditing)
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      color: Pallete.accentColor,
                                       onPressed: toggleEdit,
                                     ),
-                                  ),
-                                if (!isEditing)
-                                  IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    color: Pallete.accentColor,
-                                    onPressed: toggleEdit,
-                                  ),
-                                if (!isEditing)
-                                  IconButton(
-                                    icon: const Icon(Icons.clear),
-                                    color: Pallete.salmonColor,
-                                    onPressed: () {
-                                      widget.onDelete(context,
-                                          widget.comment.id!, widget.index);
-                                    },
-                                  ),
-                              ],
+                                  if (!isEditing)
+                                    IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      color: Pallete.salmonColor,
+                                      onPressed: () {
+                                        widget.onDelete(context,
+                                            widget.comment.id!, widget.index);
+                                      },
+                                    ),
+                                ],
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),

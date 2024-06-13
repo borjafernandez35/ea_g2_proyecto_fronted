@@ -11,6 +11,7 @@ import 'package:spotfinder/Screens/my_activities.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
 late UserService userService;
 User? user;
@@ -23,7 +24,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreen extends State<ProfileScreen> {
-  final GetStorage _storage = GetStorage();
   String? _imagePath;
   Uint8List? _webImage;
 
@@ -39,10 +39,6 @@ class _ProfileScreen extends State<ProfileScreen> {
         phone_number: '',
         gender: '',
         password: ''); // Provide an initial value
-    _imagePath = _storage.read<String>('profile_image');
-    if (_imagePath != null && _imagePath!.startsWith('data:image')) {
-      _webImage = base64Decode(_imagePath!.split(',').last);
-    }
     getData();
   }
 
@@ -58,23 +54,54 @@ class _ProfileScreen extends State<ProfileScreen> {
     });
   }
 
-  Future<void> _pickImageFromGallery() async {
+  Future<void> _pickImage() async {
     final pickedImage =
         await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (pickedImage != null) {
       final bytes = await pickedImage.readAsBytes();
-      final imagePath = 'data:image/png;base64,' + base64Encode(bytes);
-      _saveImage(imagePath);
-    }
-  }
+      setState(() {
+        _imagePath = 'data:image/png;base64,' + base64Encode(bytes);
+      });
+      final url =
+          Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
+      final String filename =
+          'upload_${DateTime.now().millisecondsSinceEpoch}.png';
+      final request = http.MultipartRequest('POST', url)
+        ..fields['upload_preset'] = 'typvcah6'
+        ..files.add(
+            http.MultipartFile.fromBytes('file', bytes, filename: filename));
 
-  void _saveImage(String path) {
-    setState(() {
-      _imagePath = path;
-      _webImage = base64Decode(_imagePath!.split(',').last);
-    });
-    _storage.write('profile_image', path);
+      try {
+        final response = await request.send();
+
+        if (response.statusCode == 200) {
+          final responseData = await http.Response.fromStream(response);
+          final jsonData = jsonDecode(responseData.body);
+          final imageUrl = jsonData['secure_url'];
+
+          user?.image = imageUrl;
+
+          userService.updateUser(user!).then((_) {
+            getData();
+          }).catchError((error) {
+            Get.snackbar(
+              'Error',
+              'Error sending user to backend: $error',
+              snackPosition: SnackPosition.BOTTOM,
+            );
+          });
+        } else {
+          print(
+              'Error al subir la imagen a Cloudinary: ${response.statusCode}');
+          return;
+        }
+      } catch (e) {
+        return;
+      }
+    } else {
+      print('No se seleccionó ninguna imagen.');
+    }
   }
 
   void _showImageSourceActionSheet(BuildContext context) {
@@ -91,7 +118,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                 title: const Text('Galería'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  _pickImageFromGallery();
+                  _pickImage();
                 },
               ),
             ],
@@ -106,10 +133,6 @@ class _ProfileScreen extends State<ProfileScreen> {
     if (isLoading) {
       return Center(child: CircularProgressIndicator());
     } else {
-      ImageProvider<Object>? imageProvider;
-      if (_imagePath != null) {
-        imageProvider = MemoryImage(_webImage!);
-      }
       return Scaffold(
         backgroundColor: Pallete.whiteColor,
         body: Padding(
@@ -130,15 +153,21 @@ class _ProfileScreen extends State<ProfileScreen> {
                         // Avatar y botón de edición
                         CircleAvatar(
                           radius: 50,
-                          backgroundImage: imageProvider,
                           backgroundColor: Pallete.accentColor,
-                          child: _imagePath == null
+                          child: user?.image == null
                               ? const Icon(
                                   Icons.person,
                                   size: 60,
                                   color: Pallete.paleBlueColor,
                                 )
-                              : null,
+                              : ClipOval(
+                                  child: Image.network(
+                                    user!.image!,
+                                    fit: BoxFit.cover,
+                                    height: 100,
+                                    width: 100,
+                                  ),
+                                ),
                         ),
                         Positioned(
                           bottom: -10,
@@ -164,7 +193,8 @@ class _ProfileScreen extends State<ProfileScreen> {
                           left: 140, // Ajusta la posición horizontal del nombre
                           top: 27,
                           child: Align(
-                            alignment: Alignment.centerLeft, // Alinea el texto a la izquierda
+                            alignment: Alignment
+                                .centerLeft, // Alinea el texto a la izquierda
                             child: Text(
                               user!.name,
                               style: const TextStyle(

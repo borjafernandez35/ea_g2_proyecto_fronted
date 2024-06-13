@@ -87,9 +87,7 @@ class UserService {
     Response response =await dio.put('$baseUrl/user/${user.id}', data: user.toJson());
 
     data = response.data.toString();
-    print('Data: $data');
     statusCode = response.statusCode;
-    print('Status code: $statusCode');
 
     if (statusCode == 201) {
       // Si el usuario se crea correctamente, retornamos el código 201

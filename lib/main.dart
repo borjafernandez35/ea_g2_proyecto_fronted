@@ -14,6 +14,7 @@ import 'package:spotfinder/Screens/settingsScreen.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:spotfinder/Utils/tdahHelper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,14 +74,14 @@ class MyApp extends StatelessWidget {
         ),
       ],
       initialRoute: token != null ? '/home' : '/',
-      // builder: (context, child) {
-      //   return Stack(
-      //     children: [
-      //       child!,
-      //       if (tdah) TDahHelper(),
-      //     ],
-      //   );
-      // },
+      builder: (context, child) {
+        return Stack(
+          children: [
+            child!,
+            if (tdah) TdahHelper(), // Mostrar TdahHelper si está activado en la configuración
+          ],
+        );
+      },
     );
   }
 
@@ -94,74 +95,3 @@ class MyApp extends StatelessWidget {
     return null;
   }
 }
-
-// class TDahHelper extends StatefulWidget {
-//   @override
-//   _TDahHelperState createState() => _TDahHelperState();
-// }
-
-// class _TDahHelperState extends State<TDahHelper> {
-//   Offset _position = Offset(0, 0);
-//   bool _isHovering = false;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Positioned.fill(
-//       child: MouseRegion(
-//         onHover: (event) {
-//           setState(() {
-//             _position = event.position;
-//             _isHovering = true;
-//           });
-//         },
-//         onExit: (event) {
-//           setState(() {
-//             _isHovering = false;
-//           });
-//         },
-//         child: IgnorePointer(
-//           child: Stack(
-//             children: [
-//               Container(
-//                 color: Colors.black.withOpacity(0.5),
-//               ),
-//               Positioned(
-//                 left: 0,
-//                 top: _position.dy - 20, // Centrar verticalmente en la posición del ratón
-//                 right: 0,
-//                 height: 40, // Altura de la fila resaltada
-//                 child: CustomPaint(
-//                   painter: HighlightPainter(),
-//                   child: Container(),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// class HighlightPainter extends CustomPainter {
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     final paint = Paint()
-//       ..color = Colors.black.withOpacity(0.1)
-//       ..style = PaintingStyle.fill;
-
-//     final path = Path()
-//       ..moveTo(0, 0)
-//       ..lineTo(size.width, 0)
-//       ..lineTo(size.width, size.height)
-//       ..lineTo(0, size.height)
-//       ..close();
-
-//     canvas.drawPath(path, paint);
-//   }
-
-//   @override
-//   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-//     return false;
-//   }
-// }

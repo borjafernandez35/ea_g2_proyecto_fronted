@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:spotfinder/Utils/tdahHelper.dart';
 import 'package:spotfinder/main.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -18,6 +18,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _isDyslexicFontEnabled = box.read('font') == 'Dyslexia';
+    _highlightMouseZone = box.read('tdah');
     _selectedTheme = box.read('theme');
   }
 
@@ -200,63 +201,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class TDahHelper extends StatefulWidget {
-  @override
-  _TDahHelperState createState() => _TDahHelperState();
-}
-
-class _TDahHelperState extends State<TDahHelper> {
-  Offset _position = Offset(0, 0);
-  bool _isHovering = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: MouseRegion(
-        onHover: (event) {
-          setState(() {
-            _position = event.position;
-            _isHovering = true;
-          });
-        },
-        onExit: (event) {
-          setState(() {
-            _isHovering = false;
-          });
-        },
-        child: IgnorePointer(
-          child: Stack(
-            children: [
-              // Pantalla sin desenfoque
-              Container(
-                color: Colors.black.withOpacity(0.5), // Color oscuro para apagar la pantalla
-              ),
-              // Fila resaltada
-              if (_isHovering)
-                Positioned(
-                  left: 0,
-                  top: _position.dy - 20, // Centrar verticalmente en la posición del ratón
-                  right: 0,
-                  height: 40, // Altura de la fila resaltada
-                  child: Container(
-                    color: Colors.transparent, // Fondo transparente para mostrar la aplicación debajo
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(width: 8),
-                        // Contenido de la aplicación que debe mostrarse perfectamente en la fila resaltada
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
         ),
       ),
     );

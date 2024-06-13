@@ -37,6 +37,7 @@ class Activity {
       'date': date.toIso8601String(),
       'listUsers': listUsers ?? [],
       'comments': comments ?? [],
+      'image': imageUrl,
       'active': true,
       'location': location != null
           ? {
