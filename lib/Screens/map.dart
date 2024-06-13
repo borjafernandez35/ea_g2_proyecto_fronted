@@ -73,7 +73,7 @@ class _MapScreen extends State<MapScreen> {
       await userService.updateLocation(position);
 
       initialLocation = ltlg.LatLng(position!.latitude, position!.longitude);
-      double distance = 10.0; // Distancia por defecto
+      double distance = 10000; // Distancia por defecto
       lista_activities = await activityService.getData(distance);
       markers.add(
         Marker(

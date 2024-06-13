@@ -38,8 +38,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
           true; // Mostrar indicador de carga mientras se obtienen los datos
     });
     try {
-      listaActivities = await activityService
-          .getData(selectedDistance); // Filtrar por distancia
+      listaActivities = await activityService.getData(selectedDistance * 1000); // Filtrar por distancia
       setState(() {
         isLoading = false;
       });
@@ -66,8 +65,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
 
   Future<String?> _getAddressFromCoordinates(
       double latitude, double longitude) async {
-    final url =
-        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -79,7 +77,8 @@ class _ActivityListPageState extends State<ActivityListPage> {
           final road = address['road'] ?? '';
           final houseNumber = address['house_number'] ?? '';
           final postcode = address['postcode'] ?? '';
-          final city =address['city'] ?? address['town'] ?? address['village'] ?? '';
+          final city =
+              address['city'] ?? address['town'] ?? address['village'] ?? '';
           final country = address['country'] ?? '';
 
           List<String> parts = [];
@@ -174,16 +173,24 @@ class _ActivityListPageState extends State<ActivityListPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                           ListTile(
+                          ListTile(
                             title: Text(listaActivities[index].name),
                             subtitle: listaActivities[index].location != null
                                 ? FutureBuilder<String?>(
-                                    future: _getAddressFromCoordinates(listaActivities[index].location!.latitude, listaActivities[index].location!.longitude),
+                                    future: _getAddressFromCoordinates(
+                                        listaActivities[index]
+                                            .location!
+                                            .latitude,
+                                        listaActivities[index]
+                                            .location!
+                                            .longitude),
                                     builder: (context, snapshot) {
-                                      if (snapshot.connectionState == ConnectionState.waiting) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
                                         return const Row(
                                           children: [
-                                            Icon(Icons.location_on, color: Colors.red, size:17),
+                                            Icon(Icons.location_on,
+                                                color: Colors.red, size: 17),
                                             SizedBox(width: 4),
                                             Text('Cargando dirección...'),
                                           ],
@@ -191,7 +198,8 @@ class _ActivityListPageState extends State<ActivityListPage> {
                                       } else if (snapshot.hasError) {
                                         return const Row(
                                           children: [
-                                            Icon(Icons.location_on, color: Colors.red, size:17),
+                                            Icon(Icons.location_on,
+                                                color: Colors.red, size: 17),
                                             SizedBox(width: 4),
                                             Text('Error al cargar dirección'),
                                           ],
@@ -199,11 +207,13 @@ class _ActivityListPageState extends State<ActivityListPage> {
                                       } else {
                                         return Row(
                                           children: [
-                                            const Icon(Icons.location_on, color: Colors.red, size:17),
+                                            const Icon(Icons.location_on,
+                                                color: Colors.red, size: 17),
                                             const SizedBox(width: 4),
                                             Expanded(
                                               child: Text(
-                                                snapshot.data ?? 'Dirección no encontrada',
+                                                snapshot.data ??
+                                                    'Dirección no encontrada',
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),

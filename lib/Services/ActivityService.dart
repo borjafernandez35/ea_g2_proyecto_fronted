@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:spotfinder/Services/TokenService.dart';
+import 'package:spotfinder/Services/UserService.dart';
 
 
 class ActivityService {
@@ -11,6 +12,7 @@ class ActivityService {
   var statusCode;
   var data;
   final TokenRefreshService tokenRefreshService = TokenRefreshService(); 
+  final UserService user_service = UserService(); 
 
   ActivityService() {
     dio.interceptors.add(tokenRefreshService.dio.interceptors.first);
@@ -39,10 +41,9 @@ class ActivityService {
 
   Future<List<Activity>> getData(double selectedDistance) async {
     print('getData');
-    
-
+    String? id = user_service.getId();
     try {
-      var res = await dio.get('$baseUrl/activity/1/10');
+      var res = await dio.get('$baseUrl/activity/1/10/$id/$selectedDistance');
       final List<dynamic> responseData = res.data['activities'];
       List<Activity> activities = responseData.map((data) => Activity.fromJson(data)).toList();
       return activities;
