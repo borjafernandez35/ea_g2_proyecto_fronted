@@ -16,7 +16,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _isDyslexicFontEnabled = box.read('font') == 'Dyslexia';
-    _selectedTheme = box.read('theme');
+    _selectedTheme = box.read('theme') ?? 'Light';
   }
 
   void _changeFont(bool isDyslexicFont) {
@@ -44,7 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Select Theme', style: TextStyle(color: Colors.white)),
+                  Text('Select Theme', style: TextStyle(color: Colors.black)),
                   IconButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -168,6 +168,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// Main app class with theme selection logic
+class MyApp extends StatelessWidget {
+  final box = GetStorage();
+
+  @override
+  Widget build(BuildContext context) {
+    String theme = box.read('theme') ?? 'Light';
+    ThemeData themeData;
+
+    switch (theme) {
+      case 'Dark':
+        themeData = ThemeData.dark().copyWith(
+          primaryColor: Colors.white,
+          backgroundColor: Colors.black,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey[800],
+            ),
+          ),
+        );
+        break;
+      case 'Custom':
+        themeData = ThemeData.custom().copyWith(
+          primaryColor: Color(0xFF7E1E9C), 
+          backgroundColor: Color(0xFFF97306),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF7E1E9C), // morado
+            ),
+          ),
+        );
+        break;
+      case 'Light':
+      default:
+        themeData = ThemeData.light().copyWith(
+          primaryColor: Colors.black,
+          backgroundColor: Colors.white,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey[300],
+            ),
+          ),
+        );
+        break;
+    }
+
+    return MaterialApp(
+      theme: themeData,
+      home: SettingsScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Home'),
+      ),
+      body: Center(
+        child: Text('Home Screen'),
       ),
     );
   }
