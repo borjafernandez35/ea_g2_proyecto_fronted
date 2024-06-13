@@ -14,7 +14,6 @@ import 'package:spotfinder/Screens/settingsScreen.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'package:spotfinder/Utils/tdahHelper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,8 +52,6 @@ class MyApp extends StatelessWidget {
       box.write('theme', "Light");
     }
 
-    bool tdah = box.read('tdah') ?? false;
-
     return GetMaterialApp(
       title: 'SpotFinder',
       theme: ThemeData.dark().copyWith(
@@ -74,14 +71,6 @@ class MyApp extends StatelessWidget {
         ),
       ],
       initialRoute: token != null ? '/home' : '/',
-      builder: (context, child) {
-        return Stack(
-          children: [
-            child!,
-            if (tdah) TdahHelper(), 
-          ],
-        );
-      },
     );
   }
 

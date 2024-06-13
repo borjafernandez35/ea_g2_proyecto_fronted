@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:spotfinder/Utils/tdahHelper.dart';
 import 'package:spotfinder/main.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -11,27 +10,18 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final box = GetStorage();
   bool _isDyslexicFontEnabled = false;
-  bool _highlightMouseZone = false;
   String? _selectedTheme;
 
   @override
   void initState() {
     super.initState();
     _isDyslexicFontEnabled = box.read('font') == 'Dyslexia';
-    _highlightMouseZone = box.read('tdah') ?? false;
     _selectedTheme = box.read('theme');
   }
 
   void _changeFont(bool isDyslexicFont) {
     final String font = isDyslexicFont ? 'Dyslexia' : 'Default';
     box.write('font', font);
-    runApp(
-      MyApp(), // Se reinicia la aplicación con la nueva configuración
-    );
-  }
-
-  void _changeMouseHighlight(bool isHighlightEnabled) {
-    box.write('tdah', isHighlightEnabled);
     runApp(
       MyApp(), // Se reinicia la aplicación con la nueva configuración
     );
@@ -155,30 +145,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 inactiveTrackColor: Colors.grey[300],
                 activeTrackColor: Colors.green[200],
                 secondary: Icon(Icons.text_fields, color: Colors.black),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: 400,
-              height: 40,
-              child: SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text(
-                  'Highlight Mouse Zone',
-                  style: TextStyle(color: Colors.black),
-                ),
-                value: _highlightMouseZone,
-                onChanged: (bool value) {
-                  setState(() {
-                    _highlightMouseZone = value;
-                  });
-                  _changeMouseHighlight(_highlightMouseZone);
-                },
-                activeColor: Colors.green,
-                inactiveThumbColor: Colors.grey,
-                inactiveTrackColor: Colors.grey[300],
-                activeTrackColor: Colors.green[200],
-                secondary: Icon(Icons.mouse, color: Colors.black),
               ),
             ),
             const SizedBox(height: 20),

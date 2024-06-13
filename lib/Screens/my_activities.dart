@@ -124,7 +124,7 @@ class _MyActivities extends State<MyActivities> {
               child: InkWell(
                 onTap: () {
                   print(lista_activities[index]);
-                  Get.to(() => EditActivity(onUpdate: getData, id: lista_activities[index].id));
+                  Get.to(() => EditActivity(lista_activities[index], onUpdate: getData));
                 },
                 child: ActivityCard(getAddressFromCoordinates,lista_activities[index]),
               ),

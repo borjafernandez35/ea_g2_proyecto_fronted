@@ -54,11 +54,11 @@ class _ActivityListPageState extends State<ActivityListPage> {
       isLoading = true;
     });
     try {
-      List<Activity> newActivities = await activityService.getData(selectedDistance, page, limit); 
+      List<Activity> activities = await activityService.getData(selectedDistance * 1000, page, limit); // Filtrar por distancia
       setState(() {
-        listaActivities.addAll(newActivities);
+        listaActivities.addAll(activities);
         isLoading = false;
-        hasMore = newActivities.length == limit; 
+        hasMore = activities.length == limit; 
       });
     } catch (error) {
       Get.snackbar(
@@ -76,6 +76,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
     if (newDistance != null) {
       setState(() {
         selectedDistance = newDistance;
+        listaActivities = [];
         getData();
       });
     }
@@ -83,8 +84,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
 
   Future<String?> _getAddressFromCoordinates(
       double latitude, double longitude) async {
-    final url =
-        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -162,8 +162,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
                         .map((double value) {
                       return DropdownMenuItem<double>(
                         value: value,
-                        child: Text('Hasta $value km',
-                            style: const TextStyle(color: Colors.white)),
+                        child: Text('Hasta $value km', style: const TextStyle(color: Colors.white)),
                       );
                     }).toList(),
                   ),

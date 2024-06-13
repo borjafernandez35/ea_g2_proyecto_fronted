@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/detalles_user.dart';
@@ -24,8 +22,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreen extends State<ProfileScreen> {
-  String? _imagePath;
-  Uint8List? _webImage;
 
   bool isLoading = true;
 
@@ -60,9 +56,6 @@ class _ProfileScreen extends State<ProfileScreen> {
 
     if (pickedImage != null) {
       final bytes = await pickedImage.readAsBytes();
-      setState(() {
-        _imagePath = 'data:image/png;base64,' + base64Encode(bytes);
-      });
       final url =
           Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
       final String filename =

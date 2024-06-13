@@ -33,7 +33,8 @@ class ActivityDetail extends StatefulWidget {
 }
 
 class _ActivityDetail extends State<ActivityDetail> {
-  final ActivityDetailController controllerActivityDetail =Get.put(ActivityDetailController());
+  final ActivityDetailController controllerActivityDetail =
+      Get.put(ActivityDetailController());
 
   bool isLoading = true;
   bool showReviewForm = false;
@@ -226,7 +227,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                 iconSize: 30,
                 color: Pallete.salmonColor,
                 onPressed: () {
-                  final formattedDate = '${activity.date.day}/${activity.date.month}/${activity.date.year}';
+                  final formattedDate =
+                      '${activity.date.day}/${activity.date.month}/${activity.date.year}';
                   final message =
                       'Echa un vistazo a este evento: *${activity.name}*\n'
                       'Fecha: 📅 $formattedDate\n'
@@ -314,8 +316,9 @@ class _ActivityDetail extends State<ActivityDetail> {
                                   ),
                                   SignUpButton(
                                     onPressed: () {
-                                      controllerActivityDetail.joinActivity(activity.id);
-                                      onUpdate!();
+                                      controllerActivityDetail
+                                          .joinActivity(activity.id);
+                                      Get.to(const ActivityDetail());
                                     },
                                     text: 'Join',
                                   ),
@@ -337,7 +340,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                                     const SizedBox(height: 15),
                                     ElevatedButton(
                                       onPressed: () {
-                                        Get.toNamed('/', arguments: {'id' : activityId});
+                                        Get.toNamed('/',
+                                            arguments: {'id': activityId});
                                       },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Pallete.salmonColor,
@@ -410,7 +414,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                                     ),
                                     const SizedBox(height: 8),
                                     TextFormField(
-                                      controller: controllerActivityDetail.titleController,
+                                      controller: controllerActivityDetail
+                                          .titleController,
                                       style: const TextStyle(
                                           color: Pallete.backgroundColor),
                                       decoration: InputDecoration(
@@ -435,7 +440,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                                     ),
                                     const SizedBox(height: 8),
                                     TextFormField(
-                                      controller: controllerActivityDetail.contentController,
+                                      controller: controllerActivityDetail
+                                          .contentController,
                                       maxLines: 5,
                                       style: const TextStyle(
                                           color: Pallete.backgroundColor),
@@ -489,16 +495,25 @@ class _ActivityDetail extends State<ActivityDetail> {
                                         // Botón de enviar
                                         ElevatedButton(
                                           onPressed: () {
-                                            controllerActivityDetail.activityId = activity.id!;
-                                            controllerActivityDetail.addComment().then((success) {
+                                            controllerActivityDetail
+                                                .activityId = activity.id!;
+                                            controllerActivityDetail
+                                                .addComment()
+                                                .then((success) {
                                               if (success) {
                                                 setState(() {
                                                   alreadyCommented = true;
                                                   getUsers();
-                                                  showReviewForm =!showReviewForm;
-                                                  controllerActivityDetail.contentController.clear();
-                                                  controllerActivityDetail.titleController.clear();
-                                                  controllerActivityDetail.ratingValue = 0;
+                                                  showReviewForm =
+                                                      !showReviewForm;
+                                                  controllerActivityDetail
+                                                      .contentController
+                                                      .clear();
+                                                  controllerActivityDetail
+                                                      .titleController
+                                                      .clear();
+                                                  controllerActivityDetail
+                                                      .ratingValue = 0;
                                                 });
                                                 onUpdate!();
                                               }

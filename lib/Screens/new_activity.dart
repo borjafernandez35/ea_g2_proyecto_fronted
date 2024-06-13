@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';

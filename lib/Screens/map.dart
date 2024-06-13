@@ -76,18 +76,25 @@ class _MapScreen extends State<MapScreen> {
       await userService.updateLocation(position);
 
       initialLocation = ltlg.LatLng(position!.latitude, position!.longitude);
-      double distance = 10.0; // Distancia por defecto
-      int limit = 10; // Puedes ajustar este límite según tus necesidades
-      lista_activities = await getAllActivities(distance, limit); 
 
-      markers.add(Marker(
-        point: initialLocation,
-        width: 60,
-        height: 60,
-        alignment: Alignment.centerLeft,
-        child: const Icon(Icons.circle, size: 20, color: Pallete.salmonColor),
-      ));
-      for (var actividad in lista_activities) {
+      double distance = 10000; 
+      int limit = 10;
+      lista_activities = await getAllActivities(distance, limit); 
+      markers.add(
+        Marker(
+          point: initialLocation,
+          width: 60,
+          height: 60,
+          alignment: Alignment.centerLeft,
+          child: const Icon(
+            Icons.circle,
+            size: 20,
+            color: Pallete.salmonColor
+          ),
+        )
+      );
+      
+      for(var actividad in lista_activities){
         markers.add(
           Marker(
             point: ltlg.LatLng(
