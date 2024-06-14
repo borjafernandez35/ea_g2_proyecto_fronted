@@ -18,11 +18,12 @@ class NewActivityScreen extends StatefulWidget {
 
   const NewActivityScreen({required this.onUpdate});
 
+  @override
   _NewActivityScreenState createState() => _NewActivityScreenState();
 }
 
 class _NewActivityScreenState extends State<NewActivityScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
@@ -46,17 +47,17 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   }
 
   Future<void> _fetchUserId() async {
-    final userId = await UserService().getId();
+    final String? userId = await UserService().getId();
     setState(() {
       _userId = userId!;
     });
   }
 
   Future<void> _pickImage() async {
-    final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final XFile? pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (pickedImage != null) {
-      final bytes = await pickedImage.readAsBytes();
+      final Uint8List bytes = await pickedImage.readAsBytes();
       setState(() {
         _imageBytes = bytes;
         _image = 'data:image/png;base64,' + base64Encode(bytes);
@@ -72,9 +73,9 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
       return null;
     }
 
-    final url = Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
+    final Uri url = Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
     final String filename = 'upload_${DateTime.now().millisecondsSinceEpoch}.png'; 
-    final request = http.MultipartRequest('POST', url)
+    final http.MultipartRequest request = http.MultipartRequest('POST', url)
       ..fields['upload_preset'] = 'typvcah6'
       ..files.add(http.MultipartFile.fromBytes(
         'file',
@@ -83,12 +84,12 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
       ));
 
     try {
-      final response = await request.send();
+      final http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200) {
-        final responseData = await http.Response.fromStream(response);
-        final jsonData = jsonDecode(responseData.body);
-        final imageUrl = jsonData['secure_url'];
+        final http.Response responseData = await http.Response.fromStream(response);
+        final Map<String, dynamic> jsonData = jsonDecode(responseData.body);
+        final String imageUrl = jsonData['secure_url'];
 
         return imageUrl;
       } else {
@@ -116,7 +117,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
 
   Future<void> _selectLocation() async {
     try {
-      Position position = await Geolocator.getCurrentPosition(
+      final Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
       setState(() {
@@ -136,7 +137,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      Activity newActivity = Activity(
+      final Activity newActivity = Activity(
         name: _nameController.text,
         description: _descriptionController.text,
         imageUrl: await _uploadImage(),
@@ -153,15 +154,15 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   }
 
   Future<List<double>?> getCoordinatesFromAddress(String address) async {
-    final encodedAddress = Uri.encodeComponent(address);
-    final url = 'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json';
+    final String encodedAddress = Uri.encodeComponent(address);
+    final String url = 'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json';
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final http.Response response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         if (data.isNotEmpty) {
-          final firstResult = data.first;
+          final Map<String, dynamic> firstResult = data.first;
           final double lat = double.parse(firstResult['lat']);
           final double lon = double.parse(firstResult['lon']);
           setState(() {
@@ -181,21 +182,21 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   }
 
   Future<String?> getAddressFromCoordinates(double latitude, double longitude) async {
-    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+    final String url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final http.Response response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final address = data['address'];
+        final Map<String, dynamic> data = json.decode(response.body);
+        final Map<String, dynamic> address = data['address'];
         if (address != null) {
-          final road = address['road'] ?? '';
-          final houseNumber = address['house_number'] ?? '';
-          final postcode = address['postcode'] ?? '';
-          final city = address['city'] ?? address['town'] ?? address['village'] ?? '';
-          final country = address['country'] ?? '';
+          final String road = address['road'] ?? '';
+          final String houseNumber = address['house_number'] ?? '';
+          final String postcode = address['postcode'] ?? '';
+          final String city = address['city'] ?? address['town'] ?? address['village'] ?? '';
+          final String country = address['country'] ?? '';
 
-          List<String> parts = [];
+          final List<String> parts = [];
 
           if (road.isNotEmpty) parts.add(road);
           if (houseNumber.isNotEmpty) parts.add(houseNumber);
@@ -203,7 +204,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
           if (city.isNotEmpty) parts.add(city);
           if (country.isNotEmpty) parts.add(country);
 
-          String formattedAddress = parts.join(', ');
+          final String formattedAddress = parts.join(', ');
           setState(() {
             _searchController.text = formattedAddress;
           });
@@ -298,7 +299,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                   ),
                 ),
                 style: const TextStyle(color: Colors.white),
-                validator: (value) {
+                validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the activity name';
                   }
@@ -337,7 +338,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                   ),
                 ),
                 style: const TextStyle(color: Colors.white),
-                validator: (value) {
+                validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a description';
                   }
@@ -379,7 +380,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                         ),
                       ),
                       style: const TextStyle(color: Colors.white),
-                      validator: (value) {
+                      validator: (String? value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a location';
                         }
@@ -390,7 +391,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                   IconButton(
                     icon: Icon(
                       _isMapVisible ? Icons.close : Icons.map,
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                     onPressed: () {
                       setState(() {
@@ -436,7 +437,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                 ),
                 style: const TextStyle(color: Colors.white),
                 onTap: () => _selectDate(context),
-                validator: (value) {
+                validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return 'Please select a date';
                   }
@@ -526,7 +527,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                           ],
                         ),
                       )
-                    : Center(child: CircularProgressIndicator()),
+                    : const Center(child: CircularProgressIndicator()),
               ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
