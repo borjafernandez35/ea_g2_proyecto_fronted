@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:spotfinder/main.dart';
+
+void main() async {
+  await GetStorage.init();
+  runApp(MyApp());
+}
 
 class SettingsScreen extends StatefulWidget {
   @override
@@ -22,16 +26,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _changeFont(bool isDyslexicFont) {
     final String font = isDyslexicFont ? 'Dyslexia' : 'Default';
     box.write('font', font);
-    runApp(
-      MyApp(), // Se reinicia la aplicación con la nueva configuración
-    );
+    _restartApp(); // Reinicia la aplicación con la nueva configuración
   }
 
   void _changeTheme(String theme) {
     box.write('theme', theme);
-    runApp(
-      MyApp(), // Se reinicia la aplicación con la nueva configuración
-    );
+    _restartApp(); // Reinicia la aplicación con la nueva configuración
+  }
+
+  void _restartApp() {
+    final MyAppState? state = MyApp.instance.currentState;
+    state?.restartApp();
   }
 
   void _showThemeDialog(BuildContext context) {
@@ -44,12 +49,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Select Theme', style: TextStyle(color: Colors.black)),
+                  const Text('Select Theme', style: TextStyle(color: Colors.black)),
                   IconButton(
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    icon: Icon(Icons.close),
+                    icon: const Icon(Icons.close),
                   ),
                 ],
               ),
@@ -57,10 +62,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   RadioListTile<String>(
-                    title: Text('Light'),
+                    title: const Text('Light'),
                     value: 'Light',
                     groupValue: _selectedTheme,
-                    onChanged: (value) {
+                    onChanged: (String? value) {
                       setState(() {
                         _selectedTheme = value;
                       });
@@ -68,10 +73,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     activeColor: Colors.green,
                   ),
                   RadioListTile<String>(
-                    title: Text('Dark'),
+                    title: const Text('Dark'),
                     value: 'Dark',
                     groupValue: _selectedTheme,
-                    onChanged: (value) {
+                    onChanged: (String? value) {
                       setState(() {
                         _selectedTheme = value;
                       });
@@ -79,10 +84,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     activeColor: Colors.green,
                   ),
                   RadioListTile<String>(
-                    title: Text('Custom'),
+                    title: const Text('Custom'),
                     value: 'Custom',
                     groupValue: _selectedTheme,
-                    onChanged: (value) {
+                    onChanged: (String? value) {
                       setState(() {
                         _selectedTheme = value;
                       });
@@ -116,7 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
+        title: const Text('Settings'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -144,7 +149,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 inactiveThumbColor: Colors.grey,
                 inactiveTrackColor: Colors.grey[300],
                 activeTrackColor: Colors.green[200],
-                secondary: Icon(Icons.text_fields, color: Colors.black),
+                secondary: const Icon(Icons.text_fields, color: Colors.black),
               ),
             ),
             const SizedBox(height: 20),
@@ -173,12 +178,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
-// Main app class with theme selection logic
-class MyApp extends StatelessWidget {
-  final box = GetStorage();
+class MyApp extends StatefulWidget {
+  static final GlobalKey<MyAppState> instance = GlobalKey<MyAppState>();
 
   @override
+  MyAppState createState() => MyAppState();
+}
+
+class MyAppState extends State<MyApp> {
+  @override
   Widget build(BuildContext context) {
+    final box = GetStorage();
     String theme = box.read('theme') ?? 'Light';
     ThemeData themeData;
 
@@ -195,13 +205,17 @@ class MyApp extends StatelessWidget {
         );
         break;
       case 'Custom':
-        themeData = ThemeData.custom().copyWith(
-          primaryColor: Color(0xFF7E1E9C), 
-          backgroundColor: Color(0xFFF97306),
+        themeData = ThemeData(
+          primaryColor: const Color(0xFF7E1E9C), // morado
+          backgroundColor: const Color(0xFFF97306),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF7E1E9C), // morado
+              backgroundColor: const Color(0xFF7E1E9C), // morado
             ),
+          ),
+          textTheme: const TextTheme(
+            bodyText1: TextStyle(color: Colors.white),
+            bodyText2: TextStyle(color: Colors.white),
           ),
         );
         break;
@@ -220,9 +234,14 @@ class MyApp extends StatelessWidget {
     }
 
     return MaterialApp(
+      key: MyApp.instance,
       theme: themeData,
-      home: SettingsScreen(),
+      home: HomeScreen(),
     );
+  }
+
+  void restartApp() {
+    setState(() {});
   }
 }
 
@@ -231,9 +250,9 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: const Text('Home'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Home Screen'),
       ),
     );

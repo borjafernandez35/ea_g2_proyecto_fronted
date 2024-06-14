@@ -1,6 +1,3 @@
-import 'dart:html';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -26,15 +23,24 @@ void main() async {
   runApp(MyApp(token: token));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final String? token;
 
   const MyApp({Key? key, this.token}) : super(key: key);
 
+  static final GlobalKey<_MyAppState> _instance = GlobalKey<_MyAppState>();
+
+  @override
+  _MyAppState createState() => _MyAppState();
+
+  static _MyAppState? get instance => _instance.currentState;
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (token != null) {
+      if (widget.token != null) {
         if (Get.currentRoute != '/home' &&
             !Get.currentRoute.contains('activity') &&
             !Get.currentRoute.contains('settings')) {
@@ -49,15 +55,59 @@ class MyApp extends StatelessWidget {
 
     String? theme = box.read('theme');
     if (theme == null) {
-      box.write('theme', "Light");
+      theme = "Light";
+      box.write('theme', theme);
+    }
+
+    ThemeData themeData;
+
+    switch (theme) {
+      case 'Dark':
+        themeData = ThemeData.dark().copyWith(
+          primaryColor: Colors.white,
+          backgroundColor: Colors.black,
+          scaffoldBackgroundColor: Pallete.whiteColor,
+          textTheme: textTheme,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey[800],
+            ),
+          ),
+        );
+        break;
+      case 'Custom':
+        themeData = ThemeData(
+          primaryColor: const Color(0xFF7E1E9C), // morado
+          backgroundColor: const Color(0xFFF97306),
+          scaffoldBackgroundColor: const Color(0xFFF97306),
+          textTheme: textTheme,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF7E1E9C), // morado
+            ),
+          ),
+        );
+        break;
+      case 'Light':
+      default:
+        themeData = ThemeData.light().copyWith(
+          primaryColor: Colors.black,
+          backgroundColor: Colors.white,
+          scaffoldBackgroundColor: Colors.white,
+          textTheme: textTheme,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey[300],
+            ),
+          ),
+        );
+        break;
     }
 
     return GetMaterialApp(
+      key: MyApp._instance,
       title: 'SpotFinder',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Pallete.whiteColor,
-        textTheme: textTheme,
-      ),
+      theme: themeData,
       getPages: [
         GetPage(name: '/', page: () => TitleScreen()),
         GetPage(name: '/home', page: () => HomePage()),
@@ -70,8 +120,12 @@ class MyApp extends StatelessWidget {
           transition: Transition.fade,
         ),
       ],
-      initialRoute: token != null ? '/home' : '/',
+      initialRoute: widget.token != null ? '/home' : '/',
     );
+  }
+
+  void restartApp() {
+    setState(() {});
   }
 
   TextTheme? getFontTextTheme(String? font) {
