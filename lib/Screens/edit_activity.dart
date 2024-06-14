@@ -1,29 +1,31 @@
 import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:spotfinder/Resources/pallete.dart';
-import 'package:spotfinder/Screens/activity_detail.dart';
-import 'package:spotfinder/Screens/my_activities.dart';
-import 'package:spotfinder/Services/ActivityService.dart';
-import 'package:spotfinder/Models/ActivityModel.dart';
-import 'package:spotfinder/Services/UserService.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as ltld;
 import 'package:http/http.dart' as http;
 
+import 'package:spotfinder/Resources/pallete.dart';
+import 'package:spotfinder/Screens/my_activities.dart';
+import 'package:spotfinder/Services/ActivityService.dart';
+import 'package:spotfinder/Services/UserService.dart';
+import 'package:spotfinder/Models/ActivityModel.dart';
+
 class EditActivity extends StatefulWidget {
-  @override
   final VoidCallback onUpdate;
   final Activity activity;
 
   const EditActivity(this.activity, {required this.onUpdate});
 
-  _EditActivity createState() => _EditActivity();
+  @override
+  _EditActivityState createState() => _EditActivityState();
 }
 
-class _EditActivity extends State<EditActivity> {
+class _EditActivityState extends State<EditActivity> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -38,7 +40,7 @@ class _EditActivity extends State<EditActivity> {
   double _latitude = 0;
   double _longitude = 0;
   bool _locationLoaded = false;
-  bool imageChange = false;
+  bool _isEditing = false; // Estado de edición
 
   @override
   void initState() {
@@ -47,16 +49,13 @@ class _EditActivity extends State<EditActivity> {
     _selectLocation();
     activityService = ActivityService();
 
-    setState(() {
-
-      _nameController.text = widget.activity.name;
-      _descriptionController.text = widget.activity.description;
-      _latitude = widget.activity.location!.latitude;
-      _longitude = widget.activity.location!.longitude;
-      _image = widget.activity.imageUrl;
-      _selectedDate = widget.activity.date;
-    });
-
+    // Inicializar los controladores con los datos de la actividad
+    _nameController.text = widget.activity.name;
+    _descriptionController.text = widget.activity.description;
+    _latitude = widget.activity.location!.latitude;
+    _longitude = widget.activity.location!.longitude;
+    _image = widget.activity.imageUrl;
+    _selectedDate = widget.activity.date;
   }
 
   Future<void> _fetchUserId() async {
@@ -68,26 +67,26 @@ class _EditActivity extends State<EditActivity> {
   }
 
   Future<void> _pickImage() async {
-    final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedImage =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (pickedImage != null) {
       final bytes = await pickedImage.readAsBytes();
       await _uploadImage(bytes);
-     
     } else {
       print('No se seleccionó ninguna imagen.');
     }
   }
 
   Future<void> _uploadImage(Uint8List imageBytes) async {
-
-    final url =Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
-    final String filename ='upload_${DateTime.now().millisecondsSinceEpoch}.png';
+    final url =
+        Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
+    final String filename =
+        'upload_${DateTime.now().millisecondsSinceEpoch}.png';
     final request = http.MultipartRequest('POST', url)
       ..fields['upload_preset'] = 'typvcah6'
-      ..files.add(http.MultipartFile.fromBytes('file',
-       imageBytes,
-      filename: filename));
+      ..files.add(http.MultipartFile.fromBytes('file', imageBytes,
+          filename: filename));
 
     try {
       final response = await request.send();
@@ -103,7 +102,8 @@ class _EditActivity extends State<EditActivity> {
 
         return imageUrl;
       } else {
-        print('Error al subir la imagen a Cloudinary: ${response.statusCode}');
+        print(
+            'Error al subir la imagen a Cloudinary: ${response.statusCode}');
         return null;
       }
     } catch (e) {
@@ -144,18 +144,18 @@ class _EditActivity extends State<EditActivity> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      print("shdflu");
       Activity newActivity = Activity(
-          name: _nameController.text,
-          description: _descriptionController.text,
-          imageUrl: _image,
-          date: _selectedDate,
-          idUser: _userId,
-          location: LatLng(latitude: _latitude, longitude: _longitude));
+        name: _nameController.text,
+        description: _descriptionController.text,
+        imageUrl: _image,
+        date: _selectedDate,
+        idUser: _userId,
+        location: LatLng(latitude: _latitude, longitude: _longitude),
+      );
 
       await activityService.editActivity(newActivity, widget.activity.id);
       widget.onUpdate();
-      print('Actividad enviada correctamente.');
+      print('Actividad editada correctamente.');
       Get.back();
     } else {
       print('Formulario inválido. No se puede enviar la actividad.');
@@ -232,9 +232,9 @@ class _EditActivity extends State<EditActivity> {
   }
 
   Future<void> _deleteActivity() async {
-    await activityService.deleteActivity(activity.id);
+    await activityService.deleteActivity(widget.activity.id);
     widget.onUpdate();
-    print('Actividad enviada correctamente.');
+    print('Actividad eliminada correctamente.');
     Get.back();
   }
 
@@ -257,9 +257,22 @@ class _EditActivity extends State<EditActivity> {
             color: Pallete.backgroundColor,
           ),
           onPressed: () {
-            Get.to(() => MyActivities()); // Ensure MyActivities is correctly imported and used
+            Get.to(() => MyActivities());
           },
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.edit,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              setState(() {
+                _isEditing = true; // Cambiar al modo de edición
+              });
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Form(
@@ -302,6 +315,7 @@ class _EditActivity extends State<EditActivity> {
               _buildTextField(
                 controller: _nameController,
                 labelText: 'Activity Name',
+                readOnly: !_isEditing, // Controlar solo lectura según el modo de edición
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the activity name';
@@ -314,6 +328,7 @@ class _EditActivity extends State<EditActivity> {
                 controller: _descriptionController,
                 labelText: 'Description',
                 maxLines: 5,
+                readOnly: !_isEditing, // Controlar solo lectura según el modo de edición
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a description';
@@ -341,7 +356,11 @@ class _EditActivity extends State<EditActivity> {
                 ),
                 labelText: 'Date',
                 readOnly: true,
-                onTap: () => _selectDate(context),
+                onTap: () {
+                  if (_isEditing) {
+                    _selectDate(context); // Permitir seleccionar la fecha solo en modo de edición
+                  }
+                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please select a date';
@@ -355,32 +374,38 @@ class _EditActivity extends State<EditActivity> {
                       height: 300,
                       child: Stack(
                         children: [
-                        FlutterMap(
+                          FlutterMap(
                             mapController: _mapController,
                             options: MapOptions(
-                              initialCenter: ltld.LatLng(_latitude, _longitude),
+                              initialCenter:
+                                  ltld.LatLng(_latitude, _longitude),
                               initialZoom: 12,
-                              interactionOptions: const InteractionOptions(
-                                  flags: ~InteractiveFlag.doubleTapZoom),
+                              interactionOptions:
+                                  const InteractionOptions(
+                                      flags: ~InteractiveFlag
+                                          .doubleTapZoom),
                               onTap: (tapPosition, point) {
-                                setState(() {
-                                  _latitude = point.latitude;
-                                  _longitude = point.longitude;
-                                  _locationController.text =
-                                      '$_latitude,$_longitude';
-                                });
-                                getAddressFromCoordinates(
-                                    _latitude, _longitude);
+                                if (_isEditing) {
+                                  setState(() {
+                                    _latitude = point.latitude;
+                                    _longitude = point.longitude;
+                                    _locationController.text =
+                                        '$_latitude,$_longitude';
+                                  });
+                                  getAddressFromCoordinates(
+                                      _latitude, _longitude);
+                                }
                               },
                             ),
-                           children: [
+                            children: [
                               openStreetMapTileLayer,
                               MarkerLayer(
                                 markers: [
                                   Marker(
                                     width: 80.0,
                                     height: 80.0,
-                                    point: ltld.LatLng(_latitude, _longitude),
+                                    point: ltld.LatLng(
+                                        _latitude, _longitude),
                                     child: const Icon(
                                       Icons.location_on,
                                       color: Colors.red,
@@ -396,22 +421,25 @@ class _EditActivity extends State<EditActivity> {
                             left: 20,
                             right: 20,
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16.0),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(8.0),
+                                borderRadius:
+                                    BorderRadius.circular(8.0),
                               ),
                               child: Row(
                                 children: [
                                   Expanded(
                                     child: TextFormField(
                                       controller: _searchController,
-                                      decoration: const InputDecoration(
+                                      decoration:
+                                          const InputDecoration(
                                         hintText: 'Search...',
                                         border: InputBorder.none,
                                       ),
-                                      style:
-                                          const TextStyle(color: Colors.black),
+                                      style: const TextStyle(
+                                          color: Colors.black),
                                     ),
                                   ),
                                   IconButton(
@@ -420,8 +448,10 @@ class _EditActivity extends State<EditActivity> {
                                       color: Colors.black,
                                     ),
                                     onPressed: () {
-                                      getCoordinatesFromAddress(
-                                          _searchController.text);
+                                      if (_isEditing) {
+                                        getCoordinatesFromAddress(
+                                            _searchController.text);
+                                      }
                                     },
                                   ),
                                 ],
@@ -432,23 +462,26 @@ class _EditActivity extends State<EditActivity> {
                       ),
                     )
                   : const SizedBox.shrink(),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  onPressed: _submitForm,
-                  child: Text('Edit'),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  onPressed: _deleteActivity,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red, // Background color
+              if (_isEditing) // Mostrar botones solo en modo de edición
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: _submitForm,
+                    child: Text('Edit'),
                   ),
-                  child: Text('Delete'),
                 ),
-              ),
+              if (_isEditing) // Mostrar botones solo en modo de edición
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: _deleteActivity,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          Colors.red, // Background color
+                    ),
+                    child: Text('Delete'),
+                  ),
+                ),
             ],
           ),
         ),
@@ -507,4 +540,5 @@ class _EditActivity extends State<EditActivity> {
 
 TileLayer get openStreetMapTileLayer => TileLayer(
       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      userAgentPackageName: 'dev.fleaflet.flutter_map.example', );
+      userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+    );
