@@ -36,6 +36,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   double _latitude = 41.27552212202214;
   double _longitude = 1.9863014220734023;
   bool _locationLoaded = false;
+  bool _isMapVisible = false;
 
   @override
   void initState() {
@@ -344,43 +345,60 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                 },
               ),
               const SizedBox(height: 24),
-              TextFormField(
-                readOnly: true,
-                controller: _locationController,
-                decoration: InputDecoration(
-                  labelText: 'Location',
-                  labelStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      readOnly: true,
+                      controller: _locationController,
+                      decoration: InputDecoration(
+                        labelText: 'Location',
+                        labelStyle: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        fillColor: Colors.black.withOpacity(0.7),
+                        filled: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 12.0),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Colors.white),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Colors.white),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Pallete.salmonColor),
+                        ),
+                        floatingLabelStyle: const TextStyle(
+                          color: Pallete.salmonColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a location';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
-                  fillColor: Colors.black.withOpacity(0.7),
-                  filled: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10.0, horizontal: 12.0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
+                  IconButton(
+                    icon: Icon(
+                      _isMapVisible ? Icons.close : Icons.map,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isMapVisible = !_isMapVisible;
+                      });
+                    },
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Pallete.salmonColor),
-                  ),
-                  floatingLabelStyle: const TextStyle(
-                    color: Pallete.salmonColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a location';
-                  }
-                  return null;
-                },
+                ],
               ),
               const SizedBox(height: 24),
               TextFormField(
@@ -425,88 +443,91 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                   return null;
                 },
               ),
-              _locationLoaded
-                  ? Container(
-                      height: 300,
-                      child: Stack(
-                        children: [
-                          FlutterMap(
-                            mapController: _mapController,
-                            options: MapOptions(
-                              initialCenter: ltld.LatLng(_latitude, _longitude),
-                              initialZoom: 12,
-                              interactionOptions: const InteractionOptions(
-                                  flags: ~InteractiveFlag.doubleTapZoom),
-                              onTap: (tapPosition, point) {
-                                setState(() {
-                                  _latitude = point.latitude;
-                                  _longitude = point.longitude;
-                                  _locationController.text =
-                                      '$_latitude,$_longitude';
-                                });
-                                getAddressFromCoordinates(
-                                    _latitude, _longitude);
-                              },
-                            ),
-                            children: [
-                              openStreetMapTileLayer,
-                              MarkerLayer(
-                                markers: [
-                                  Marker(
-                                    width: 80.0,
-                                    height: 80.0,
-                                    point: ltld.LatLng(_latitude, _longitude),
-                                    child: const Icon(
-                                      Icons.location_on,
-                                      color: Colors.red,
-                                      size: 50.0,
-                                    ),
-                                  ),
-                                ],
+              Visibility(
+                visible: _isMapVisible,
+                child: _locationLoaded
+                    ? Container(
+                        height: 300,
+                        child: Stack(
+                          children: [
+                            FlutterMap(
+                              mapController: _mapController,
+                              options: MapOptions(
+                                initialCenter: ltld.LatLng(_latitude, _longitude),
+                                initialZoom: 12,
+                                interactionOptions: const InteractionOptions(
+                                    flags: ~InteractiveFlag.doubleTapZoom),
+                                onTap: (tapPosition, point) {
+                                  setState(() {
+                                    _latitude = point.latitude;
+                                    _longitude = point.longitude;
+                                    _locationController.text =
+                                        '$_latitude,$_longitude';
+                                  });
+                                  getAddressFromCoordinates(
+                                      _latitude, _longitude);
+                                },
                               ),
-                            ],
-                          ),
-                          Positioned(
-                            top: 20,
-                            left: 20,
-                            right: 20,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 16.0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: TextFormField(
-                                      controller: _searchController,
-                                      decoration: const InputDecoration(
-                                        hintText: 'Search...',
-                                        border: InputBorder.none,
+                              children: [
+                                openStreetMapTileLayer,
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      width: 80.0,
+                                      height: 80.0,
+                                      point: ltld.LatLng(_latitude, _longitude),
+                                      child: const Icon(
+                                        Icons.location_on,
+                                        color: Colors.red,
+                                        size: 50.0,
                                       ),
-                                      style:
-                                          const TextStyle(color: Colors.black),
                                     ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.search,
-                                      color: Colors.black,
+                                  ],
+                                ),
+                              ],
+                            ),
+                            Positioned(
+                              top: 20,
+                              left: 20,
+                              right: 20,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextFormField(
+                                        controller: _searchController,
+                                        decoration: const InputDecoration(
+                                          hintText: 'Search...',
+                                          border: InputBorder.none,
+                                        ),
+                                        style:
+                                            const TextStyle(color: Colors.black),
+                                      ),
                                     ),
-                                    onPressed: () {
-                                      getCoordinatesFromAddress(
-                                          _searchController.text);
-                                    },
-                                  ),
-                                ],
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.search,
+                                        color: Colors.black,
+                                      ),
+                                      onPressed: () {
+                                        getCoordinatesFromAddress(
+                                            _searchController.text);
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Center(child: CircularProgressIndicator()),
+                          ],
+                        ),
+                      )
+                    : Center(child: CircularProgressIndicator()),
+              ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Align(
