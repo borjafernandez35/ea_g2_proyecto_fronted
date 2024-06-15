@@ -4,10 +4,14 @@ import 'package:spotfinder/Services/UserService.dart';
 
 late UserService userService;
 
-
 class UserCard extends StatefulWidget {
   final String? name;
-  const UserCard(this.name ,{super.key,});
+  final String? image;
+  const UserCard(
+    this.name,
+    this.image, {
+    super.key,
+  });
 
   @override
   // ignore: library_private_types_in_public_api
@@ -28,6 +32,7 @@ class _UserCard extends State<UserCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Card(
+          color: Pallete.backgroundColor,
           surfaceTintColor: Pallete.accentColor,
           elevation: 5,
           margin: EdgeInsets.all(5),
@@ -35,22 +40,27 @@ class _UserCard extends State<UserCard> {
             children: [
               // Left side: Image
               Container(
-                margin: EdgeInsets.all(5),
-                width: 75,
-                height: 75,
-                child: Image.network(
-                  'https://via.placeholder.com/100', // Replace with your image URL
-                  fit: BoxFit.cover,
-                ),
-              ),
+                  margin: EdgeInsets.all(8),
+                  width: 65,
+                  height: 65,
+                  child: widget.image == null
+                      ? Icon(
+                          Icons.person,
+                          size: 32,
+                          color: Pallete.paleBlueColor,
+                        )
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(12), 
+                          child: Image.network(
+                            widget.image!,
+                            fit: BoxFit.cover,
+                          ),
+                        )),
               // Right side: Title, Description, and Value
               const SizedBox(width: 15),
               Text(
                 widget.name ?? 'NAME',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Pallete.textColor),
               ),
             ],
           ),

@@ -96,10 +96,10 @@ class _MyActivities extends State<MyActivities> {
     } else {
       return Scaffold(
         appBar: AppBar(
-        title: const Text(
+        title: Text(
           'My activities',
           style: TextStyle(
-            color: Pallete.backgroundColor,
+            color: Pallete.textColor,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -107,9 +107,9 @@ class _MyActivities extends State<MyActivities> {
         backgroundColor: Colors.transparent,
         leading: Builder(
           builder: (context) => IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back,
-              color: Pallete.backgroundColor,
+              color: Pallete.textColor,
             ),
             onPressed: () {
               Get.to(() => HomePage());
@@ -120,7 +120,7 @@ class _MyActivities extends State<MyActivities> {
         body: ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return Card(
-              color: Pallete.backgroundColor,
+              color: Pallete.primaryColor,
               child: InkWell(
                 onTap: () {
                   print(lista_activities[index]);
@@ -135,8 +135,8 @@ class _MyActivities extends State<MyActivities> {
         floatingActionButton: Tooltip(
           message: 'Add new activity',
           child: FloatingActionButton(
-            backgroundColor: Pallete.backgroundColor,
-            child: Icon(Icons.add),
+            backgroundColor: Pallete.textColor,
+            child: Icon(Icons.add, color: Pallete.accentColor,),
             onPressed: () {
               Get.to(() => NewActivityScreen(onUpdate: getData));
             },

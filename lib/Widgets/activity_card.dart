@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
-import 'package:spotfinder/Screens/activity_detail.dart';
-import 'package:spotfinder/Screens/activity_list_page.dart';
 
 class ActivityCard extends StatelessWidget {
   final Activity activity;
@@ -21,23 +19,26 @@ class ActivityCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Card(
-          color: Pallete.primaryColor,
+          color: Pallete.backgroundColor,
           surfaceTintColor: Pallete.accentColor,
           elevation: 5,
           margin: EdgeInsets.all(10),
           child: Row(
             children: [
               // Lado izquierdo: Imagen
-              SizedBox(width:8),
+              SizedBox(width: 8),
               Container(
-                width: 100,
-                height: 100,
-                child: Image.network(
-                  activity.imageUrl ??
-                      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
-                  fit: BoxFit.cover,
-                ),
-              ),
+                  width: 100,
+                  height: 100,
+                  child: ClipRRect(
+                    borderRadius:
+                        BorderRadius.circular(12), 
+                    child: Image.network(
+                      activity.imageUrl ??
+                          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
+                      fit: BoxFit.cover,
+                    ),
+                  )),
               // Lado derecho: Título, Descripción y Valor
               Expanded(
                 child: Padding(
@@ -47,15 +48,16 @@ class ActivityCard extends StatelessWidget {
                     children: [
                       Text(
                         activity.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Pallete.textColor),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Description: ${activity.description}',
-                        style: const TextStyle(fontSize: 14),
+                        style:
+                            TextStyle(fontSize: 14, color: Pallete.textColor),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -91,21 +93,29 @@ class ActivityCard extends StatelessWidget {
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
-                                    return const Row(
+                                    return Row(
                                       children: [
-                                        Icon(Icons.location_on,
+                                        const Icon(Icons.location_on,
                                             color: Colors.red, size: 17),
                                         SizedBox(width: 4),
-                                        Text('Cargando dirección...'),
+                                        Text(
+                                          'Cargando dirección...',
+                                          style: TextStyle(
+                                              color: Pallete.textColor),
+                                        ),
                                       ],
                                     );
                                   } else if (snapshot.hasError) {
-                                    return const Row(
+                                    return Row(
                                       children: [
-                                        Icon(Icons.location_on,
+                                        const Icon(Icons.location_on,
                                             color: Colors.red, size: 17),
-                                        SizedBox(width: 4),
-                                        Text('Error al cargar dirección'),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Error al cargar dirección',
+                                          style: TextStyle(
+                                              color: Pallete.textColor),
+                                        ),
                                       ],
                                     );
                                   } else {
@@ -119,6 +129,8 @@ class ActivityCard extends StatelessWidget {
                                             snapshot.data ??
                                                 'Dirección no encontrada',
                                             overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                color: Pallete.textColor),
                                           ),
                                         ),
                                       ],
@@ -126,7 +138,10 @@ class ActivityCard extends StatelessWidget {
                                   }
                                 },
                               )
-                            : const Text('Ubicación no disponible'),
+                            : Text(
+                                'Ubicación no disponible',
+                                style: TextStyle(color: Pallete.textColor),
+                              ),
                       ),
                     ],
                   ),

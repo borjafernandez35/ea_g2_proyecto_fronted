@@ -22,7 +22,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreen extends State<ProfileScreen> {
-
   bool isLoading = true;
 
   @override
@@ -127,7 +126,7 @@ class _ProfileScreen extends State<ProfileScreen> {
       return Center(child: CircularProgressIndicator());
     } else {
       return Scaffold(
-        backgroundColor: Pallete.whiteColor,
+        backgroundColor: Pallete.backgroundColor,
         body: Padding(
           padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
           child: Column(
@@ -148,7 +147,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                           radius: 50,
                           backgroundColor: Pallete.accentColor,
                           child: user?.image == null
-                              ? const Icon(
+                              ? Icon(
                                   Icons.person,
                                   size: 60,
                                   color: Pallete.paleBlueColor,
@@ -168,32 +167,31 @@ class _ProfileScreen extends State<ProfileScreen> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               shape: CircleBorder(),
-                              backgroundColor: Pallete.paleBlueColor,
+                              backgroundColor: Pallete.primaryColor,
                               padding: EdgeInsets.all(8),
                             ),
                             onPressed: () {
                               _showImageSourceActionSheet(context);
                             },
-                            child: const Icon(
+                            child: Icon(
                               Icons.edit,
-                              color: Pallete.primaryColor,
+                              color: Pallete.paleBlueColor,
                               size: 24,
                             ),
                           ),
                         ),
                         // Texto del nombre del usuario
                         Positioned(
-                          left: 140, // Ajusta la posición horizontal del nombre
+                          left: 140,
                           top: 27,
                           child: Align(
-                            alignment: Alignment
-                                .centerLeft, // Alinea el texto a la izquierda
+                            alignment: Alignment.centerLeft,
                             child: Text(
                               user!.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 26.0,
                                 fontWeight: FontWeight.bold,
-                                color: Pallete.primaryColor,
+                                color: Pallete.accentColor,
                               ),
                             ),
                           ),
@@ -212,11 +210,11 @@ class _ProfileScreen extends State<ProfileScreen> {
                             Get.to(() =>
                                 UserDetailsPage(user!, onUpdate: getData));
                           },
-                          child: const Align(
+                          child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'My profile',
-                              style: TextStyle(color: Pallete.primaryColor),
+                              style: TextStyle(color: Pallete.accentColor),
                             ),
                           ),
                         ),
@@ -225,11 +223,11 @@ class _ProfileScreen extends State<ProfileScreen> {
                           onPressed: () {
                             Get.to(() => MyActivities());
                           },
-                          child: const Align(
+                          child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'My activities',
-                              style: TextStyle(color: Pallete.primaryColor),
+                              style: TextStyle(color: Pallete.accentColor),
                             ),
                           ),
                         ),
@@ -239,11 +237,11 @@ class _ProfileScreen extends State<ProfileScreen> {
                             Get.to(() =>
                                 MyCommentsScreen(user!, onUpdate: getData));
                           },
-                          child: const Align(
+                          child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'My reviews',
-                              style: TextStyle(color: Pallete.primaryColor),
+                              style: TextStyle(color: Pallete.accentColor),
                             ),
                           ),
                         ),
@@ -252,13 +250,11 @@ class _ProfileScreen extends State<ProfileScreen> {
                           onPressed: () {
                             // Navegar a otra pantalla (puedes reemplazar esta función)
                           },
-                          child: const Align(
+                          child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'Preferences',
-                              style: TextStyle(
-                                  color:
-                                      Pallete.primaryColor), // Texto en negro
+                              style: TextStyle(color: Pallete.accentColor),
                             ),
                           ),
                         ),
@@ -272,7 +268,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                             foregroundColor:
                                 Pallete.salmonColor, // Color del texto
                           ),
-                          child: const Align(
+                          child: Align(
                             alignment: Alignment.centerLeft,
                             child: Row(
                               children: [
@@ -280,14 +276,10 @@ class _ProfileScreen extends State<ProfileScreen> {
                                   Icons.exit_to_app, // Icono de log out
                                   color: Pallete.salmonColor, // Color del icono
                                 ),
-                                SizedBox(
-                                    width:
-                                        8), // Espaciado entre el icono y el texto
+                                const SizedBox(width: 8),
                                 Text(
                                   'Log out',
-                                  style: TextStyle(
-                                      color: Pallete
-                                          .salmonColor), // Color del texto
+                                  style: TextStyle(color: Pallete.salmonColor),
                                 ),
                               ],
                             ),
@@ -302,23 +294,26 @@ class _ProfileScreen extends State<ProfileScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
                 child: TextButton(
-                  onPressed: () {
-                    // Acción para el nuevo botón en la parte inferior
-                    Get.toNamed('/settings');
+                  onPressed: () async {
+                    final result = await Get.toNamed('/settings');
+
+                    if (result == true) {
+                      setState(() {});
+                    }
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.all(12.0), // Padding del botón
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(
                         Icons.settings, // Icono de configuración
-                        color: Pallete.backgroundColor,
+                        color: Pallete.textColor,
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
                         'Settings',
-                        style: TextStyle(color: Pallete.backgroundColor),
+                        style: TextStyle(color: Pallete.textColor),
                         textAlign: TextAlign.left,
                       ),
                     ],

@@ -24,10 +24,10 @@ class ParamTextBox extends StatelessWidget {
       readOnly: !editable!,
       decoration: InputDecoration(
         labelText: text,
-        labelStyle: const TextStyle(
-          color: Pallete.accentColor, // Color del texto del label
+        labelStyle: TextStyle(
+          color: Pallete.paleBlueColor, // Color del texto del label
         ),
-        border: const OutlineInputBorder(
+        border: OutlineInputBorder(
           borderSide: BorderSide(
             color: Pallete.accentColor, // Color del borde
           ),
@@ -35,7 +35,7 @@ class ParamTextBox extends StatelessWidget {
       ),
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
-      style: TextStyle(color: Pallete.backgroundColor),
+      style: TextStyle(color: Pallete.textColor),
     );
   }
 }

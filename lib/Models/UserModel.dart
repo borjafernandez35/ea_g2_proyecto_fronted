@@ -1,6 +1,4 @@
-import 'package:latlong2/latlong.dart';
 
-import 'package:latlong2/latlong.dart';
 
 class User {
   final String? id;

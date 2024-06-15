@@ -1,5 +1,6 @@
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:latlong2/latlong.dart' as ltlg;
 import 'package:flutter/foundation.dart';
 import 'package:spotfinder/Resources/pallete.dart';
@@ -32,6 +33,7 @@ class _MapScreen extends State<MapScreen> {
   bool isLoading = true;
   Position? position;
   late ltlg.LatLng initialLocation;
+  late TileLayer _tileLayer;
 
   @override
   void initState() {
@@ -39,6 +41,27 @@ class _MapScreen extends State<MapScreen> {
     activityService = ActivityService();
     userService = UserService();
     getData();
+    setupMapTheme();
+
+  }
+
+  void setupMapTheme() async {
+    final box = GetStorage();
+    String? theme = box.read('theme');
+    
+    setState(() {
+      if (theme == 'Dark') {
+        _tileLayer = TileLayer(
+          urlTemplate: 'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+        );
+      } else {
+        _tileLayer = TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+        );
+      }
+    });
   }
 
   void getData() async {
@@ -86,7 +109,7 @@ class _MapScreen extends State<MapScreen> {
           width: 60,
           height: 60,
           alignment: Alignment.centerLeft,
-          child: const Icon(
+          child: Icon(
             Icons.circle,
             size: 20,
             color: Pallete.salmonColor
@@ -184,7 +207,7 @@ class _MapScreen extends State<MapScreen> {
                   },
                 );
               },
-              child: const Icon(Icons.location_pin,
+              child: Icon(Icons.location_pin,
                   size: 60, color: Pallete.salmonColor),
             ),
           ),
@@ -231,7 +254,7 @@ class _MapScreen extends State<MapScreen> {
           width: 60,
           height: 60,
           alignment: Alignment.centerLeft,
-          child: const Icon(
+          child: Icon(
             Icons.circle,
             size: 20,
             color: Pallete.salmonColor,
@@ -257,7 +280,7 @@ class _MapScreen extends State<MapScreen> {
                   flags: ~InteractiveFlag.doubleTapZoom),
             ),
             children: [
-              openStreetMapTileLayer,
+              _tileLayer,
               MarkerLayer(markers: markers),
             ],
           ),
@@ -275,9 +298,9 @@ class _MapScreen extends State<MapScreen> {
                       text: 'Scaperoom...',
                     ),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                           size: 40,
-                          color: Pallete.backgroundColor,
+                          color: Pallete.textColor,
                           LineIcons.searchLocation),
                       onPressed: () {},
                     ),
@@ -293,10 +316,6 @@ class _MapScreen extends State<MapScreen> {
   }
 }
 
-TileLayer get openStreetMapTileLayer => TileLayer(
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-    );
 
 class MapController extends GetxController {
   final TextEditingController searchBarController = TextEditingController();

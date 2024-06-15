@@ -1,5 +1,4 @@
 import 'dart:html';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -33,31 +32,28 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (token != null) {
-        if (Get.currentRoute != '/home' &&
-            !Get.currentRoute.contains('activity') &&
-            !Get.currentRoute.contains('settings')) {
-          Get.offAllNamed('/home');
-        }
-      }
-    });
-
     final box = GetStorage();
     String? font = box.read('font');
-    TextTheme? textTheme = getFontTextTheme(font);
 
     String? theme = box.read('theme');
     if (theme == null) {
       box.write('theme', "Light");
     }
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (token != null) {
+        if (Get.currentRoute != '/home' &&
+            !Get.currentRoute.contains('activity') &&
+            !Get.currentRoute.contains('settings')) {
+          Get.offAllNamed('/settings');
+        }
+      }
+    });
+
     return GetMaterialApp(
       title: 'SpotFinder',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Pallete.whiteColor,
-        textTheme: textTheme,
-      ),
+      theme: getTheme(theme, font),
+
       getPages: [
         GetPage(name: '/', page: () => TitleScreen()),
         GetPage(name: '/home', page: () => HomePage()),
@@ -82,5 +78,30 @@ class MyApp extends StatelessWidget {
         return null;
     }
     return null;
+  }
+
+  ThemeData? getTheme(String? theme, String? font) {
+    ThemeData themeData;
+
+    if (theme == "Dark") {
+      Pallete.setDarkTheme();
+      themeData = ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: Pallete.backgroundColor,
+        textTheme: getFontTextTheme(font),
+      );
+    } else if (theme == "Custom") {
+      Pallete.setCustomTheme();
+      themeData = ThemeData.light().copyWith(
+        scaffoldBackgroundColor: Pallete.backgroundColor,
+        textTheme: getFontTextTheme(font),
+      );
+    } else {
+      Pallete.setLightTheme();
+      themeData = ThemeData.light().copyWith(
+        scaffoldBackgroundColor: Pallete.backgroundColor,
+        textTheme: getFontTextTheme(font),
+      );
+    }
+    return themeData;
   }
 }

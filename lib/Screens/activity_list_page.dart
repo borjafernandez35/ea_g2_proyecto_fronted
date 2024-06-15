@@ -127,9 +127,9 @@ class _ActivityListPageState extends State<ActivityListPage> {
       return Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back,
-              color:Pallete.backgroundColor, 
+              color:Pallete.textColor, 
             ),
             onPressed: () {
               Get.to(HomePage()); 
@@ -138,10 +138,10 @@ class _ActivityListPageState extends State<ActivityListPage> {
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Your feed',
                 style: TextStyle(
-                  color: Pallete.backgroundColor,
+                  color: Pallete.textColor,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -149,20 +149,20 @@ class _ActivityListPageState extends State<ActivityListPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 decoration: BoxDecoration(
-                  color: Colors.black,
+                  color: Pallete.textColor,
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<double>(
                     value: selectedDistance,
                     onChanged: _onDistanceChanged,
-                    dropdownColor: Colors.black,
-                    style: const TextStyle(color: Colors.white),
+                    dropdownColor: Pallete.textColor,
+                    style: TextStyle(color: Pallete.backgroundColor),
                     items: <double>[5.0, 10.0, 20.0, 50.0, 100.0]
                         .map((double value) {
                       return DropdownMenuItem<double>(
                         value: value,
-                        child: Text('Hasta $value km', style: const TextStyle(color: Colors.white)),
+                        child: Text('Hasta $value km', style: TextStyle(color: Pallete.backgroundColor)),
                       );
                     }).toList(),
                   ),
@@ -184,7 +184,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
                         : SizedBox(); // Mostrar un indicador de carga al final de la lista
                   }
                   return Card(
-                    color: Pallete.backgroundColor,
+                    color: Pallete.primaryColor,
                     child: InkWell(
                       onTap: () {
                         Get.toNamed(
@@ -210,8 +210,8 @@ class _ActivityListPageState extends State<ActivityListPage> {
         floatingActionButton: Tooltip(
           message: 'Add new activity',
           child: FloatingActionButton(
-            backgroundColor: Pallete.backgroundColor,
-            child: const Icon(Icons.add),
+            backgroundColor: Pallete.textColor,
+            child: Icon(Icons.add, color: Pallete.backgroundColor),
             onPressed: () {
               Get.to(() => NewActivityScreen(onUpdate: getData));
                     listaActivities=[];

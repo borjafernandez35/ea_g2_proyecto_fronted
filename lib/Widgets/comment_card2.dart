@@ -92,7 +92,7 @@ class _CommentCardState extends State<CommentCard> {
                         radius: 15,
                         backgroundColor: Pallete.accentColor,
                         child: widget.user.image == null
-                            ? const Icon(
+                            ? Icon(
                                 Icons.person,
                                 size: 17,
                                 color: Pallete.paleBlueColor,
@@ -125,7 +125,7 @@ class _CommentCardState extends State<CommentCard> {
                 children: [
                   Expanded(
                     child: Card(
-                      color: Pallete.whiteColor,
+                      color: Pallete.backgroundColor,
                       elevation: 0,
                       margin: EdgeInsets.fromLTRB(8, 0, 8, 8),
                       child: Stack(
@@ -145,8 +145,8 @@ class _CommentCardState extends State<CommentCard> {
                                         )
                                       : Text(
                                           widget.comment.title,
-                                          style: const TextStyle(
-                                            color: Colors.black,
+                                          style: TextStyle(
+                                            color: Pallete.textColor,
                                             fontWeight: FontWeight.bold,
                                             fontSize: 18,
                                           ),
@@ -159,9 +159,9 @@ class _CommentCardState extends State<CommentCard> {
                                         )
                                       : Text(
                                           widget.comment.content,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 16,
-                                            color: Colors.black,
+                                            color: Pallete.textColor,
                                           ),
                                         ),
                                   const SizedBox(height: 8),

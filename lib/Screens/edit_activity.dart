@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as ltld;
@@ -40,7 +41,8 @@ class _EditActivityState extends State<EditActivity> {
   double _latitude = 0;
   double _longitude = 0;
   bool _locationLoaded = false;
-  bool _isEditing = false; // Estado de edición
+  bool _isEditing = false; 
+  late TileLayer _tileLayer;
 
   @override
   void initState() {
@@ -48,6 +50,7 @@ class _EditActivityState extends State<EditActivity> {
     _fetchUserId();
     _selectLocation();
     activityService = ActivityService();
+    _setupMapTheme();
 
     // Inicializar los controladores con los datos de la actividad
     _nameController.text = widget.activity.name;
@@ -62,7 +65,25 @@ class _EditActivityState extends State<EditActivity> {
     final userId = await UserService().getId();
     setState(() {
       _userId = userId!;
-      print(_userId);
+    });
+  }
+
+  void _setupMapTheme() async {
+    final box = GetStorage();
+    String? theme = box.read('theme');
+    
+    setState(() {
+      if (theme == 'Dark') {
+        _tileLayer = TileLayer(
+          urlTemplate: 'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+        );
+      } else {
+        _tileLayer = TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+        );
+      }
     });
   }
 
@@ -242,7 +263,7 @@ class _EditActivityState extends State<EditActivity> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Edit Activity',
           style: TextStyle(
             color: Pallete.backgroundColor,
@@ -252,7 +273,7 @@ class _EditActivityState extends State<EditActivity> {
         ),
         backgroundColor: Colors.black.withOpacity(0.7),
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back,
             color: Pallete.backgroundColor,
           ),
@@ -398,7 +419,7 @@ class _EditActivityState extends State<EditActivity> {
                               },
                             ),
                             children: [
-                              openStreetMapTileLayer,
+                              _tileLayer,
                               MarkerLayer(
                                 markers: [
                                   Marker(
@@ -523,9 +544,9 @@ class _EditActivityState extends State<EditActivity> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Pallete.salmonColor),
+            borderSide: BorderSide(color: Pallete.salmonColor),
           ),
-          floatingLabelStyle: const TextStyle(
+          floatingLabelStyle: TextStyle(
             color: Pallete.salmonColor,
             fontWeight: FontWeight.bold,
           ),
@@ -538,7 +559,3 @@ class _EditActivityState extends State<EditActivity> {
   }
 }
 
-TileLayer get openStreetMapTileLayer => TileLayer(
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-    );

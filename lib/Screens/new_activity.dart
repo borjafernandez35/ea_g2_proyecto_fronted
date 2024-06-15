@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
@@ -38,12 +40,14 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   double _longitude = 1.9863014220734023;
   bool _locationLoaded = false;
   bool _isMapVisible = false;
+  late TileLayer _tileLayer;
 
   @override
   void initState() {
     super.initState();
     _fetchUserId();
     _selectLocation();
+    _setupMapTheme();
   }
 
   Future<void> _fetchUserId() async {
@@ -52,6 +56,26 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
       _userId = userId!;
     });
   }
+
+  void _setupMapTheme() async {
+    final box = GetStorage();
+    String? theme = box.read('theme');
+    
+    setState(() {
+      if (theme == 'Dark') {
+        _tileLayer = TileLayer(
+          urlTemplate: 'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+        );
+      } else {
+        _tileLayer = TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+        );
+      }
+    });
+  }
+
 
   Future<void> _pickImage() async {
     final XFile? pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -117,9 +141,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
 
   Future<void> _selectLocation() async {
     try {
-      final Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high,);
       setState(() {
         _latitude = position.latitude;
         _longitude = position.longitude;
@@ -189,28 +211,26 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
         final Map<String, dynamic> address = data['address'];
-        if (address != null) {
-          final String road = address['road'] ?? '';
-          final String houseNumber = address['house_number'] ?? '';
-          final String postcode = address['postcode'] ?? '';
-          final String city = address['city'] ?? address['town'] ?? address['village'] ?? '';
-          final String country = address['country'] ?? '';
+        final String road = address['road'] ?? '';
+        final String houseNumber = address['house_number'] ?? '';
+        final String postcode = address['postcode'] ?? '';
+        final String city = address['city'] ?? address['town'] ?? address['village'] ?? '';
+        final String country = address['country'] ?? '';
 
-          final List<String> parts = [];
+        final List<String> parts = [];
 
-          if (road.isNotEmpty) parts.add(road);
-          if (houseNumber.isNotEmpty) parts.add(houseNumber);
-          if (postcode.isNotEmpty) parts.add(postcode);
-          if (city.isNotEmpty) parts.add(city);
-          if (country.isNotEmpty) parts.add(country);
+        if (road.isNotEmpty) parts.add(road);
+        if (houseNumber.isNotEmpty) parts.add(houseNumber);
+        if (postcode.isNotEmpty) parts.add(postcode);
+        if (city.isNotEmpty) parts.add(city);
+        if (country.isNotEmpty) parts.add(country);
 
-          final String formattedAddress = parts.join(', ');
-          setState(() {
-            _searchController.text = formattedAddress;
-          });
-          return formattedAddress;
-        }
-      }
+        final String formattedAddress = parts.join(', ');
+        setState(() {
+          _searchController.text = formattedAddress;
+        });
+        return formattedAddress;
+            }
       return null;
     } catch (e) {
       print('Error al obtener la dirección desde las coordenadas: $e');
@@ -222,15 +242,15 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'New activity',
           style: TextStyle(
-            color: Colors.white,
+            color: Pallete.textColor,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.black.withOpacity(0.7),
+        backgroundColor: Pallete.backgroundColor.withOpacity(0.7),
       ),
       body: SingleChildScrollView(
         child: Form(
@@ -248,16 +268,16 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                       Container(
                         height: 100,
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
+                          color: Pallete.primaryColor.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white),
+                          border: Border.all(color: Pallete.textColor),
                         ),
                         child: _image == null
-                            ? const Center(
+                            ? Center(
                                 child: Text(
                                   'Tap to select an image\nAccepted formats: JPG, PNG',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(color: Colors.white),
+                                  style: TextStyle(color: Pallete.textColor),
                                 ),
                               )
                             : Image.memory(
@@ -269,36 +289,39 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                   ),
                 ),
               ),
+              Padding(padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: 'Activity Name',
-                  labelStyle: const TextStyle(
-                    color: Colors.white,
+                  labelStyle: TextStyle(
+                    color: Pallete.textColor,
                     fontWeight: FontWeight.bold,
                   ),
-                  fillColor: Colors.black.withOpacity(0.7),
+                  fillColor: Pallete.primaryColor.withOpacity(0.7),
                   filled: true,
                   contentPadding: const EdgeInsets.symmetric(
                       vertical: 10.0, horizontal: 12.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: Pallete.textColor),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: Pallete.textColor),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Pallete.salmonColor),
+                    borderSide: BorderSide(color: Pallete.salmonColor),
                   ),
-                  floatingLabelStyle: const TextStyle(
+                  floatingLabelStyle: TextStyle(
                     color: Pallete.salmonColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: Pallete.textColor),
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the activity name';
@@ -312,32 +335,32 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                 maxLines: 5,
                 decoration: InputDecoration(
                   labelText: 'Description',
-                  labelStyle: const TextStyle(
-                    color: Colors.white,
+                  labelStyle: TextStyle(
+                    color: Pallete.textColor,
                     fontWeight: FontWeight.bold,
                   ),
-                  fillColor: Colors.black.withOpacity(0.7),
+                  fillColor: Pallete.primaryColor.withOpacity(0.7),
                   filled: true,
                   contentPadding: const EdgeInsets.symmetric(
                       vertical: 10.0, horizontal: 12.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: Pallete.textColor),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: Pallete.textColor),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Pallete.salmonColor),
+                    borderSide: BorderSide(color: Pallete.salmonColor),
                   ),
-                  floatingLabelStyle: const TextStyle(
+                  floatingLabelStyle: TextStyle(
                     color: Pallete.salmonColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: Pallete.textColor),
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a description';
@@ -354,32 +377,32 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                       controller: _locationController,
                       decoration: InputDecoration(
                         labelText: 'Location',
-                        labelStyle: const TextStyle(
-                          color: Colors.white,
+                        labelStyle: TextStyle(
+                          color: Pallete.textColor,
                           fontWeight: FontWeight.bold,
                         ),
-                        fillColor: Colors.black.withOpacity(0.7),
+                        fillColor: Pallete.primaryColor.withOpacity(0.7),
                         filled: true,
                         contentPadding: const EdgeInsets.symmetric(
                             vertical: 10.0, horizontal: 12.0),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.white),
+                          borderSide:  BorderSide(color: Pallete.textColor),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.white),
+                          borderSide: BorderSide(color: Pallete.textColor),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Pallete.salmonColor),
+                          borderSide: BorderSide(color: Pallete.salmonColor),
                         ),
-                        floatingLabelStyle: const TextStyle(
+                        floatingLabelStyle: TextStyle(
                           color: Pallete.salmonColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: Pallete.textColor),
                       validator: (String? value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a location';
@@ -391,7 +414,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                   IconButton(
                     icon: Icon(
                       _isMapVisible ? Icons.close : Icons.map,
-                      color: Colors.black,
+                      color: Pallete.textColor,
                     ),
                     onPressed: () {
                       setState(() {
@@ -410,32 +433,32 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                 ),
                 decoration: InputDecoration(
                   labelText: 'Date',
-                  labelStyle: const TextStyle(
-                    color: Colors.white,
+                  labelStyle: TextStyle(
+                    color: Pallete.textColor,
                     fontWeight: FontWeight.bold,
                   ),
-                  fillColor: Colors.black.withOpacity(0.7),
+                  fillColor: Pallete.primaryColor.withOpacity(0.7),
                   filled: true,
                   contentPadding: const EdgeInsets.symmetric(
                       vertical: 10.0, horizontal: 12.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: Pallete.textColor),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: Pallete.textColor),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Pallete.salmonColor),
+                    borderSide: BorderSide(color: Pallete.salmonColor),
                   ),
-                  floatingLabelStyle: const TextStyle(
+                  floatingLabelStyle: TextStyle(
                     color: Pallete.salmonColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: Pallete.textColor),
                 onTap: () => _selectDate(context),
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
@@ -444,6 +467,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 24),
               Visibility(
                 visible: _isMapVisible,
                 child: _locationLoaded
@@ -470,7 +494,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                                 },
                               ),
                               children: [
-                                openStreetMapTileLayer,
+                                _tileLayer,
                                 MarkerLayer(
                                   markers: [
                                     Marker(
@@ -494,7 +518,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                               child: Container(
                                 padding: EdgeInsets.symmetric(horizontal: 16.0),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: Pallete.backgroundColor,
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                                 child: Row(
@@ -507,13 +531,13 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                                           border: InputBorder.none,
                                         ),
                                         style:
-                                            const TextStyle(color: Colors.black),
+                                          TextStyle(color: Pallete.textColor),
                                       ),
                                     ),
                                     IconButton(
-                                      icon: const Icon(
+                                      icon: Icon(
                                         Icons.search,
-                                        color: Colors.black,
+                                        color: Pallete.textColor,
                                       ),
                                       onPressed: () {
                                         getCoordinatesFromAddress(
@@ -539,6 +563,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                   ),
                 ),
               ),
+                ],
+              ),),
             ],
           ),
         ),
@@ -547,7 +573,3 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   }
 }
 
-TileLayer get openStreetMapTileLayer => TileLayer(
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-    );

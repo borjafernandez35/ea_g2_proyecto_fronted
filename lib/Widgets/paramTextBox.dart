@@ -29,14 +29,14 @@ class ParamTextBox extends StatelessWidget {
           filled: true, // Habilita el relleno del campo de texto
           fillColor: Colors.white, // Establece el color de fondo blanco
           enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
+          borderSide: BorderSide(
             color: Pallete.backgroundColor,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(50),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(
+            borderSide: BorderSide(
               color: Pallete.salmonColor,
               width: 2,
             ),

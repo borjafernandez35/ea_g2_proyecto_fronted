@@ -136,12 +136,12 @@ class _MyCommentsScreen extends State<MyCommentsScreen> {
     } else {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: Pallete.whiteColor,
-          iconTheme: IconThemeData(color: Pallete.backgroundColor),
-          title: const Text(
+          backgroundColor: Pallete.backgroundColor,
+          iconTheme: IconThemeData(color: Pallete.textColor),
+          title: Text(
             'My reviews',
             style: TextStyle(
-                color: Pallete.backgroundColor), // Color del texto del app bar
+                color: Pallete.textColor),
           ),
         ),
         body: SingleChildScrollView(

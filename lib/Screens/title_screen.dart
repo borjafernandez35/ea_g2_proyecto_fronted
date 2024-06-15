@@ -61,9 +61,8 @@ class TitleScreen extends StatelessWidget {
                     ),
                     TextSpan(
                       text: "Sign up",
-                      style: const TextStyle(
-                        color: Pallete
-                            .salmonColor,
+                      style: TextStyle(
+                        color: Pallete.salmonColor,
                         fontWeight: FontWeight.bold,
                         decoration: TextDecoration.underline, // Subraya el texto "Sign up"
                       ),

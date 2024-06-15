@@ -5,6 +5,7 @@ import 'package:spotfinder/Screens/activity_list_page.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:get/get.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:spotfinder/Screens/settingsScreen.dart';
 import 'profile_screen.dart';
 import 'chatScreen.dart';
 import 'package:latlong2/latlong.dart' as ltlg;
@@ -30,9 +31,18 @@ class _nameState extends State<HomePage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    EventBus().onThemeChanged.listen((theme) {
+      setState(() {
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Pallete.backgroundColor,
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
@@ -58,25 +68,25 @@ class _nameState extends State<HomePage> {
               activeColor: Pallete.salmonColor,
               iconSize: 28,
               tabBackgroundColor: Colors.grey[100]!,
-              color: Pallete.whiteColor,
-              tabs: const [
+              color: Pallete.textColor,
+              tabs: [
                 GButton(
-                  iconColor: Colors.white,
+                  iconColor: Pallete.textColor,
                   icon: LineIcons.mapMarker,
                   text: "Home"
                 ),
                 GButton(
-                  iconColor: Colors.white,
+                  iconColor:Pallete.textColor,
                   icon: LineIcons.hiking,
                   text: "Activities"
                 ),
                 GButton(
-                  iconColor: Colors.white,
+                  iconColor:Pallete.textColor,
                   icon: LineIcons.comment,
                   text: "Chats"
                 ),
                 GButton(
-                  iconColor: Colors.white,
+                  iconColor: Pallete.textColor,
                   icon: LineIcons.user,
                   text: "Profile"
                 ),

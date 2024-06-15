@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/main.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -9,7 +13,9 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final box = GetStorage();
+  final _eventBus = EventBus(); 
   bool _isDyslexicFontEnabled = false;
+  bool _settingsChanged = false;
   String? _selectedTheme;
 
   @override
@@ -32,6 +38,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     runApp(
       MyApp(), // Se reinicia la aplicación con la nueva configuración
     );
+    setState(() {
+      _settingsChanged = true;
+    });
+    _eventBus.notifyThemeChanged(theme); 
   }
 
   void _showThemeDialog(BuildContext context) {
@@ -44,12 +54,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Select Theme', style: TextStyle(color: Colors.black)),
+                  Text('Select Theme',
+                      style: TextStyle(color: Pallete.backgroundColor)),
                   IconButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Get.back(result: _settingsChanged);
                     },
-                    icon: Icon(Icons.close),
+                    icon: const Icon(Icons.close),
                   ),
                 ],
               ),
@@ -57,7 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   RadioListTile<String>(
-                    title: Text('Light'),
+                    title: const Text('Light'),
                     value: 'Light',
                     groupValue: _selectedTheme,
                     onChanged: (value) {
@@ -68,7 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     activeColor: Colors.green,
                   ),
                   RadioListTile<String>(
-                    title: Text('Dark'),
+                    title: const Text('Dark'),
                     value: 'Dark',
                     groupValue: _selectedTheme,
                     onChanged: (value) {
@@ -79,7 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     activeColor: Colors.green,
                   ),
                   RadioListTile<String>(
-                    title: Text('Custom'),
+                    title: const Text('Colorblind Accessible'),
                     value: 'Custom',
                     groupValue: _selectedTheme,
                     onChanged: (value) {
@@ -116,8 +127,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
+        backgroundColor: Pallete.backgroundColor,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: Pallete.textColor,
+          ),
+          onPressed: () {
+Navigator.pop(context,  _settingsChanged);         },
+        ),
+        title: Text(
+          'Settings',
+          style: TextStyle(color: Pallete.textColor), 
+        ),
       ),
+      backgroundColor: Pallete.backgroundColor,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -129,9 +153,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               height: 40,
               child: SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text(
+                title: Text(
                   'Enable Dyslexic-Friendly Font',
-                  style: TextStyle(color: Colors.black),
+                  style: TextStyle(color: Pallete.textColor),
                 ),
                 value: _isDyslexicFontEnabled,
                 onChanged: (bool value) {
@@ -144,7 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 inactiveThumbColor: Colors.grey,
                 inactiveTrackColor: Colors.grey[300],
                 activeTrackColor: Colors.green[200],
-                secondary: Icon(Icons.text_fields, color: Colors.black),
+                secondary: Icon(Icons.text_fields, color: Pallete.textColor),
               ),
             ),
             const SizedBox(height: 20),
@@ -152,14 +176,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () {
                 _showThemeDialog(context);
               },
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.color_lens, color: Colors.black),
-                  SizedBox(width: 8, height: 40),
+                  Icon(Icons.color_lens, color: Pallete.textColor),
+                  const SizedBox(width: 8, height: 40),
                   Text(
                     'Theme',
                     style: TextStyle(
-                      color: Colors.black,
+                      color: Pallete.textColor,
                       fontSize: 16,
                     ),
                   ),
@@ -171,71 +195,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-}
-
-// Main app class with theme selection logic
-class MyApp extends StatelessWidget {
-  final box = GetStorage();
 
   @override
-  Widget build(BuildContext context) {
-    String theme = box.read('theme') ?? 'Light';
-    ThemeData themeData;
-
-    switch (theme) {
-      case 'Dark':
-        themeData = ThemeData.dark().copyWith(
-          primaryColor: Colors.white,
-          backgroundColor: Colors.black,
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[800],
-            ),
-          ),
-        );
-        break;
-      case 'Custom':
-        themeData = ThemeData.custom().copyWith(
-          primaryColor: Color(0xFF7E1E9C), 
-          backgroundColor: Color(0xFFF97306),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF7E1E9C), // morado
-            ),
-          ),
-        );
-        break;
-      case 'Light':
-      default:
-        themeData = ThemeData.light().copyWith(
-          primaryColor: Colors.black,
-          backgroundColor: Colors.white,
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[300],
-            ),
-          ),
-        );
-        break;
-    }
-
-    return MaterialApp(
-      theme: themeData,
-      home: SettingsScreen(),
-    );
+  void dispose() {
+    _eventBus.dispose(); // Libera recursos del EventBus
+    super.dispose();
   }
 }
 
-class HomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Home'),
-      ),
-      body: Center(
-        child: Text('Home Screen'),
-      ),
-    );
+class EventBus {
+  static final EventBus _singleton = EventBus._internal();
+  factory EventBus() => _singleton;
+  
+  EventBus._internal();
+  
+  final _themeChangeController = StreamController<String>.broadcast();
+  
+  Stream<String> get onThemeChanged => _themeChangeController.stream;
+  
+  void notifyThemeChanged(String theme) {
+    _themeChangeController.sink.add(theme);
+  }
+  
+  void dispose() {
+    _themeChangeController.close();
   }
 }
+
