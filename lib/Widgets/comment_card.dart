@@ -85,7 +85,7 @@ class _CommentCardState extends State<CommentCard> {
                 child: GestureDetector(
                   child: Text(
                     widget.activity.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
                       color: Pallete.paleBlueColor,
@@ -99,16 +99,20 @@ class _CommentCardState extends State<CommentCard> {
                   Container(
                     width: 100,
                     height: 100,
-                    padding: EdgeInsets.fromLTRB(6, 0, 0, 0),
+                    padding: EdgeInsets.fromLTRB(6, 0, 0, 8),
+                    child: ClipRRect(
+                    borderRadius:
+                        BorderRadius.circular(12), 
                     child: Image.network(
-                      'https://via.placeholder.com/100',
+                      widget.activity.imageUrl ??
+                          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
                       fit: BoxFit.cover,
                     ),
-                  ),
+                  )),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Card(
-                      color: Pallete.whiteColor,
+                      color: Pallete.backgroundColor,
                       elevation: 0,
                       margin: EdgeInsets.fromLTRB(0, 0, 8, 8),
                       child: Stack(
@@ -128,8 +132,8 @@ class _CommentCardState extends State<CommentCard> {
                                         )
                                       : Text(
                                           widget.comment.title,
-                                          style: const TextStyle(
-                                            color: Colors.black,
+                                          style: TextStyle(
+                                            color: Pallete.textColor,
                                             fontWeight: FontWeight.bold,
                                             fontSize: 18,
                                           ),
@@ -142,9 +146,9 @@ class _CommentCardState extends State<CommentCard> {
                                         )
                                       : Text(
                                           widget.comment.content,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 16,
-                                            color: Colors.black,
+                                            color: Pallete.textColor,
                                           ),
                                         ),
                                   const SizedBox(height: 8),

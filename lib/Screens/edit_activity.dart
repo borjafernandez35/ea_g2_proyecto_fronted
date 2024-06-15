@@ -1,51 +1,64 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'package:spotfinder/Resources/pallete.dart';
-import 'package:spotfinder/Screens/my_activities.dart';
-import 'package:spotfinder/Services/ActivityService.dart';
-import 'package:spotfinder/Models/ActivityModel.dart';
-import 'package:spotfinder/Services/UserService.dart';
-import 'package:spotfinder/Widgets/button_red.dart';
-import 'package:spotfinder/Widgets/button_sign_up.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as ltld;
 import 'package:http/http.dart' as http;
 
+import 'package:spotfinder/Resources/pallete.dart';
+import 'package:spotfinder/Screens/my_activities.dart';
+import 'package:spotfinder/Services/ActivityService.dart';
+import 'package:spotfinder/Services/UserService.dart';
+import 'package:spotfinder/Models/ActivityModel.dart';
+
 class EditActivity extends StatefulWidget {
-  @override
   final VoidCallback onUpdate;
-  final String? id;
+  final Activity activity;
 
-  const EditActivity({required this.onUpdate, required this.id});
+  const EditActivity(this.activity, {required this.onUpdate});
 
-  _EditActivity createState() => _EditActivity();
+  @override
+  _EditActivityState createState() => _EditActivityState();
 }
 
-class _EditActivity extends State<EditActivity> {
+class _EditActivityState extends State<EditActivity> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   final MapController _mapController = MapController();
+  ActivityService activityService = ActivityService();
 
-  File? _image;
+  String? _image;
   DateTime _selectedDate = DateTime.now();
   String _userId = '';
-  double _latitude = 41.27552212202214;
-  double _longitude = 1.9863014220734023;
+  double _latitude = 0;
+  double _longitude = 0;
   bool _locationLoaded = false;
+  bool _isEditing = false; 
+  late TileLayer _tileLayer;
 
   @override
   void initState() {
     super.initState();
     _fetchUserId();
     _selectLocation();
+    activityService = ActivityService();
+    _setupMapTheme();
+
+    // Inicializar los controladores con los datos de la actividad
+    _nameController.text = widget.activity.name;
+    _descriptionController.text = widget.activity.description;
+    _latitude = widget.activity.location!.latitude;
+    _longitude = widget.activity.location!.longitude;
+    _image = widget.activity.imageUrl;
+    _selectedDate = widget.activity.date;
   }
 
   Future<void> _fetchUserId() async {
@@ -55,47 +68,95 @@ class _EditActivity extends State<EditActivity> {
     });
   }
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
-
+  void _setupMapTheme() async {
+    final box = GetStorage();
+    String? theme = box.read('theme');
+    
     setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
+      if (theme == 'Dark') {
+        _tileLayer = TileLayer(
+          urlTemplate: 'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+        );
       } else {
-        print('No image selected.');
+        _tileLayer = TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+        );
       }
     });
+  }
+
+  Future<void> _pickImage() async {
+    final pickedImage =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (pickedImage != null) {
+      final bytes = await pickedImage.readAsBytes();
+      await _uploadImage(bytes);
+    } else {
+      print('No se seleccionó ninguna imagen.');
+    }
+  }
+
+  Future<void> _uploadImage(Uint8List imageBytes) async {
+    final url =
+        Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
+    final String filename =
+        'upload_${DateTime.now().millisecondsSinceEpoch}.png';
+    final request = http.MultipartRequest('POST', url)
+      ..fields['upload_preset'] = 'typvcah6'
+      ..files.add(http.MultipartFile.fromBytes('file', imageBytes,
+          filename: filename));
+
+    try {
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        final responseData = await http.Response.fromStream(response);
+        final jsonData = jsonDecode(responseData.body);
+        final imageUrl = jsonData['secure_url'];
+
+        setState(() {
+          _image = imageUrl;
+        });
+
+        return imageUrl;
+      } else {
+        print(
+            'Error al subir la imagen a Cloudinary: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(), 
-      firstDate: DateTime.now(), 
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
-        _selectedDate = picked;
+        final utcDate = picked.toUtc();
+        _selectedDate = utcDate;
       });
     }
   }
 
   Future<void> _selectLocation() async {
     try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
       setState(() {
-        _latitude = position.latitude;
-        _longitude = position.longitude;
+        _latitude = widget.activity.location!.latitude;
+        _longitude = widget.activity.location!.longitude;
         _locationController.text = '$_latitude, $_longitude';
         _locationLoaded = true;
         _mapController.move(ltld.LatLng(_latitude, _longitude), 12);
       });
     } catch (e) {
-      print('No se pudo obtener la ubicación actual.');
       setState(() {
         _locationLoaded = true;
       });
@@ -107,14 +168,15 @@ class _EditActivity extends State<EditActivity> {
       Activity newActivity = Activity(
         name: _nameController.text,
         description: _descriptionController.text,
-        imageUrl: _image?.path,
+        imageUrl: _image,
         date: _selectedDate,
         idUser: _userId,
-        location: LatLng(latitude: _latitude, longitude: _longitude)
+        location: LatLng(latitude: _latitude, longitude: _longitude),
       );
-      await ActivityService().editActivity(newActivity, widget.id);
+
+      await activityService.editActivity(newActivity, widget.activity.id);
       widget.onUpdate();
-      print('Actividad enviada correctamente.');
+      print('Actividad editada correctamente.');
       Get.back();
     } else {
       print('Formulario inválido. No se puede enviar la actividad.');
@@ -123,7 +185,8 @@ class _EditActivity extends State<EditActivity> {
 
   Future<List<double>?> getCoordinatesFromAddress(String address) async {
     final encodedAddress = Uri.encodeComponent(address);
-    final url = 'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json';
+    final url =
+        'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -149,8 +212,10 @@ class _EditActivity extends State<EditActivity> {
     }
   }
 
-  Future<String?> getAddressFromCoordinates(double latitude, double longitude) async {
-    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+  Future<String?> getAddressFromCoordinates(
+      double latitude, double longitude) async {
+    final url =
+        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -161,7 +226,8 @@ class _EditActivity extends State<EditActivity> {
           final road = address['road'] ?? '';
           final houseNumber = address['house_number'] ?? '';
           final postcode = address['postcode'] ?? '';
-          final city = address['city'] ?? address['town'] ?? address['village'] ?? '';
+          final city =
+              address['city'] ?? address['town'] ?? address['village'] ?? '';
           final country = address['country'] ?? '';
 
           List<String> parts = [];
@@ -187,9 +253,9 @@ class _EditActivity extends State<EditActivity> {
   }
 
   Future<void> _deleteActivity() async {
-    await ActivityService().deleteActivity(widget.id);
+    await activityService.deleteActivity(widget.activity.id);
     widget.onUpdate();
-    print('Actividad enviada correctamente.');
+    print('Actividad eliminada correctamente.');
     Get.back();
   }
 
@@ -197,7 +263,7 @@ class _EditActivity extends State<EditActivity> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Edit Activity',
           style: TextStyle(
             color: Pallete.backgroundColor,
@@ -206,23 +272,35 @@ class _EditActivity extends State<EditActivity> {
           ),
         ),
         backgroundColor: Colors.black.withOpacity(0.7),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Pallete.backgroundColor,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: Pallete.backgroundColor,
+          ),
+          onPressed: () {
+            Get.to(() => MyActivities());
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.edit,
+              color: Colors.white,
             ),
             onPressed: () {
-              Get.to(() => MyActivities());
+              setState(() {
+                _isEditing = true; // Cambiar al modo de edición
+              });
             },
           ),
-        ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -231,7 +309,7 @@ class _EditActivity extends State<EditActivity> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                        _image == null
+                      _image == null
                           ? Container(
                               height: 100,
                               decoration: BoxDecoration(
@@ -247,41 +325,18 @@ class _EditActivity extends State<EditActivity> {
                                 ),
                               ),
                             )
-                          : Image.file(_image!, height: 150),
+                          : Image.network(
+                              _image!,
+                              height: 100,
+                            ),
                     ],
                   ),
                 ),
               ),
-              TextFormField(
+              _buildTextField(
                 controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Activity Name',
-                  labelStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  fillColor: Colors.black.withOpacity(0.7),
-                  filled: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 10.0, horizontal: 12.0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Pallete.salmonColor),
-                  ),
-                  floatingLabelStyle: const TextStyle(
-                    color: Pallete.salmonColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
+                labelText: 'Activity Name',
+                readOnly: !_isEditing, // Controlar solo lectura según el modo de edición
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the activity name';
@@ -290,75 +345,23 @@ class _EditActivity extends State<EditActivity> {
                 },
               ),
               const SizedBox(height: 24),
-                TextFormField(
-                  controller: _descriptionController,
-                  maxLines: 5,
-                  decoration: InputDecoration(
-                    labelText: 'Description',
-                    labelStyle: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    fillColor: Colors.black.withOpacity(0.7),
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.white),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.white),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Pallete.salmonColor),
-                    ),
-                    floatingLabelStyle: const TextStyle(
-                      color: Pallete.salmonColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: const TextStyle(color: Colors.white),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a description';
-                    }
-                    return null;
-                  },
-                ),
+              _buildTextField(
+                controller: _descriptionController,
+                labelText: 'Description',
+                maxLines: 5,
+                readOnly: !_isEditing, // Controlar solo lectura según el modo de edición
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a description';
+                  }
+                  return null;
+                },
+              ),
               const SizedBox(height: 24),
-              TextFormField(
-                readOnly: true,
+              _buildTextField(
                 controller: _locationController,
-                decoration: InputDecoration(
-                  labelText: 'Location',
-                  labelStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  fillColor: Colors.black.withOpacity(0.7),
-                  filled: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10.0, horizontal: 12.0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Pallete.salmonColor),
-                  ),
-                  floatingLabelStyle: const TextStyle(
-                    color: Pallete.salmonColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
+                labelText: 'Location',
+                readOnly: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a location';
@@ -366,47 +369,27 @@ class _EditActivity extends State<EditActivity> {
                   return null;
                 },
               ),
-              const SizedBox(height: 24), 
-              TextFormField(
-                  readOnly: true,
-                  controller: TextEditingController(
-                    text: '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                  ),
-                  decoration: InputDecoration(
-                    labelText: 'Date',
-                    labelStyle: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    fillColor: Colors.black.withOpacity(0.7),
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.white),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.white),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Pallete.salmonColor),
-                    ),
-                    floatingLabelStyle: const TextStyle(
-                      color: Pallete.salmonColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: const TextStyle(color: Colors.white),
-                  onTap: () => _selectDate(context),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a date';
-                    }
-                    return null;
-                  },
+              const SizedBox(height: 24),
+              _buildTextField(
+                controller: TextEditingController(
+                  text:
+                      '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
                 ),
+                labelText: 'Date',
+                readOnly: true,
+                onTap: () {
+                  if (_isEditing) {
+                    _selectDate(context); // Permitir seleccionar la fecha solo en modo de edición
+                  }
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a date';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
               _locationLoaded
                   ? Container(
                       height: 300,
@@ -418,28 +401,32 @@ class _EditActivity extends State<EditActivity> {
                               initialCenter:
                                   ltld.LatLng(_latitude, _longitude),
                               initialZoom: 12,
-                              interactionOptions: const InteractionOptions(
-                                  flags: ~InteractiveFlag.doubleTapZoom),
+                              interactionOptions:
+                                  const InteractionOptions(
+                                      flags: ~InteractiveFlag
+                                          .doubleTapZoom),
                               onTap: (tapPosition, point) {
-                                setState(() {
-                                  _latitude = point.latitude;
-                                  _longitude = point.longitude;
-                                  _locationController.text =
-                                      '$_latitude,$_longitude';
-                                });
-                                getAddressFromCoordinates(
-                                    _latitude, _longitude);
+                                if (_isEditing) {
+                                  setState(() {
+                                    _latitude = point.latitude;
+                                    _longitude = point.longitude;
+                                    _locationController.text =
+                                        '$_latitude,$_longitude';
+                                  });
+                                  getAddressFromCoordinates(
+                                      _latitude, _longitude);
+                                }
                               },
                             ),
                             children: [
-                              openStreetMapTileLayer,
+                              _tileLayer,
                               MarkerLayer(
                                 markers: [
                                   Marker(
                                     width: 80.0,
                                     height: 80.0,
-                                    point:
-                                        ltld.LatLng(_latitude, _longitude),
+                                    point: ltld.LatLng(
+                                        _latitude, _longitude),
                                     child: const Icon(
                                       Icons.location_on,
                                       color: Colors.red,
@@ -455,17 +442,20 @@ class _EditActivity extends State<EditActivity> {
                             left: 20,
                             right: 20,
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16.0),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(8.0),
+                                borderRadius:
+                                    BorderRadius.circular(8.0),
                               ),
                               child: Row(
                                 children: [
-                                    Expanded(
+                                  Expanded(
                                     child: TextFormField(
                                       controller: _searchController,
-                                      decoration: const InputDecoration(
+                                      decoration:
+                                          const InputDecoration(
                                         hintText: 'Search...',
                                         border: InputBorder.none,
                                       ),
@@ -479,8 +469,10 @@ class _EditActivity extends State<EditActivity> {
                                       color: Colors.black,
                                     ),
                                     onPressed: () {
-                                      getCoordinatesFromAddress(
-                                          _searchController.text);
+                                      if (_isEditing) {
+                                        getCoordinatesFromAddress(
+                                            _searchController.text);
+                                      }
                                     },
                                   ),
                                 ],
@@ -489,20 +481,81 @@ class _EditActivity extends State<EditActivity> {
                           ),
                         ],
                       ),
-                    ):
-                    const Spacer(),
-                    SignUpButton(onPressed: _submitForm, text: 'Edit'),
-                    const SizedBox(height: 10,),
-                    RedButton(onPressed: _deleteActivity, text: 'Delete'),
+                    )
+                  : const SizedBox.shrink(),
+              if (_isEditing) // Mostrar botones solo en modo de edición
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: _submitForm,
+                    child: Text('Edit'),
+                  ),
+                ),
+              if (_isEditing) // Mostrar botones solo en modo de edición
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: _deleteActivity,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          Colors.red, // Background color
+                    ),
+                    child: Text('Delete'),
+                  ),
+                ),
             ],
-        ),
           ),
         ),
-      );
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    bool readOnly = false,
+    int maxLines = 1,
+    required String? Function(String?)? validator,
+    Function()? onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: TextFormField(
+        controller: controller,
+        readOnly: readOnly,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+          fillColor: Colors.black.withOpacity(0.7),
+          filled: true,
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.white),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.white),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Pallete.salmonColor),
+          ),
+          floatingLabelStyle: TextStyle(
+            color: Pallete.salmonColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: const TextStyle(color: Colors.white),
+        validator: validator,
+        onTap: onTap,
+      ),
+    );
   }
 }
 
-TileLayer get openStreetMapTileLayer => TileLayer(
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-    );

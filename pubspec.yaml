@@ -31,6 +31,8 @@ dependencies:
   flutter_routing: ^0.1.11
   share_plus: ^9.0.0
   geocoding: ^3.0.0
+  google_fonts: ^6.2.1
+  provider: ^6.1.2
 
 
 dev_dependencies:
@@ -42,3 +44,4 @@ flutter:
   uses-material-design: true
   assets: 
     - assets/
+ 

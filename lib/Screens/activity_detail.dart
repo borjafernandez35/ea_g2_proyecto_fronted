@@ -202,9 +202,9 @@ class _ActivityDetail extends State<ActivityDetail> {
           leading: isLoggedIn
               ? Builder(
                   builder: (context) => IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_back,
-                      color: Pallete.backgroundColor,
+                      color: Pallete.textColor,
                     ),
                     onPressed: () {
                       Get.to(const ActivityListPage());
@@ -216,8 +216,8 @@ class _ActivityDetail extends State<ActivityDetail> {
             children: [
               Text(
                 activity.name,
-                style: const TextStyle(
-                  color: Pallete.backgroundColor,
+                style: TextStyle(
+                  color: Pallete.textColor,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -244,17 +244,14 @@ class _ActivityDetail extends State<ActivityDetail> {
           child: Center(
             child: Column(
               children: [
-                const SizedBox(
-                  height: 40,
-                ),
                 Container(
-                  margin: const EdgeInsets.only(left: 30),
+                  margin: const EdgeInsets.all( 30),
                   child: Column(
                     children: [
-                      const Text(
+                      Text(
                         'Description:',
                         style: TextStyle(
-                          color: Pallete.backgroundColor,
+                          color: Pallete.textColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -262,8 +259,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                       const SizedBox(height: 20),
                       Text(
                         activity.description,
-                        style: const TextStyle(
-                          color: Pallete.backgroundColor,
+                        style: TextStyle(
+                          color: Pallete.textColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -271,8 +268,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                       const SizedBox(height: 10),
                       Text(
                         '${activity.rate} ⭐',
-                        style: const TextStyle(
-                          color: Pallete.backgroundColor,
+                        style: TextStyle(
+                          color: Pallete.textColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -289,10 +286,10 @@ class _ActivityDetail extends State<ActivityDetail> {
                             if (isLoggedIn)
                               Column(
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Users participating',
                                     style: TextStyle(
-                                      color: Pallete.whiteColor,
+                                      color: Pallete.textColor,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                     ),
@@ -306,8 +303,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                                     itemBuilder:
                                         (BuildContext context, int index) {
                                       return Card(
-                                        color: Pallete.whiteColor,
-                                        child: UserCard(users[index].name),
+                                        color: Pallete.paleBlueColor,
+                                        child: UserCard(users[index].name, users[index].image),
                                       );
                                     },
                                   ),
@@ -354,10 +351,10 @@ class _ActivityDetail extends State<ActivityDetail> {
                           ],
                         ),
                       ),
-                      const Text(
+                      Text(
                         'Reviews:',
                         style: TextStyle(
-                          color: Pallete.backgroundColor,
+                          color: Pallete.textColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -372,18 +369,18 @@ class _ActivityDetail extends State<ActivityDetail> {
                                   showReviewForm = !showReviewForm;
                                 });
                               },
-                              child: const Card(
-                                color: Pallete.backgroundColor,
-                                surfaceTintColor: Pallete.accentColor,
+                              child: Card(
+                                color: Pallete.primaryColor,
+                                surfaceTintColor: Pallete.primaryColor,
                                 elevation: 5,
                                 margin: EdgeInsets.all(10),
                                 child: Card(
-                                  color: Pallete.paleBlueColor,
+                                  color: Pallete.backgroundColor,
                                   child: Text(
                                     ' + Add ',
                                     style: TextStyle(
                                       fontSize: 18,
-                                      color: Pallete.primaryColor,
+                                      color: Pallete.paleBlueColor,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -394,8 +391,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                           Visibility(
                             visible: showReviewForm,
                             child: Card(
-                              color: Pallete.primaryColor,
-                              surfaceTintColor: Pallete.accentColor,
+                              color: Pallete.accentColor,
+                              surfaceTintColor: Pallete.primaryColor,
                               elevation: 5,
                               margin: const EdgeInsets.all(10),
                               child: Padding(
@@ -404,7 +401,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     // Campo de título
-                                    const Text(
+                                   Text(
                                       'Title:',
                                       style: TextStyle(
                                         fontSize: 18,
@@ -414,10 +411,9 @@ class _ActivityDetail extends State<ActivityDetail> {
                                     ),
                                     const SizedBox(height: 8),
                                     TextFormField(
-                                      controller: controllerActivityDetail
-                                          .titleController,
-                                      style: const TextStyle(
-                                          color: Pallete.backgroundColor),
+                                      controller: controllerActivityDetail.titleController,
+                                      style: TextStyle(
+                                          color: Pallete.textColor),
                                       decoration: InputDecoration(
                                         hintText: 'Enter title',
                                         filled: true,
@@ -430,7 +426,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                                     ),
                                     const SizedBox(height: 16),
                                     // Campo de contenido
-                                    const Text(
+                                    Text(
                                       'Content:',
                                       style: TextStyle(
                                         fontSize: 18,
@@ -443,7 +439,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                                       controller: controllerActivityDetail
                                           .contentController,
                                       maxLines: 5,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: Pallete.backgroundColor),
                                       decoration: InputDecoration(
                                         hintText: 'Enter content',
@@ -457,7 +453,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                                     ),
                                     const SizedBox(height: 16),
                                     // Campo de revisión
-                                    const Text(
+                                    Text(
                                       'Review:',
                                       style: TextStyle(
                                         fontSize: 18,
@@ -529,7 +525,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                                               showReviewForm = !showReviewForm;
                                             });
                                           },
-                                          child: const Text(
+                                          child: Text(
                                             'Cancel',
                                             style: TextStyle(
                                               color: Pallete.salmonColor,
@@ -573,8 +569,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                 ),
                 Text(
                   'Position: ${activity.location?.latitude}, ${activity.location?.longitude}',
-                  style: const TextStyle(
-                    color: Pallete.backgroundColor,
+                  style: TextStyle(
+                    color: Pallete.textColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),

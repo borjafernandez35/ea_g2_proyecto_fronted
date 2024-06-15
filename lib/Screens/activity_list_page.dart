@@ -7,7 +7,6 @@ import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Screens/new_activity.dart';
 import 'package:get/get.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
-import 'package:intl/intl.dart';
 import 'package:spotfinder/Widgets/activity_card.dart';
 import 'package:http/http.dart' as http;
 import 'package:spotfinder/Resources/pallete.dart';
@@ -25,26 +24,44 @@ class _ActivityListPageState extends State<ActivityListPage> {
   late List<Activity> listaActivities;
   late List<Activity> sortedActivities;
   bool isLoading = true;
+  bool hasMore = true; 
+  int currentPage = 1; 
   double selectedDistance = 5.0; // Distancia inicial seleccionada
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     activityService = ActivityService();
+    listaActivities = [];
     getData();
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && hasMore) {
+        currentPage++;
+        getData(page: currentPage);
+      }
+    });
   }
 
-  void getData() async {
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void getData({int page = 1, int limit = 10}) async {
     setState(() {
-      isLoading = true; // Mostrar indicador de carga mientras se obtienen los datos
+      isLoading = true;
     });
     try {
-      listaActivities = await activityService.getData(selectedDistance * 1000); // Filtrar por distancia
-      sortedActivities = listaActivities.map((user) => user).toList()
+      List<Activity> activities = await activityService.getData(selectedDistance * 1000, page, limit); // Filtrar por distancia
+      sortedActivities = activities.map((activity) => activity).toList()
       ..sort((a, b) => a.date.compareTo(b.date));
-      print(sortedActivities[0].date);
       setState(() {
+        listaActivities.addAll(sortedActivities);
         isLoading = false;
+        hasMore = activities.length == limit; 
       });
     } catch (error) {
       Get.snackbar(
@@ -62,6 +79,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
     if (newDistance != null) {
       setState(() {
         selectedDistance = newDistance;
+        listaActivities = [];
         getData();
       });
     }
@@ -104,31 +122,29 @@ class _ActivityListPageState extends State<ActivityListPage> {
     }
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
-    if (isLoading) {
+    if (isLoading && listaActivities.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     } else {
       return Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(
-              Icons
-                  .arrow_back, // Puedes cambiar este icono por otro si lo deseas
-              color:
-                  Pallete.backgroundColor, // Ajusta el color a tu preferencia
+            icon: Icon(
+              Icons.arrow_back,
+              color:Pallete.textColor, 
             ),
             onPressed: () {
-              Get.to(HomePage()); // Acción personalizada para el botón
+              Get.to(HomePage()); 
             },
           ),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Your feed',
                 style: TextStyle(
-                  color: Pallete.backgroundColor,
+                  color: Pallete.textColor,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -136,21 +152,20 @@ class _ActivityListPageState extends State<ActivityListPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 decoration: BoxDecoration(
-                  color: Colors.black,
+                  color: Pallete.textColor,
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<double>(
                     value: selectedDistance,
                     onChanged: _onDistanceChanged,
-                    dropdownColor: Colors.black,
-                    style: const TextStyle(color: Colors.white),
+                    dropdownColor: Pallete.textColor,
+                    style: TextStyle(color: Pallete.backgroundColor),
                     items: <double>[5.0, 10.0, 20.0, 50.0, 100.0]
                         .map((double value) {
                       return DropdownMenuItem<double>(
                         value: value,
-                        child: Text('Hasta $value km',
-                            style: const TextStyle(color: Colors.white)),
+                        child: Text('Hasta $value km', style: TextStyle(color: Pallete.backgroundColor)),
                       );
                     }).toList(),
                   ),
@@ -164,79 +179,33 @@ class _ActivityListPageState extends State<ActivityListPage> {
           children: [
             Expanded(
               child: ListView.builder(
+                controller: _scrollController, // Asignar el ScrollController
                 itemBuilder: (BuildContext context, int index) {
+                  if (index == listaActivities.length) {
+                    return isLoading
+                        ? Center(child: CircularProgressIndicator())
+                        : SizedBox(); // Mostrar un indicador de carga al final de la lista
+                  }
                   return Card(
-                    color: Pallete.backgroundColor,
+                    color: Pallete.primaryColor,
                     child: InkWell(
                       onTap: () {
                         Get.toNamed(
                           '/activity/${sortedActivities[index].id}',
                           arguments: {'onUpdate': getData},
                         );
+                        listaActivities=[];
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ListTile(
-                            trailing: Text(DateFormat('dd/MM/yyyy').format(sortedActivities[index].date),
-                            style: const TextStyle(fontSize: 15),
-                            ),
-                            title: Text(sortedActivities[index].name),
-                            subtitle: sortedActivities[index].location != null
-                                ? FutureBuilder<String?>(
-                                    future: _getAddressFromCoordinates(
-                                        sortedActivities[index]
-                                            .location!
-                                            .latitude,
-                                        sortedActivities[index]
-                                            .location!
-                                            .longitude),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return const Row(
-                                          children: [
-                                            Icon(Icons.location_on,
-                                                color: Colors.red, size: 17),
-                                            SizedBox(width: 4),
-                                            Text('Cargando dirección...'),
-                                          ],
-                                        );
-                                      } else if (snapshot.hasError) {
-                                        return const Row(
-                                          children: [
-                                            Icon(Icons.location_on,
-                                                color: Colors.red, size: 17),
-                                            SizedBox(width: 4),
-                                            Text('Error al cargar dirección'),
-                                          ],
-                                        );
-                                      } else {
-                                        return Row(
-                                          children: [
-                                            const Icon(Icons.location_on,
-                                                color: Colors.red, size: 17),
-                                            const SizedBox(width: 4),
-                                            Expanded(
-                                              child: Text(
-                                                snapshot.data ??
-                                                    'Dirección no encontrada',
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }
-                                    },
-                                  )
-                                : const Text('Ubicación no disponible'),
-                          ),
+                           ActivityCard(_getAddressFromCoordinates,listaActivities[index])
                         ],
                       ),
                     ),
                   );
                 },
-                itemCount: sortedActivities.length,
+                itemCount: listaActivities.length + (hasMore ? 1 : 0), // Incrementar el count si hay más datos
               ),
             ),
           ],
@@ -244,10 +213,11 @@ class _ActivityListPageState extends State<ActivityListPage> {
         floatingActionButton: Tooltip(
           message: 'Add new activity',
           child: FloatingActionButton(
-            backgroundColor: Pallete.backgroundColor,
-            child: const Icon(Icons.add),
+            backgroundColor: Pallete.textColor,
+            child: Icon(Icons.add, color: Pallete.backgroundColor),
             onPressed: () {
               Get.to(() => NewActivityScreen(onUpdate: getData));
+                    listaActivities=[];
             },
           ),
         ),

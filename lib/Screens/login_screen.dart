@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Widgets/button_sign_in.dart';
 import 'package:spotfinder/Widgets/paramTextBox.dart';
 import 'package:spotfinder/Services/UserService.dart';

@@ -1,4 +1,6 @@
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:latlong2/latlong.dart' as ltlg;
 import 'package:flutter/foundation.dart';
 import 'package:spotfinder/Resources/pallete.dart';
@@ -23,6 +25,7 @@ class MapScreen extends StatefulWidget {
   // ignore: library_private_types_in_public_api
   _MapScreen createState() => _MapScreen();
 }
+
 class _MapScreen extends State<MapScreen> {
   final MapController mapController = Get.put(MapController());
   late List<Activity> lista_activities;
@@ -30,6 +33,7 @@ class _MapScreen extends State<MapScreen> {
   bool isLoading = true;
   Position? position;
   late ltlg.LatLng initialLocation;
+  late TileLayer _tileLayer;
 
   @override
   void initState() {
@@ -37,6 +41,27 @@ class _MapScreen extends State<MapScreen> {
     activityService = ActivityService();
     userService = UserService();
     getData();
+    setupMapTheme();
+
+  }
+
+  void setupMapTheme() async {
+    final box = GetStorage();
+    String? theme = box.read('theme');
+    
+    setState(() {
+      if (theme == 'Dark') {
+        _tileLayer = TileLayer(
+          urlTemplate: 'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+        );
+      } else {
+        _tileLayer = TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+        );
+      }
+    });
   }
 
   void getData() async {
@@ -45,7 +70,7 @@ class _MapScreen extends State<MapScreen> {
       LocationPermission permission;
 
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if(!serviceEnabled) {
+      if (!serviceEnabled) {
         Get.snackbar('Error', 'Los servicios de ubicación están dehabilitados');
         useDefaultLocation();
         return;
@@ -62,7 +87,8 @@ class _MapScreen extends State<MapScreen> {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        Get.snackbar('Error', 'Los permisos de ubicación están permanentemente denegados.');
+        Get.snackbar('Error',
+            'Los permisos de ubicación están permanentemente denegados.');
         useDefaultLocation();
         return;
       }
@@ -73,97 +99,119 @@ class _MapScreen extends State<MapScreen> {
       await userService.updateLocation(position);
 
       initialLocation = ltlg.LatLng(position!.latitude, position!.longitude);
-      double distance = 10000; // Distancia por defecto
-      lista_activities = await activityService.getData(distance);
+
+      double distance = 10000; 
+      int limit = 10;
+      lista_activities = await getAllActivities(distance, limit); 
       markers.add(
         Marker(
           point: initialLocation,
           width: 60,
           height: 60,
           alignment: Alignment.centerLeft,
-          child: const Icon(
+          child: Icon(
             Icons.circle,
             size: 20,
             color: Pallete.salmonColor
           ),
         )
       );
+      
       for(var actividad in lista_activities){
         markers.add(
-        Marker(
-          point: ltlg.LatLng(actividad.location!.latitude, actividad.location!.longitude),
-          width: 60,
-          height: 60,
-          alignment: Alignment.centerLeft,
-          child: GestureDetector(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    content: SingleChildScrollView(
-                      child: Card(
-                        color: Pallete.primaryColor,
-                        surfaceTintColor: Pallete.accentColor,
-                        elevation: 5,
-                        margin: EdgeInsets.all(10),
-                        child: Row(
-                          children: [
-                            // Left side: Image
-                            Container(
-                              width: 100,
-                              height: 100,
-                              child: Image.network(
-                                'https://via.placeholder.com/100', // Replace with your image URL
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            // Right side: Title, Description, and Value
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      actividad.name,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Description: ${actividad.description}',
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'rate: ${actividad.rate.toString()} ⭐',
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
+          Marker(
+            point: ltlg.LatLng(
+                actividad.location!.latitude, actividad.location!.longitude),
+            width: 60,
+            height: 60,
+            alignment: Alignment.centerLeft,
+            child: GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      content: SingleChildScrollView(
+                        child: Card(
+                          color: Pallete.primaryColor,
+                          surfaceTintColor: Pallete.accentColor,
+                          elevation: 5,
+                          margin: EdgeInsets.all(10),
+                          child: Row(
+                            children: [
+                              // Left side: Image
+                              Container(
+                                width: 100,
+                                height: 100,
+                                child: Image.network(
+                                  actividad.imageUrl ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                            ),
-                          ],
+                              // Right side: Title, Description, and Value
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        actividad.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Description: ${actividad.description}',
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          RatingBarIndicator(
+                                            rating: actividad.rate!,
+                                            itemBuilder: (context, index) =>
+                                                const Icon(
+                                              Icons.star,
+                                              size: 18,
+                                              color: Colors.amber,
+                                            ),
+                                            itemCount: 5,
+                                            itemSize: 18,
+                                            direction: Axis.horizontal,
+                                            unratedColor:
+                                                Colors.blueAccent.withAlpha(50),
+                                          ),
+                                          const SizedBox(width:8), 
+                                          Text(
+                                            actividad.rate!.toStringAsFixed(1), 
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.amber, 
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              );
-            },
-            child: const Icon(
-              Icons.location_pin,
-              size: 60,
-              color: Pallete.salmonColor
+                    );
+                  },
+                );
+              },
+              child: Icon(Icons.location_pin,
+                  size: 60, color: Pallete.salmonColor),
             ),
           ),
-        ),
-      );
+        );
       }
       setState(() {
         isLoading = false;
@@ -180,6 +228,23 @@ class _MapScreen extends State<MapScreen> {
     }
   }
 
+  Future<List<Activity>> getAllActivities(double distance, int limit) async {
+    int page = 1;
+    bool hasMore = true;
+    List<Activity> allActivities = [];
+
+    while (hasMore) {
+      List<Activity> activities = await activityService.getData(distance, page, limit);
+      allActivities.addAll(activities);
+
+      hasMore = activities.length == limit;
+      page++;
+    }
+
+    return allActivities;
+  }
+
+
   void useDefaultLocation() {
     setState(() {
       initialLocation = widget.defaultLocation;
@@ -189,9 +254,9 @@ class _MapScreen extends State<MapScreen> {
           width: 60,
           height: 60,
           alignment: Alignment.centerLeft,
-          child: const Icon(
+          child: Icon(
             Icons.circle,
-            size:20,
+            size: 20,
             color: Pallete.salmonColor,
           ),
         ),
@@ -211,13 +276,12 @@ class _MapScreen extends State<MapScreen> {
             options: MapOptions(
               initialCenter: initialLocation,
               initialZoom: 12,
-              interactionOptions: const InteractionOptions(flags: ~InteractiveFlag.doubleTapZoom),
+              interactionOptions: const InteractionOptions(
+                  flags: ~InteractiveFlag.doubleTapZoom),
             ),
             children: [
-              openStreetMapTileLayer,
-              MarkerLayer(
-                markers: markers
-              ),
+              _tileLayer,
+              MarkerLayer(markers: markers),
             ],
           ),
           Align(
@@ -234,11 +298,10 @@ class _MapScreen extends State<MapScreen> {
                       text: 'Scaperoom...',
                     ),
                     IconButton(
-                      icon: const Icon(
-                        size: 40,
-                        color: Pallete.backgroundColor,
-                        LineIcons.searchLocation
-                      ),
+                      icon: Icon(
+                          size: 40,
+                          color: Pallete.textColor,
+                          LineIcons.searchLocation),
                       onPressed: () {},
                     ),
                   ],
@@ -248,14 +311,12 @@ class _MapScreen extends State<MapScreen> {
             ),
           ),
         ],
-    );
+      );
     }
   }
 }
-TileLayer get openStreetMapTileLayer => TileLayer(
-  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-  userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-);
+
+
 class MapController extends GetxController {
   final TextEditingController searchBarController = TextEditingController();
 }
