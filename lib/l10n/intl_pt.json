@@ -1,0 +1,19 @@
+{
+    "settings": "Configurações",
+    "select_language": "Selecionar idioma",
+    "select_theme": "Selecionar tema",
+    "enable_dyslexic_font": "Ativar fonte amigável para dislexia",
+    "theme": "Tema",
+    "apply": "Aplicar",
+    "languages": {
+      "spanish": "Español",
+      "catalan": "Català",
+      "galician": "Galego",
+      "basque": "Euskara",
+      "english": "English",
+      "portuguese": "Português",
+      "french": "Français",
+      "italian": "Italiano"
+    }
+  }
+  

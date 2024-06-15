@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -13,10 +11,13 @@ import 'package:spotfinder/Screens/settingsScreen.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:spotfinder/l10n/app_localizations.dart';
+import 'package:spotfinder/localization/localization_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await GetStorage.init(); // Espera la inicialización de GetStorage
+  await GetStorage.init();
   final UserService userService = UserService();
   final String? token = await userService.getToken();
 
@@ -32,28 +33,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final box = GetStorage();
-    String? font = box.read('font');
-
-    String? theme = box.read('theme');
-    if (theme == null) {
-      box.write('theme', "Light");
-    }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (token != null) {
-        if (Get.currentRoute != '/home' &&
-            !Get.currentRoute.contains('activity') &&
-            !Get.currentRoute.contains('settings')) {
-          Get.offAllNamed('/home');
-        }
-      }
-    });
-
     return GetMaterialApp(
       title: 'SpotFinder',
-      theme: getTheme(theme, font),
-
+      theme: _getAppTheme(),
+      locale: Locale(_getLocale()), // Configura el idioma seleccionado
+      translations: LocalizationService(),
+      fallbackLocale: Locale('en', 'US'),
+      supportedLocales: LocalizationService.locales.values.toList(),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       getPages: [
         GetPage(name: '/', page: () => TitleScreen()),
         GetPage(name: '/home', page: () => HomePage()),
@@ -70,38 +61,46 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  TextTheme? getFontTextTheme(String? font) {
-    switch (font) {
-      case 'Dyslexia':
-        return GoogleFonts.comicNeueTextTheme().copyWith();
-      case 'Default':
-        return null;
-    }
-    return null;
+  String _getLocale() {
+    final box = GetStorage();
+    return box.read('lang') ?? 'en';
   }
 
-  ThemeData? getTheme(String? theme, String? font) {
-    ThemeData themeData;
+  ThemeData _getAppTheme() {
+    final box = GetStorage();
+    String? font = box.read('font');
+    String? theme = box.read('theme') ?? 'Light';
 
-    if (theme == "Dark") {
-      Pallete.setDarkTheme();
-      themeData = ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Pallete.backgroundColor,
-        textTheme: getFontTextTheme(font),
-      );
-    } else if (theme == "Custom") {
-      Pallete.setCustomTheme();
-      themeData = ThemeData.light().copyWith(
-        scaffoldBackgroundColor: Pallete.backgroundColor,
-        textTheme: getFontTextTheme(font),
-      );
-    } else {
-      Pallete.setLightTheme();
-      themeData = ThemeData.light().copyWith(
-        scaffoldBackgroundColor: Pallete.backgroundColor,
-        textTheme: getFontTextTheme(font),
-      );
+    switch (theme) {
+      case 'Dark':
+        Pallete.setDarkTheme();
+        return ThemeData.dark().copyWith(
+          scaffoldBackgroundColor: Pallete.backgroundColor,
+          textTheme: _getFontTextTheme(font),
+        );
+      case 'Custom':
+        Pallete.setCustomTheme();
+        return ThemeData.light().copyWith(
+          scaffoldBackgroundColor: Pallete.backgroundColor,
+          textTheme: _getFontTextTheme(font),
+        );
+      case 'Light':
+      default:
+        Pallete.setLightTheme();
+        return ThemeData.light().copyWith(
+          scaffoldBackgroundColor: Pallete.backgroundColor,
+          textTheme: _getFontTextTheme(font),
+        );
     }
-    return themeData;
+  }
+
+  TextTheme? _getFontTextTheme(String? font) {
+    switch (font) {
+      case 'Dyslexia':
+        return GoogleFonts.comicNeueTextTheme();
+      case 'Default':
+      default:
+        return null;
+    }
   }
 }

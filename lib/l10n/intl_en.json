@@ -1,0 +1,19 @@
+{
+    "settings": "Settings",
+    "select_language": "Select Language",
+    "select_theme": "Select Theme",
+    "enable_dyslexic_font": "Enable Dyslexic-Friendly Font",
+    "theme": "Theme",
+    "apply": "Apply",
+    "languages": {
+      "spanish": "Español",
+      "catalan": "Català",
+      "galician": "Galego",
+      "basque": "Euskara",
+      "english": "English",
+      "portuguese": "Português",
+      "french": "Français",
+      "italian": "Italiano"
+    }
+  }
+  

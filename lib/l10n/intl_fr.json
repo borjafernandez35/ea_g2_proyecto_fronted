@@ -1,0 +1,19 @@
+{
+    "settings": "Paramètres",
+    "select_language": "Sélectionner la langue",
+    "select_theme": "Sélectionner le thème",
+    "enable_dyslexic_font": "Activer la police pour dyslexiques",
+    "theme": "Thème",
+    "apply": "Appliquer",
+    "languages": {
+      "spanish": "Español",
+      "catalan": "Català",
+      "galician": "Galego",
+      "basque": "Euskara",
+      "english": "English",
+      "portuguese": "Português",
+      "french": "Français",
+      "italian": "Italiano"
+    }
+  }
+  

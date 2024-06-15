@@ -1,0 +1,19 @@
+{
+    "settings": "Ezarpenak",
+    "select_language": "Hizkuntza hautatu",
+    "select_theme": "Gaia hautatu",
+    "enable_dyslexic_font": "Dislexiarentzako errespetuzko letra-tipoa aktibatu",
+    "theme": "Gaia",
+    "apply": "Aplikatu",
+    "languages": {
+      "spanish": "Español",
+      "catalan": "Català",
+      "galician": "Galego",
+      "basque": "Euskara",
+      "english": "English",
+      "portuguese": "Português",
+      "french": "Français",
+      "italian": "Italiano"
+    }
+  }
+  
