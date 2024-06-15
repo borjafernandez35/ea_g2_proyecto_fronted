@@ -1,7 +1,9 @@
 import 'dart:convert';
-
+import 'dart:html';
+import 'package:latlong2/latlong.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Screens/new_activity.dart';
@@ -25,9 +27,12 @@ class _ActivityListPageState extends State<ActivityListPage> {
   late List<Activity> sortedActivities;
   bool isLoading = true;
   bool hasMore = true; 
+  Position? position;
   int currentPage = 1; 
   double selectedDistance = 5.0; // Distancia inicial seleccionada
+  String selectedSort = "Date";
   final ScrollController _scrollController = ScrollController();
+  final Distance distance = Distance();
 
   @override
   void initState() {
@@ -56,8 +61,36 @@ class _ActivityListPageState extends State<ActivityListPage> {
     });
     try {
       List<Activity> activities = await activityService.getData(selectedDistance * 1000, page, limit); // Filtrar por distancia
-      sortedActivities = activities.map((activity) => activity).toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+      position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      switch (selectedSort) {
+        case 'Date':
+          sortedActivities = activities.map((activity) => activity).toList()..sort((a, b) => a.date.compareTo(b.date));
+          break;
+        case 'Rate':
+          print("estas dentro");
+          sortedActivities = activities.map((activity) => activity).toList()..sort((a, b) => b.rate!.compareTo(a.rate!));
+          break;
+        case 'Proximity':
+          activities.sort((a, b) {
+            final double distanceA = Geolocator.distanceBetween(
+              position!.latitude,
+              position!.longitude,
+              a.location!.latitude,
+              a.location!.longitude,
+            );
+            final double distanceB = Geolocator.distanceBetween(
+              position!.latitude,
+              position!.longitude,
+              b.location!.latitude,
+              b.location!.longitude,
+            );
+            return distanceA.compareTo(distanceB);
+          });
+          sortedActivities = activities;
+          break;
+      }
       setState(() {
         listaActivities.addAll(sortedActivities);
         isLoading = false;
@@ -85,10 +118,18 @@ class _ActivityListPageState extends State<ActivityListPage> {
     }
   }
 
-  Future<String?> _getAddressFromCoordinates(
-      double latitude, double longitude) async {
-    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+  void _onSortChanged(String? newSort) {
+    if (newSort != null) {
+      setState(() {
+        selectedSort = newSort;
+        listaActivities = [];
+        getData();
+      });
+    }
+  }
 
+  Future<String?> _getAddressFromCoordinates(double latitude, double longitude) async {
+    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -151,26 +192,56 @@ class _ActivityListPageState extends State<ActivityListPage> {
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                decoration: BoxDecoration(
-                  color: Pallete.textColor,
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<double>(
-                    value: selectedDistance,
-                    onChanged: _onDistanceChanged,
-                    dropdownColor: Pallete.textColor,
-                    style: TextStyle(color: Pallete.backgroundColor),
-                    items: <double>[5.0, 10.0, 20.0, 50.0, 100.0]
-                        .map((double value) {
-                      return DropdownMenuItem<double>(
-                        value: value,
-                        child: Text('Hasta $value km', style: TextStyle(color: Pallete.backgroundColor)),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                      decoration: BoxDecoration(
+                        color: Pallete.textColor,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<double>(
+                          value: selectedDistance,
+                          onChanged: _onDistanceChanged,
+                          dropdownColor: Pallete.textColor,
+                          style: TextStyle(color: Pallete.backgroundColor),
+                          items: <double>[5.0, 10.0, 20.0, 50.0, 100.0]
+                              .map((double value) {
+                            return DropdownMenuItem<double>(
+                              value: value,
+                              child: Text('Hasta $value km', style: TextStyle(color: Pallete.backgroundColor)),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10,),
+                    // Add your second Container and DropdownButton here
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                      decoration: BoxDecoration(
+                        color: Pallete.textColor,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: selectedSort, // Customize as needed
+                          onChanged: _onSortChanged, // Implement your onChanged function
+                          dropdownColor: Pallete.textColor,
+                          style: TextStyle(color: Pallete.backgroundColor),
+                          items: <String>['Date', 'Rate', 'Proximity']
+                              .map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text('Sort: $value', style: TextStyle(color: Pallete.backgroundColor)),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                ],)
+              )
             ],
           ),
           backgroundColor: Colors.transparent,
