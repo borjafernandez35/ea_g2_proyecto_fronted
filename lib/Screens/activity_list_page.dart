@@ -22,6 +22,7 @@ class ActivityListPage extends StatefulWidget {
 
 class _ActivityListPageState extends State<ActivityListPage> {
   late List<Activity> listaActivities;
+  late List<Activity> sortedActivities;
   bool isLoading = true;
   bool hasMore = true; 
   int currentPage = 1; 
@@ -55,8 +56,10 @@ class _ActivityListPageState extends State<ActivityListPage> {
     });
     try {
       List<Activity> activities = await activityService.getData(selectedDistance * 1000, page, limit); // Filtrar por distancia
+      sortedActivities = activities.map((activity) => activity).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
       setState(() {
-        listaActivities.addAll(activities);
+        listaActivities.addAll(sortedActivities);
         isLoading = false;
         hasMore = activities.length == limit; 
       });
@@ -188,7 +191,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
                     child: InkWell(
                       onTap: () {
                         Get.toNamed(
-                          '/activity/${listaActivities[index].id}',
+                          '/activity/${sortedActivities[index].id}',
                           arguments: {'onUpdate': getData},
                         );
                         listaActivities=[];

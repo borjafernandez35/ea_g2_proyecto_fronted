@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
+import 'package:intl/intl.dart';
 
 class ActivityCard extends StatelessWidget {
   final Activity activity;
@@ -86,6 +87,10 @@ class ActivityCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       ListTile(
+                        
+                        trailing: Text(DateFormat('dd/MM/yyyy').format(activity.date),
+                          style: const TextStyle(fontSize: 15),
+                        ),
                         subtitle: activity.location != null
                             ? FutureBuilder<String?>(
                                 future: onUpdate(activity.location!.latitude,
