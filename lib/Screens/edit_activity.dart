@@ -42,7 +42,8 @@ class _EditActivityState extends State<EditActivity> {
   double _latitude = 0;
   double _longitude = 0;
   bool _locationLoaded = false;
-  bool _isEditing = false; 
+  bool _isEditing = false;
+  bool _isMapVisible = false;
   late TileLayer _tileLayer;
 
   @override
@@ -58,9 +59,8 @@ class _EditActivityState extends State<EditActivity> {
     _nameController.text = widget.activity.name;
     _descriptionController.text = widget.activity.description;
     _latitude = widget.activity.location!.latitude;
-    _longitude = widget.activity.location!.longitude;;
+    _longitude = widget.activity.location!.longitude;
     _selectedDate = widget.activity.date;
-  
   }
 
   Future<void> _fetchUserId() async {
@@ -70,7 +70,7 @@ class _EditActivityState extends State<EditActivity> {
     });
   }
 
-   Future<void> _loadImage() async {
+  Future<void> _loadImage() async {
     try {
       final response = await http.get(Uri.parse(widget.activity.imageUrl!));
       if (response.statusCode == 200) {
@@ -89,7 +89,7 @@ class _EditActivityState extends State<EditActivity> {
   void _setupMapTheme() async {
     final box = GetStorage();
     String? theme = box.read('theme');
-    
+
     setState(() {
       if (theme == 'Dark') {
         _tileLayer = TileLayer(
@@ -105,7 +105,7 @@ class _EditActivityState extends State<EditActivity> {
     });
   }
 
-   void _showImageSourceActionSheet(BuildContext context) {
+  void _showImageSourceActionSheet(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -141,8 +141,7 @@ class _EditActivityState extends State<EditActivity> {
   }
 
   Future<void> _pickImage() async {
-    final XFile? pickedImage =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    final XFile? pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (pickedImage != null) {
       final Uint8List bytes = await pickedImage.readAsBytes();
@@ -161,21 +160,17 @@ class _EditActivityState extends State<EditActivity> {
       return null;
     }
 
-    final Uri url =
-        Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
-    final String filename =
-        'upload_${DateTime.now().millisecondsSinceEpoch}.png';
+    final Uri url = Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
+    final String filename = 'upload_${DateTime.now().millisecondsSinceEpoch}.png';
     final http.MultipartRequest request = http.MultipartRequest('POST', url)
       ..fields['upload_preset'] = 'typvcah6'
-      ..files.add(http.MultipartFile.fromBytes('file', _imageBytes!,
-          filename: filename));
+      ..files.add(http.MultipartFile.fromBytes('file', _imageBytes!, filename: filename));
 
     try {
       final http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200) {
-        final http.Response responseData =
-            await http.Response.fromStream(response);
+        final http.Response responseData = await http.Response.fromStream(response);
         final Map<String, dynamic> jsonData = jsonDecode(responseData.body);
         final String imageUrl = jsonData['secure_url'];
 
@@ -258,8 +253,7 @@ class _EditActivityState extends State<EditActivity> {
 
   Future<List<double>?> getCoordinatesFromAddress(String address) async {
     final encodedAddress = Uri.encodeComponent(address);
-    final url =
-        'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json';
+    final url = 'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -284,10 +278,8 @@ class _EditActivityState extends State<EditActivity> {
     }
   }
 
-  Future<String?> getAddressFromCoordinates(
-      double latitude, double longitude) async {
-    final url =
-        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+  Future<String?> getAddressFromCoordinates(double latitude, double longitude) async {
+    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -298,8 +290,7 @@ class _EditActivityState extends State<EditActivity> {
           final road = address['road'] ?? '';
           final houseNumber = address['house_number'] ?? '';
           final postcode = address['postcode'] ?? '';
-          final city =
-              address['city'] ?? address['town'] ?? address['village'] ?? '';
+          final city = address['city'] ?? address['town'] ?? address['village'] ?? '';
           final country = address['country'] ?? '';
 
           List<String> parts = [];
@@ -365,6 +356,17 @@ class _EditActivityState extends State<EditActivity> {
               });
             },
           ),
+          IconButton(
+            icon: Icon(
+              _isMapVisible ? Icons.close : Icons.map,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              setState(() {
+                _isMapVisible = !_isMapVisible;
+              });
+            },
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -377,7 +379,9 @@ class _EditActivityState extends State<EditActivity> {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: GestureDetector(
-                  onTap: (){_showImageSourceActionSheet(context);},
+                  onTap: () {
+                    _showImageSourceActionSheet(context);
+                  },
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -385,7 +389,7 @@ class _EditActivityState extends State<EditActivity> {
                           ? Container(
                               height: 100,
                               decoration: BoxDecoration(
-                                color:Pallete.primaryColor.withOpacity(0.7),
+                                color: Pallete.primaryColor.withOpacity(0.7),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Pallete.textColor),
                               ),
@@ -397,13 +401,13 @@ class _EditActivityState extends State<EditActivity> {
                                 ),
                               ),
                             )
-                          :  ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.memory(
-                                  base64Decode(_image!.split(',').last),
-                                  height: 100,
-                                ),
+                          : ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.memory(
+                                base64Decode(_image!.split(',').last),
+                                height: 100,
                               ),
+                            ),
                     ],
                   ),
                 ),
@@ -433,16 +437,33 @@ class _EditActivityState extends State<EditActivity> {
                 },
               ),
               const SizedBox(height: 24),
-              _buildTextField(
-                controller: _locationController,
-                labelText: 'Location',
-                readOnly: !_isEditing,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a location';
-                  }
-                  return null;
-                },
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _locationController,
+                      labelText: 'Location',
+                      readOnly: !_isEditing,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a location';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      _isMapVisible ? Icons.close : Icons.map,
+                      color: Pallete.textColor,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isMapVisible = !_isMapVisible;
+                      });
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
               _buildTextField(
@@ -465,97 +486,90 @@ class _EditActivityState extends State<EditActivity> {
                 },
               ),
               const SizedBox(height: 24),
-              _locationLoaded
-                  ? Container(
-                      height: 300,
-                      child: Stack(
-                        children: [
-                          FlutterMap(
-                            mapController: _mapController,
-                            options: MapOptions(
-                              initialCenter:
-                                  ltld.LatLng(_latitude, _longitude),
-                              initialZoom: 12,
-                              interactionOptions:
-                                  const InteractionOptions(
-                                      flags: ~InteractiveFlag
-                                          .doubleTapZoom),
-                              onTap: (tapPosition, point) {
-                                if (_isEditing) {
-                                  setState(() {
-                                    _latitude = point.latitude;
-                                    _longitude = point.longitude;
-                                  });
-                                  getAddressFromCoordinates(
-                                      _latitude, _longitude);
-                                }
-                              },
-                            ),
-                            children: [
-                              _tileLayer,
-                              MarkerLayer(
-                                markers: [
-                                  Marker(
-                                    width: 80.0,
-                                    height: 80.0,
-                                    point: ltld.LatLng(
-                                        _latitude, _longitude),
-                                    child: const Icon(
-                                      Icons.location_on,
-                                      color: Colors.red,
-                                      size: 50.0,
-                                    ),
-                                  ),
-                                ],
+              Visibility(
+                visible: _isMapVisible,
+                child: _locationLoaded
+                    ? Container(
+                        height: 300,
+                        child: Stack(
+                          children: [
+                            FlutterMap(
+                              mapController: _mapController,
+                              options: MapOptions(
+                                initialCenter: ltld.LatLng(_latitude, _longitude),
+                                initialZoom: 12,
+                                interactionOptions: const InteractionOptions(
+                                    flags: ~InteractiveFlag.doubleTapZoom),
+                                onTap: (tapPosition, point) {
+                                  if (_isEditing) {
+                                    setState(() {
+                                      _latitude = point.latitude;
+                                      _longitude = point.longitude;
+                                    });
+                                    getAddressFromCoordinates(_latitude, _longitude);
+                                  }
+                                },
                               ),
-                            ],
-                          ),
-                          Positioned(
-                            top: 20,
-                            left: 20,
-                            right: 20,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 16.0),
-                              decoration: BoxDecoration(
-                                color: Pallete.backgroundColor,
-                                borderRadius:
-                                    BorderRadius.circular(8.0),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: TextFormField(
-                                      controller: _searchController,
-                                      decoration:
-                                          const InputDecoration(
-                                        hintText: 'Search...',
-                                        border: InputBorder.none,
+                              children: [
+                                _tileLayer,
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      width: 80.0,
+                                      height: 80.0,
+                                      point: ltld.LatLng(_latitude, _longitude),
+                                      child: const Icon(
+                                        Icons.location_on,
+                                        color: Colors.red,
+                                        size: 50.0,
                                       ),
-                                      style: TextStyle(
-                                          color: Pallete.textColor),
                                     ),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.search,
-                                      color: Pallete.textColor,
+                                  ],
+                                ),
+                              ],
+                            ),
+                            Positioned(
+                              top: 20,
+                              left: 20,
+                              right: 20,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                                decoration: BoxDecoration(
+                                  color: Pallete.backgroundColor,
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextFormField(
+                                        controller: _searchController,
+                                        decoration: const InputDecoration(
+                                          hintText: 'Search...',
+                                          border: InputBorder.none,
+                                        ),
+                                        style: TextStyle(color: Pallete.textColor),
+                                      ),
                                     ),
-                                    onPressed: () {
-                                      if (_isEditing) {
-                                        getCoordinatesFromAddress(
-                                            _searchController.text);
-                                      }
-                                    },
-                                  ),
-                                ],
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.search,
+                                        color: Pallete.textColor,
+                                      ),
+                                      onPressed: () {
+                                        if (_isEditing) {
+                                          getCoordinatesFromAddress(_searchController.text);
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : const SizedBox.shrink(),
+                          ],
+                        ),
+                      )
+                    : const Center(child: CircularProgressIndicator()),
+              ),
               if (_isEditing) // Mostrar botones solo en modo de edición
                 Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -570,8 +584,7 @@ class _EditActivityState extends State<EditActivity> {
                   child: ElevatedButton(
                     onPressed: _deleteActivity,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          Colors.red, // Background color
+                      backgroundColor: Colors.red, // Background color
                     ),
                     child: Text('Delete'),
                   ),
@@ -605,8 +618,7 @@ class _EditActivityState extends State<EditActivity> {
           ),
           fillColor: Pallete.primaryColor.withOpacity(0.7),
           filled: true,
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+          contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: Pallete.textColor),
@@ -631,4 +643,3 @@ class _EditActivityState extends State<EditActivity> {
     );
   }
 }
-
