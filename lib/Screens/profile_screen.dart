@@ -10,6 +10,7 @@ import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:crypto/crypto.dart';
 
 late UserService userService;
 User? user;
@@ -60,7 +61,7 @@ class _ProfileScreen extends State<ProfileScreen> {
       final String filename =
           'upload_${DateTime.now().millisecondsSinceEpoch}.png';
       final request = http.MultipartRequest('POST', url)
-        ..fields['upload_preset'] = 'typvcah6'
+        ..fields['upload_preset'] = 'byxhgftn'
         ..files.add(
             http.MultipartFile.fromBytes('file', bytes, filename: filename));
 
@@ -106,17 +107,48 @@ class _ProfileScreen extends State<ProfileScreen> {
     }
   }
 
-  void _RemoveImgae() {
-    user?.image = null;
-    userService.updateUser(user!).then((_) {
-      getData();
-    }).catchError((error) {
-      Get.snackbar(
-        'Error',
-        'Error removing image',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    });
+
+  Future<void> deleteImageFromUrl(String imageUrl) async {
+    final String cloudName = 'dgwbrwvux';
+    final String apiKey = '388645541249985';
+    final String apiSecret = 'MTRqeAf4459Akl-4NwIbzYP0jCM';
+    final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+
+    final Uri uri = Uri.parse(imageUrl);
+    final segments = uri.pathSegments;
+    final String publicId = segments.last.split('.').first;
+
+    // Create the signature
+    final String signatureBase =
+        'public_id=$publicId&timestamp=$timestamp$apiSecret';
+    final String signature =
+        sha1.convert(utf8.encode(signatureBase)).toString();
+
+    final url =
+        Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/destroy');
+
+    final response = await http.post(
+      url,
+      body: {
+        'public_id': publicId,
+        'api_key': apiKey,
+        'timestamp': timestamp,
+        'signature': signature,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      user?.image = null;
+      userService.updateUser(user!).then((_) {
+        getData();
+      }).catchError((error) {
+        Get.snackbar(
+          'Error',
+          'Error removing image',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      });
+    }
   }
 
   void _showImageSourceActionSheet(BuildContext context) {
@@ -142,7 +174,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                   title: const Text('Remove image'),
                   onTap: () {
                     Navigator.of(context).pop();
-                    _RemoveImgae();
+                    deleteImageFromUrl(user!.image!);
                   },
                 ),
             ],
