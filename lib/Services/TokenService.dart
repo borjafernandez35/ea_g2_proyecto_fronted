@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:spotfinder/Screens/title_screen.dart';
 
 class TokenRefreshService {
   final Dio dio = DioSingleton.instance;
@@ -78,6 +80,9 @@ class TokenRefreshService {
       }
     } catch (e) {
       print('Error refreshing token: $e');
+      box.remove('token');
+      box.remove('refresh_token');
+      Get.to(TitleScreen());
     }
   }
 }

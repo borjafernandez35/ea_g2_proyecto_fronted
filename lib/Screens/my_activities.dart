@@ -112,7 +112,7 @@ class _MyActivities extends State<MyActivities> {
               color: Pallete.textColor,
             ),
             onPressed: () {
-              Get.to(() => HomePage());
+              Get.to(() => HomePage(initialIndex: 3));
             },
           ),
         ),

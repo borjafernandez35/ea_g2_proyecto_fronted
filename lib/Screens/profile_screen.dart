@@ -84,16 +84,39 @@ class _ProfileScreen extends State<ProfileScreen> {
             );
           });
         } else {
-          print(
-              'Error al subir la imagen a Cloudinary: ${response.statusCode}');
-          return;
+          Get.snackbar(
+            'Error',
+            'Error uploading image',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Pallete.textColor,
+          );
         }
       } catch (e) {
-        return;
+        Get.snackbar(
+          'Error',
+          'Error unexpected: $e',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Pallete.textColor,
+        );
       }
     } else {
       print('No se seleccionó ninguna imagen.');
     }
+  }
+
+  void _RemoveImgae() {
+    user?.image = null;
+    userService.updateUser(user!).then((_) {
+      getData();
+    }).catchError((error) {
+      Get.snackbar(
+        'Error',
+        'Error removing image',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    });
   }
 
   void _showImageSourceActionSheet(BuildContext context) {
@@ -113,6 +136,15 @@ class _ProfileScreen extends State<ProfileScreen> {
                   _pickImage();
                 },
               ),
+              if (user?.image != null)
+                ListTile(
+                  leading: const Icon(Icons.remove_circle),
+                  title: const Text('Remove image'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _RemoveImgae();
+                  },
+                ),
             ],
           ),
         );
@@ -145,11 +177,11 @@ class _ProfileScreen extends State<ProfileScreen> {
                         // Avatar y botón de edición
                         CircleAvatar(
                           radius: 50,
-                          backgroundColor: Pallete.accentColor,
+                          backgroundColor: Pallete.primaryColor,
                           child: user?.image == null
                               ? Icon(
                                   Icons.person,
-                                  size: 60,
+                                  size: 70,
                                   color: Pallete.paleBlueColor,
                                 )
                               : ClipOval(
@@ -167,7 +199,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               shape: CircleBorder(),
-                              backgroundColor: Pallete.primaryColor,
+                              backgroundColor: Pallete.paleBlueColor,
                               padding: EdgeInsets.all(8),
                             ),
                             onPressed: () {
@@ -175,7 +207,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                             },
                             child: Icon(
                               Icons.edit,
-                              color: Pallete.paleBlueColor,
+                              color: Pallete.primaryColor,
                               size: 24,
                             ),
                           ),

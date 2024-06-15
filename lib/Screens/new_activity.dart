@@ -60,11 +60,12 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   void _setupMapTheme() async {
     final box = GetStorage();
     String? theme = box.read('theme');
-    
+
     setState(() {
       if (theme == 'Dark') {
         _tileLayer = TileLayer(
-          urlTemplate: 'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+          urlTemplate:
+              'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
           userAgentPackageName: 'dev.fleaflet.flutter_map.example',
         );
       } else {
@@ -76,8 +77,44 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     });
   }
 
+  void _showImageSourceActionSheet(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Seleccionar imagen'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Galería'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImage();
+                },
+              ),
+              if (_image != null)
+                ListTile(
+                  leading: const Icon(Icons.remove_circle),
+                  title: const Text('Remove image'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    setState(() {
+                      _image = null;
+                    });
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _pickImage() async {
-    final XFile? pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final XFile? pickedImage =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (pickedImage != null) {
       final Uint8List bytes = await pickedImage.readAsBytes();
@@ -96,27 +133,26 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
       return null;
     }
 
-    final Uri url = Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
-    final String filename = 'upload_${DateTime.now().millisecondsSinceEpoch}.png'; 
+    final Uri url =
+        Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
+    final String filename =
+        'upload_${DateTime.now().millisecondsSinceEpoch}.png';
     final http.MultipartRequest request = http.MultipartRequest('POST', url)
       ..fields['upload_preset'] = 'typvcah6'
-      ..files.add(http.MultipartFile.fromBytes(
-        'file',
-        _imageBytes!,
-        filename: filename
-      ));
+      ..files.add(http.MultipartFile.fromBytes('file', _imageBytes!,
+          filename: filename));
 
     try {
       final http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200) {
-        final http.Response responseData = await http.Response.fromStream(response);
+        final http.Response responseData =
+            await http.Response.fromStream(response);
         final Map<String, dynamic> jsonData = jsonDecode(responseData.body);
         final String imageUrl = jsonData['secure_url'];
 
         return imageUrl;
       } else {
-        print('Error al subir la imagen a Cloudinary: ${response.statusCode}');
         return null;
       }
     } catch (e) {
@@ -140,11 +176,12 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
 
   Future<void> _selectLocation() async {
     try {
-      final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high,);
+      final Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
       setState(() {
         _latitude = position.latitude;
         _longitude = position.longitude;
-        _locationController.text = '$_latitude, $_longitude';
         _locationLoaded = true;
         _mapController.move(ltld.LatLng(_latitude, _longitude), 12);
       });
@@ -157,6 +194,9 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   }
 
   Future<void> _submitForm() async {
+    if (_locationController.text.isEmpty) {
+      getCoordinatesFromAddress(_locationController.text);
+    }
     if (_formKey.currentState!.validate()) {
       final Activity newActivity = Activity(
         name: _nameController.text,
@@ -166,7 +206,24 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
         idUser: _userId,
         location: LatLng(latitude: _latitude, longitude: _longitude),
       );
-      await ActivityService().addActivity(newActivity);
+      await ActivityService().addActivity(newActivity).then((statusCode) {
+        Get.snackbar(
+          'Successful',
+          'Activity created!',
+          snackPosition: SnackPosition.BOTTOM,
+          titleText: const Text(
+            'Successful',
+            style: TextStyle(
+              color: Colors.green,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          messageText: Text(
+            'Activity created!',
+            style: TextStyle(color: Pallete.backgroundColor),
+          ),
+        );
+      });
       widget.onUpdate();
       Get.back();
     } else {
@@ -176,7 +233,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
 
   Future<List<double>?> getCoordinatesFromAddress(String address) async {
     final String encodedAddress = Uri.encodeComponent(address);
-    final String url = 'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json';
+    final String url =
+        'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json';
 
     try {
       final http.Response response = await http.get(Uri.parse(url));
@@ -189,7 +247,6 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
           setState(() {
             _latitude = lat;
             _longitude = lon;
-            _locationController.text = '$lat,$lon';
             _mapController.move(ltld.LatLng(_latitude, _longitude), 12);
           });
           return [lat, lon];
@@ -202,8 +259,10 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     }
   }
 
-  Future<String?> getAddressFromCoordinates(double latitude, double longitude) async {
-    final String url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+  Future<String?> getAddressFromCoordinates(
+      double latitude, double longitude) async {
+    final String url =
+        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
 
     try {
       final http.Response response = await http.get(Uri.parse(url));
@@ -213,7 +272,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
         final String road = address['road'] ?? '';
         final String houseNumber = address['house_number'] ?? '';
         final String postcode = address['postcode'] ?? '';
-        final String city = address['city'] ?? address['town'] ?? address['village'] ?? '';
+        final String city =
+            address['city'] ?? address['town'] ?? address['village'] ?? '';
         final String country = address['country'] ?? '';
 
         final List<String> parts = [];
@@ -226,7 +286,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
 
         final String formattedAddress = parts.join(', ');
         setState(() {
-          _searchController.text = formattedAddress;
+          _locationController.text = formattedAddress;
         });
         return formattedAddress;
       }
@@ -250,6 +310,16 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
           ),
         ),
         backgroundColor: Pallete.backgroundColor.withOpacity(0.7),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: Pallete.textColor,
+          ),
+          onPressed: () {
+            widget.onUpdate();
+            Get.back();
+          },
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -260,7 +330,9 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 GestureDetector(
-                  onTap: _pickImage,
+                  onTap: () {
+                    _showImageSourceActionSheet(context);
+                  },
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -274,14 +346,17 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                         child: _image == null
                             ? Center(
                                 child: Text(
-                                  'Tap to select an image\nAccepted formats: JPG, PNG',
+                                  'Tap to select an image',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(color: Pallete.textColor),
                                 ),
                               )
-                            : Image.memory(
-                                base64Decode(_image!.split(',').last),
-                                height: 100,
+                            : ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.memory(
+                                  base64Decode(_image!.split(',').last),
+                                  height: 100,
+                                ),
                               ),
                       ),
                     ],
@@ -369,7 +444,6 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                   children: [
                     Expanded(
                       child: TextFormField(
-                        readOnly: true,
                         controller: _locationController,
                         decoration: InputDecoration(
                           labelText: 'Location',
@@ -383,7 +457,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                               vertical: 10.0, horizontal: 12.0),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide:  BorderSide(color: Pallete.textColor),
+                            borderSide: BorderSide(color: Pallete.textColor),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -474,7 +548,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                               FlutterMap(
                                 mapController: _mapController,
                                 options: MapOptions(
-                                  initialCenter: ltld.LatLng(_latitude, _longitude),
+                                  initialCenter:
+                                      ltld.LatLng(_latitude, _longitude),
                                   initialZoom: 12,
                                   interactionOptions: const InteractionOptions(
                                       flags: ~InteractiveFlag.doubleTapZoom),
@@ -496,7 +571,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                                       Marker(
                                         width: 80.0,
                                         height: 80.0,
-                                        point: ltld.LatLng(_latitude, _longitude),
+                                        point:
+                                            ltld.LatLng(_latitude, _longitude),
                                         child: const Icon(
                                           Icons.location_on,
                                           color: Colors.red,
@@ -512,7 +588,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                                 left: 20,
                                 right: 20,
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 16.0),
                                   decoration: BoxDecoration(
                                     color: Pallete.backgroundColor,
                                     borderRadius: BorderRadius.circular(8.0),
@@ -526,8 +603,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                                             hintText: 'Search...',
                                             border: InputBorder.none,
                                           ),
-                                          style:
-                                            TextStyle(color: Pallete.textColor),
+                                          style: TextStyle(
+                                              color: Pallete.textColor),
                                         ),
                                       ),
                                       IconButton(

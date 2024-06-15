@@ -36,6 +36,7 @@ class _EditActivityState extends State<EditActivity> {
   ActivityService activityService = ActivityService();
 
   String? _image;
+  Uint8List? _imageBytes;
   DateTime _selectedDate = DateTime.now();
   String _userId = '';
   double _latitude = 0;
@@ -51,14 +52,15 @@ class _EditActivityState extends State<EditActivity> {
     _selectLocation();
     activityService = ActivityService();
     _setupMapTheme();
+    _loadImage();
 
     // Inicializar los controladores con los datos de la actividad
     _nameController.text = widget.activity.name;
     _descriptionController.text = widget.activity.description;
     _latitude = widget.activity.location!.latitude;
-    _longitude = widget.activity.location!.longitude;
-    _image = widget.activity.imageUrl;
+    _longitude = widget.activity.location!.longitude;;
     _selectedDate = widget.activity.date;
+  
   }
 
   Future<void> _fetchUserId() async {
@@ -66,6 +68,22 @@ class _EditActivityState extends State<EditActivity> {
     setState(() {
       _userId = userId!;
     });
+  }
+
+   Future<void> _loadImage() async {
+    try {
+      final response = await http.get(Uri.parse(widget.activity.imageUrl!));
+      if (response.statusCode == 200) {
+        Uint8List bytes = response.bodyBytes;
+        setState(() {
+          _image = 'data:image/png;base64,' + base64Encode(bytes);
+        });
+      } else {
+        print('Failed to load image');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
   }
 
   void _setupMapTheme() async {
@@ -87,44 +105,82 @@ class _EditActivityState extends State<EditActivity> {
     });
   }
 
+   void _showImageSourceActionSheet(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Seleccionar imagen'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Galería'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImage();
+                },
+              ),
+              if (_image != null)
+                ListTile(
+                  leading: const Icon(Icons.remove_circle),
+                  title: const Text('Remove image'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    setState(() {
+                      _image = null;
+                    });
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _pickImage() async {
-    final pickedImage =
+    final XFile? pickedImage =
         await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (pickedImage != null) {
-      final bytes = await pickedImage.readAsBytes();
-      await _uploadImage(bytes);
+      final Uint8List bytes = await pickedImage.readAsBytes();
+      setState(() {
+        _imageBytes = bytes;
+        _image = 'data:image/png;base64,' + base64Encode(bytes);
+      });
     } else {
       print('No se seleccionó ninguna imagen.');
     }
   }
 
-  Future<void> _uploadImage(Uint8List imageBytes) async {
-    final url =
+  Future<String?> _uploadImage() async {
+    if (_image == null) {
+      print('No hay imagen para subir.');
+      return null;
+    }
+
+    final Uri url =
         Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
     final String filename =
         'upload_${DateTime.now().millisecondsSinceEpoch}.png';
-    final request = http.MultipartRequest('POST', url)
+    final http.MultipartRequest request = http.MultipartRequest('POST', url)
       ..fields['upload_preset'] = 'typvcah6'
-      ..files.add(http.MultipartFile.fromBytes('file', imageBytes,
+      ..files.add(http.MultipartFile.fromBytes('file', _imageBytes!,
           filename: filename));
 
     try {
-      final response = await request.send();
+      final http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200) {
-        final responseData = await http.Response.fromStream(response);
-        final jsonData = jsonDecode(responseData.body);
-        final imageUrl = jsonData['secure_url'];
-
-        setState(() {
-          _image = imageUrl;
-        });
+        final http.Response responseData =
+            await http.Response.fromStream(response);
+        final Map<String, dynamic> jsonData = jsonDecode(responseData.body);
+        final String imageUrl = jsonData['secure_url'];
 
         return imageUrl;
       } else {
-        print(
-            'Error al subir la imagen a Cloudinary: ${response.statusCode}');
         return null;
       }
     } catch (e) {
@@ -149,10 +205,10 @@ class _EditActivityState extends State<EditActivity> {
 
   Future<void> _selectLocation() async {
     try {
-      setState(() {
+      setState(() async {
         _latitude = widget.activity.location!.latitude;
         _longitude = widget.activity.location!.longitude;
-        _locationController.text = '$_latitude, $_longitude';
+        _locationController.text = await getAddressFromCoordinates(_latitude, _longitude) ?? '';
         _locationLoaded = true;
         _mapController.move(ltld.LatLng(_latitude, _longitude), 12);
       });
@@ -168,13 +224,30 @@ class _EditActivityState extends State<EditActivity> {
       Activity newActivity = Activity(
         name: _nameController.text,
         description: _descriptionController.text,
-        imageUrl: _image,
+        imageUrl: await _uploadImage(),
         date: _selectedDate,
         idUser: _userId,
         location: LatLng(latitude: _latitude, longitude: _longitude),
       );
 
-      await activityService.editActivity(newActivity, widget.activity.id);
+      await activityService.editActivity(newActivity, widget.activity.id).then((statusCode) {
+        Get.snackbar(
+          'Successful',
+          'Activity edited!',
+          snackPosition: SnackPosition.BOTTOM,
+          titleText: const Text(
+            'Successful',
+            style: TextStyle(
+              color: Colors.green,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          messageText: Text(
+            'Activity edited!',
+            style: TextStyle(color: Pallete.backgroundColor),
+          ),
+        );
+      });
       widget.onUpdate();
       print('Actividad editada correctamente.');
       Get.back();
@@ -199,7 +272,6 @@ class _EditActivityState extends State<EditActivity> {
           setState(() {
             _latitude = lat;
             _longitude = lon;
-            _locationController.text = '$lat,$lon';
             _mapController.move(ltld.LatLng(_latitude, _longitude), 12);
           });
           return [lat, lon];
@@ -240,7 +312,7 @@ class _EditActivityState extends State<EditActivity> {
 
           String formattedAddress = parts.join(', ');
           setState(() {
-            _searchController.text = formattedAddress;
+            _locationController.text = formattedAddress;
           });
           return formattedAddress;
         }
@@ -266,16 +338,16 @@ class _EditActivityState extends State<EditActivity> {
         title: Text(
           'Edit Activity',
           style: TextStyle(
-            color: Pallete.backgroundColor,
+            color: Pallete.textColor,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.black.withOpacity(0.7),
+        backgroundColor: Pallete.backgroundColor.withOpacity(0.7),
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            color: Pallete.backgroundColor,
+            color: Pallete.textColor,
           ),
           onPressed: () {
             Get.to(() => MyActivities());
@@ -305,7 +377,7 @@ class _EditActivityState extends State<EditActivity> {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: GestureDetector(
-                  onTap: _pickImage,
+                  onTap: (){_showImageSourceActionSheet(context);},
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -313,22 +385,25 @@ class _EditActivityState extends State<EditActivity> {
                           ? Container(
                               height: 100,
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.7),
+                                color:Pallete.primaryColor.withOpacity(0.7),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.white),
+                                border: Border.all(color: Pallete.textColor),
                               ),
-                              child: const Center(
+                              child: Center(
                                 child: Text(
-                                  'Tap to select an image\nAccepted formats: JPG, PNG',
+                                  'Tap to select an image',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(color: Colors.white),
+                                  style: TextStyle(color: Pallete.textColor),
                                 ),
                               ),
                             )
-                          : Image.network(
-                              _image!,
-                              height: 100,
-                            ),
+                          :  ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.memory(
+                                  base64Decode(_image!.split(',').last),
+                                  height: 100,
+                                ),
+                              ),
                     ],
                   ),
                 ),
@@ -361,7 +436,7 @@ class _EditActivityState extends State<EditActivity> {
               _buildTextField(
                 controller: _locationController,
                 labelText: 'Location',
-                readOnly: true,
+                readOnly: !_isEditing,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a location';
@@ -410,8 +485,6 @@ class _EditActivityState extends State<EditActivity> {
                                   setState(() {
                                     _latitude = point.latitude;
                                     _longitude = point.longitude;
-                                    _locationController.text =
-                                        '$_latitude,$_longitude';
                                   });
                                   getAddressFromCoordinates(
                                       _latitude, _longitude);
@@ -445,7 +518,7 @@ class _EditActivityState extends State<EditActivity> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: 16.0),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Pallete.backgroundColor,
                                 borderRadius:
                                     BorderRadius.circular(8.0),
                               ),
@@ -459,14 +532,14 @@ class _EditActivityState extends State<EditActivity> {
                                         hintText: 'Search...',
                                         border: InputBorder.none,
                                       ),
-                                      style: const TextStyle(
-                                          color: Colors.black),
+                                      style: TextStyle(
+                                          color: Pallete.textColor),
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.search,
-                                      color: Colors.black,
+                                      color: Pallete.textColor,
                                     ),
                                     onPressed: () {
                                       if (_isEditing) {
@@ -526,21 +599,21 @@ class _EditActivityState extends State<EditActivity> {
         maxLines: maxLines,
         decoration: InputDecoration(
           labelText: labelText,
-          labelStyle: const TextStyle(
-            color: Colors.white,
+          labelStyle: TextStyle(
+            color: Pallete.textColor,
             fontWeight: FontWeight.bold,
           ),
-          fillColor: Colors.black.withOpacity(0.7),
+          fillColor: Pallete.primaryColor.withOpacity(0.7),
           filled: true,
           contentPadding:
               const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: Pallete.textColor),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: Pallete.textColor),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -551,7 +624,7 @@ class _EditActivityState extends State<EditActivity> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: Pallete.textColor),
         validator: validator,
         onTap: onTap,
       ),

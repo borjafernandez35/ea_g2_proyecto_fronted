@@ -150,13 +150,13 @@ class Controller extends GetxController {
         );
 
         userService.logIn(logIn).then((statusCode) {
-          // La solicitud se completó exitosamente, puedes realizar acciones adicionales si es necesario
           print('Usuario logeado exitosamente');
           if (id != null) {
             Get.toNamed('/activity/$id');
           } else {
             Get.toNamed('/home');
           }
+          contrasenaController.text = '';
         }).catchError((error) {
           // Manejar errores de solicitud HTTP
           Get.snackbar(

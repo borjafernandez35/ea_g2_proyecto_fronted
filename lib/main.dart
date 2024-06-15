@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
         if (Get.currentRoute != '/home' &&
             !Get.currentRoute.contains('activity') &&
             !Get.currentRoute.contains('settings')) {
-          Get.offAllNamed('/settings');
+          Get.offAllNamed('/home');
         }
       }
     });

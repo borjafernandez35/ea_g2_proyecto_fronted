@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:spotfinder/Resources/pallete.dart';
+import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/main.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -13,7 +14,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final box = GetStorage();
-  final _eventBus = EventBus(); 
   bool _isDyslexicFontEnabled = false;
   bool _settingsChanged = false;
   String? _selectedTheme;
@@ -36,12 +36,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _changeTheme(String theme) {
     box.write('theme', theme);
     runApp(
-      MyApp(), // Se reinicia la aplicación con la nueva configuración
+      MyApp(), 
     );
     setState(() {
       _settingsChanged = true;
     });
-    _eventBus.notifyThemeChanged(theme); 
   }
 
   void _showThemeDialog(BuildContext context) {
@@ -134,7 +133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             color: Pallete.textColor,
           ),
           onPressed: () {
-Navigator.pop(context,  _settingsChanged);         },
+          Get.to(() => HomePage(initialIndex: 3));         },
         ),
         title: Text(
           'Settings',
@@ -194,31 +193,6 @@ Navigator.pop(context,  _settingsChanged);         },
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _eventBus.dispose(); // Libera recursos del EventBus
-    super.dispose();
-  }
-}
-
-class EventBus {
-  static final EventBus _singleton = EventBus._internal();
-  factory EventBus() => _singleton;
-  
-  EventBus._internal();
-  
-  final _themeChangeController = StreamController<String>.broadcast();
-  
-  Stream<String> get onThemeChanged => _themeChangeController.stream;
-  
-  void notifyThemeChanged(String theme) {
-    _themeChangeController.sink.add(theme);
-  }
-  
-  void dispose() {
-    _themeChangeController.close();
   }
 }
 

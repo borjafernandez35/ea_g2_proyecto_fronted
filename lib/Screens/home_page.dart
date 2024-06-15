@@ -11,32 +11,32 @@ import 'chatScreen.dart';
 import 'package:latlong2/latlong.dart' as ltlg;
 
 class HomePage extends StatefulWidget {
-  HomePage({super.key});
+  final int initialIndex;
+
+  HomePage({this.initialIndex = 0, Key? key}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _nameState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _nameState extends State<HomePage> {
+class _HomePageState extends State<HomePage> {
   static HomeController homeController = Get.put(HomeController());
   int _selectedIndex = 0;
 
-  static final ltlg.LatLng defaultLocation = ltlg.LatLng(41.27552212202214, 1.9863014220734023);
+  static final ltlg.LatLng defaultLocation =
+      ltlg.LatLng(41.27552212202214, 1.9863014220734023);
 
   static final List<Widget> _widgetOptions = <Widget>[
     MapScreen(defaultLocation: defaultLocation),
     const ActivityListPage(),
     const ChatScreen(),
-    const ProfileScreen()
+    const ProfileScreen(),
   ];
 
   @override
   void initState() {
     super.initState();
-    EventBus().onThemeChanged.listen((theme) {
-      setState(() {
-      });
-    });
+    _selectedIndex = widget.initialIndex;
   }
 
   @override
@@ -51,8 +51,8 @@ class _nameState extends State<HomePage> {
           color: Pallete.backgroundColor,
           boxShadow: [
             BoxShadow(
-              blurRadius: 20,
-              color: Pallete.backgroundColor.withOpacity(0.1),
+              blurRadius: 12,
+              color: Pallete.textColor.withOpacity(0.3),
             ),
           ],
         ),
@@ -73,22 +73,22 @@ class _nameState extends State<HomePage> {
                 GButton(
                   iconColor: Pallete.textColor,
                   icon: LineIcons.mapMarker,
-                  text: "Home"
+                  text: "Home",
                 ),
                 GButton(
-                  iconColor:Pallete.textColor,
+                  iconColor: Pallete.textColor,
                   icon: LineIcons.hiking,
-                  text: "Activities"
+                  text: "Activities",
                 ),
                 GButton(
-                  iconColor:Pallete.textColor,
+                  iconColor: Pallete.textColor,
                   icon: LineIcons.comment,
-                  text: "Chats"
+                  text: "Chats",
                 ),
                 GButton(
                   iconColor: Pallete.textColor,
                   icon: LineIcons.user,
-                  text: "Profile"
+                  text: "Profile",
                 ),
               ],
               selectedIndex: _selectedIndex,
@@ -114,3 +114,4 @@ class _nameState extends State<HomePage> {
 class HomeController extends GetxController {
   final TextEditingController searchBarController = TextEditingController();
 }
+
