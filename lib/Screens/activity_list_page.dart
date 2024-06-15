@@ -7,6 +7,7 @@ import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Screens/new_activity.dart';
 import 'package:get/get.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
+import 'package:intl/intl.dart';
 import 'package:spotfinder/Widgets/activity_card.dart';
 import 'package:http/http.dart' as http;
 import 'package:spotfinder/Resources/pallete.dart';
@@ -22,6 +23,7 @@ class ActivityListPage extends StatefulWidget {
 
 class _ActivityListPageState extends State<ActivityListPage> {
   late List<Activity> listaActivities;
+  late List<Activity> sortedActivities;
   bool isLoading = true;
   double selectedDistance = 5.0; // Distancia inicial seleccionada
 
@@ -34,11 +36,13 @@ class _ActivityListPageState extends State<ActivityListPage> {
 
   void getData() async {
     setState(() {
-      isLoading =
-          true; // Mostrar indicador de carga mientras se obtienen los datos
+      isLoading = true; // Mostrar indicador de carga mientras se obtienen los datos
     });
     try {
       listaActivities = await activityService.getData(selectedDistance * 1000); // Filtrar por distancia
+      sortedActivities = listaActivities.map((user) => user).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+      print(sortedActivities[0].date);
       setState(() {
         isLoading = false;
       });
@@ -166,7 +170,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
                     child: InkWell(
                       onTap: () {
                         Get.toNamed(
-                          '/activity/${listaActivities[index].id}',
+                          '/activity/${sortedActivities[index].id}',
                           arguments: {'onUpdate': getData},
                         );
                       },
@@ -174,14 +178,17 @@ class _ActivityListPageState extends State<ActivityListPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ListTile(
-                            title: Text(listaActivities[index].name),
-                            subtitle: listaActivities[index].location != null
+                            trailing: Text(DateFormat('dd/MM/yyyy').format(sortedActivities[index].date),
+                            style: const TextStyle(fontSize: 15),
+                            ),
+                            title: Text(sortedActivities[index].name),
+                            subtitle: sortedActivities[index].location != null
                                 ? FutureBuilder<String?>(
                                     future: _getAddressFromCoordinates(
-                                        listaActivities[index]
+                                        sortedActivities[index]
                                             .location!
                                             .latitude,
-                                        listaActivities[index]
+                                        sortedActivities[index]
                                             .location!
                                             .longitude),
                                     builder: (context, snapshot) {
@@ -229,7 +236,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
                     ),
                   );
                 },
-                itemCount: listaActivities.length,
+                itemCount: sortedActivities.length,
               ),
             ),
           ],
