@@ -309,7 +309,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 20.0),
+   /*                     SizedBox(height: 20.0),
                         TextButton(
                           onPressed: () {
                             // Navegar a otra pantalla (puedes reemplazar esta función)
@@ -321,7 +321,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                               style: TextStyle(color: Pallete.accentColor),
                             ),
                           ),
-                        ),
+                        ), */
                         SizedBox(height: 20.0),
                         TextButton(
                           onPressed: () {
