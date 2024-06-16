@@ -104,7 +104,7 @@ class ActivityCard extends StatelessWidget {
                                             color: Colors.red, size: 17),
                                         SizedBox(width: 4),
                                         Text(
-                                          'Cargando dirección...',
+                                          'Loading address...',
                                           style: TextStyle(
                                               color: Pallete.textColor),
                                         ),
@@ -117,7 +117,7 @@ class ActivityCard extends StatelessWidget {
                                             color: Colors.red, size: 17),
                                         const SizedBox(width: 4),
                                         Text(
-                                          'Error al cargar dirección',
+                                          'Error getting the address',
                                           style: TextStyle(
                                               color: Pallete.textColor),
                                         ),
@@ -132,7 +132,7 @@ class ActivityCard extends StatelessWidget {
                                         Expanded(
                                           child: Text(
                                             snapshot.data ??
-                                                'Dirección no encontrada',
+                                                'Address not found',
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                                 color: Pallete.textColor),
@@ -144,7 +144,7 @@ class ActivityCard extends StatelessWidget {
                                 },
                               )
                             : Text(
-                                'Ubicación no disponible',
+                                'Address unavailable',
                                 style: TextStyle(color: Pallete.textColor),
                               ),
                       ),
