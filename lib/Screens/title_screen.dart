@@ -1,16 +1,30 @@
 import 'package:flutter/gestures.dart';
+import 'package:google_identity_services_web/oauth2.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:spotfinder/Resources/jwt.dart';
 import 'package:spotfinder/Resources/pallete.dart';
+import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Widgets/button_sign_in.dart';
 import 'package:spotfinder/Screens/login_screen.dart';
 import 'package:spotfinder/Screens/register_screen.dart';
 import 'package:get/get.dart';
 import 'package:spotfinder/Resources/sign_in_button.dart';
 import 'package:spotfinder/Services/SignInService.dart';
+import 'package:google_identity_services_web/id.dart';
+import 'package:google_identity_services_web/google_identity_services_web.dart'
+    as gis;
+import 'package:google_identity_services_web/id.dart';
+import 'package:google_identity_services_web/id.dart' as gis_id;
+import 'package:google_identity_services_web/oauth2.dart';
 
 late SignInService signInService;
+
+const List<String> scopes = <String>[
+  'email',
+  'https://www.googleapis.com/auth/contacts.readonly',
+];
 
 class TitleScreen extends StatefulWidget {
   @override
@@ -18,63 +32,81 @@ class TitleScreen extends StatefulWidget {
 }
 
 class _TitleScreenState extends State<TitleScreen> {
-  late SignInService signInService;
+  // late SignInService signInService;
   GoogleSignInAccount? _currentUser;
   bool _isAuthorized = false;
   String _contactText = '';
+  String _token = '';
+  late TokenClient tokenClient;
+  late TokenClientConfig config;
+
+  String idClient =
+      '125785942229-p83mg0gugi4cebkqos62m6q2l86jabkc.apps.googleusercontent.com';
 
   @override
   void initState() {
+    print("^*******************************************************");
     super.initState();
-     signInService = SignInService(clientId: '435863540335-3edtkmprvlpkb3j4ea522cvndn8mc7mr.apps.googleusercontent.com');
+
+    signInService = SignInService(
+      clientId: idClient,
+    );
+    /* config = TokenClientConfig(
+      client_id: idClient,
+      scope: scopes,
+      callback: signInService.onTokenResponse,
+      error_callback: signInService.onError,
+    );
+ */
+    
+
     signInService.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
       setState(() {
+        gis_id.id.setLogLevel('debug');
+        gis_id.id.initialize(signInService.idConfiguration);
+
+        
+
+        //print("Que es TokenClient: ${tokenClient}");
+
+        print(
+            "iniciiiiiaaaaaaaaaaaaaaaaa el putoooooooooo TOOOOOOOOKKKEEEEENNNNNNNN!!!!!!${signInService.idToken}");
+
+        gis_id.id.prompt(signInService.onPromptMoment);
+
+        _handleSignIn();
+
+        print("Sirve para algo?????, ${account}");
+
         _currentUser = account;
+        // idToken=accessToken ?? (await _currentUser?.authentication)?.accessToken;;
         _isAuthorized = signInService.isAuthorized;
+        print("ojala funcione el token:${signInService.idToken}");
       });
-      if (_currentUser != null && _isAuthorized) {
-        _handleGetContact(_currentUser!);
-      }
     });
+    print("He salido!!");
 
     signInService.signInSilently();
-  }
 
- 
- Future<void> _handleGetContact(GoogleSignInAccount user) async {
-    setState(() {
-      _contactText = 'Loading contact info...';
-    });
-
-    try {
-      await signInService.handleGetContact(user);
-      setState(() {
-        _contactText = signInService.contactText;
-      });
-    } catch (error) {
-      setState(() {
-        _contactText = 'Failed to load contacts.';
-      });
-    }
-  }
-
-  Future<void> _handleAuthorizeScopes() async {
-    try {
-      await signInService.handleAuthorizeScopes();
-      setState(() {
-        _isAuthorized = signInService.isAuthorized;
-      });
-      if (_currentUser != null && _isAuthorized) {
-        _handleGetContact(_currentUser!);
-      }
-    } catch (error) {
-      print('Error authorizing scopes: $error');
-    }
+    //signInService.signIn();
   }
 
   Future<void> _handleSignIn() async {
     try {
       await signInService.handleSignIn();
+       //oauth2.initTokenClient(config);
+
+        //tokenClient.requestAccessToken();
+      if (signInService.token.isNotEmpty) {
+        setState(() {
+          _token = signInService.idToken ?? '';
+          print("que te voy a decir si yo acabo de llegar: ${_token}");
+        });
+        // Navigate to HomePage after successful sign-in
+        Get.offAll(() => TitleScreen());
+        
+        
+      }
     } catch (error) {
       print('Error signing in: $error');
     }
@@ -84,7 +116,7 @@ class _TitleScreenState extends State<TitleScreen> {
     await signInService.handleSignOut();
   }
 
- Widget _buildBody() {
+  Widget _buildBody() {
     final GoogleSignInAccount? user = _currentUser;
     if (user != null) {
       // The user is Authenticated
@@ -94,24 +126,25 @@ class _TitleScreenState extends State<TitleScreen> {
           ListTile(
             leading: GoogleUserCircleAvatar(identity: user),
             title: Text(user.displayName ?? ''),
-            subtitle: Text(user.email),
+            subtitle: Text('Token: ${signInService.idToken}'),
+            trailing: Text(user.email),
           ),
           const Text('Signed in successfully.'),
           if (_isAuthorized) ...<Widget>[
             // The user has Authorized all required scopes
             Text(_contactText),
-            ElevatedButton(
+            /* ElevatedButton(
               child: const Text('REFRESH'),
               onPressed: () => _handleGetContact(user),
-            ),
+            ), */
           ],
           if (!_isAuthorized) ...<Widget>[
             // The user has NOT Authorized all required scopes.
             const Text('Additional permissions needed to read your contacts.'),
-            ElevatedButton(
+            /* ElevatedButton(
               onPressed: _handleAuthorizeScopes,
               child: const Text('REQUEST PERMISSIONS'),
-            ),
+            ), */
           ],
           ElevatedButton(
             onPressed: _handleSignOut,
@@ -124,7 +157,7 @@ class _TitleScreenState extends State<TitleScreen> {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          const Text('You are not currently signed in.'),
+          const Text('Google sign in.'),
           // This method is used to separate mobile from web code with conditional exports.
           // See: src/sign_in_button.dart
           buildSignInButton(
@@ -164,7 +197,7 @@ class _TitleScreenState extends State<TitleScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     // Acción al presionar el botón
-                    Get.toNamed('/login',  arguments: {'id' : id});
+                    Get.toNamed('/login', arguments: {'id': id});
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Pallete
@@ -175,24 +208,6 @@ class _TitleScreenState extends State<TitleScreen> {
                     style: TextStyle(
                       fontSize: 26, // Ajusta el tamaño del texto aquí
                       color: Colors.white, // Cambia el color del texto a blanco
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: ElevatedButton.icon(
-                  onPressed: _handleSignIn,
-                  icon: Image.asset('assets/google-logo.png', height: 24, width: 24), // Icono de Google
-                  label: const Text(
-                    'Sign in with Google',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.black,
-                    backgroundColor: Colors.white, // Color del texto negro
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20), // Bordes redondeados
                     ),
                   ),
                 ),
@@ -210,20 +225,20 @@ class _TitleScreenState extends State<TitleScreen> {
                     TextSpan(
                       text: "Sign up",
                       style: const TextStyle(
-                        color: Pallete
-                            .salmonColor,
+                        color: Pallete.salmonColor,
                         fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline, // Subraya el texto "Sign up"
+                        decoration: TextDecoration
+                            .underline, // Subraya el texto "Sign up"
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                           Get.toNamed('/register',  arguments: {'id' : id});
+                          Get.toNamed('/register', arguments: {'id': id});
                         },
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
               _buildBody(),
             ],
           ),

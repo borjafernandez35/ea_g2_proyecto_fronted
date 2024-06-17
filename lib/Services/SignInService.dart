@@ -1,11 +1,18 @@
 // ignore: file_names
 import 'dart:async';
-import 'dart:convert' show json;
-//import 'package:flutter/foundation.dart';
+import 'dart:convert' show base64Url, json, jsonDecode;
+import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in_web/google_sign_in_web.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_identity_services_web/id.dart';
-import 'package:google_identity_services_web/google_identity_services_web.dart' as gis;
+import 'package:google_identity_services_web/google_identity_services_web.dart'
+    as gis;
+import '../Resources/jwt.dart' as jwt;
+import 'dart:math';
+import 'package:google_identity_services_web/oauth2.dart';
+//import 'package:dio/dio.dart';
 
 /// The scopes required by this application.
 const List<String> scopes = <String>[
@@ -13,111 +20,214 @@ const List<String> scopes = <String>[
   'https://www.googleapis.com/auth/contacts.readonly',
 ];
 
-void handleCredentialResponse(CredentialResponse response) {
-    // Maneja la respuesta de las credenciales aquí
-    if (response.credential != null) {
-      print('Credential received: ${response.credential}');
-      // Aquí puedes almacenar el token o manejar la autenticación
-    } else {
-      print('No credential received.');
-    }
-  }
+String generateState() {
+  final random = Random.secure();
+  final values = List<int>.generate(16, (i) => random.nextInt(256));
+  return base64Url.encode(values);
+}
+
+String? storedState;
 
 class SignInService {
   final GoogleSignIn _googleSignIn;
-
-
-
-  final IdConfiguration idConfiguration = IdConfiguration(
-    client_id: '435863540335-3edtkmprvlpkb3j4ea522cvndn8mc7mr.apps.googleusercontent.com',
-    callback: handleCredentialResponse, // Define el callback aquí
-    use_fedcm_for_prompt: true,
-  );
+  late final IdConfiguration idConfiguration;
+  //final Dio dio = Dio();
+  final String baseUrl = 'http://127.0.0.1:3000';
 
   GoogleSignInAccount? _currentUser;
   bool _isAuthorized = false; // has granted permissions?
   String _contactText = '';
+  String _token = '';
+  String? _idToken;
+  String? _accessToken;
+  // GoogleAccountsId _accountsId;
 
   SignInService({required String clientId})
       : _googleSignIn = GoogleSignIn(
-          clientId: '435863540335-3edtkmprvlpkb3j4ea522cvndn8mc7mr.apps.googleusercontent.com',
-          scopes: ['email', 'profile'],
-        );
+          clientId: clientId,
+          scopes: scopes,
+        ) {
+    idConfiguration = IdConfiguration(
+      client_id: clientId,
+      callback: (CredentialResponse response) {
+        onCredentialResponse(response);
+        _idToken = response.credential;
+        print(
+            "Credential!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.........................................:${_idToken}");
+      },
+      use_fedcm_for_prompt: true,
+    );
+  }
 
   GoogleSignInAccount? get currentUser => _currentUser;
   bool get isAuthorized => _isAuthorized;
   String get contactText => _contactText;
+  String get token => _token;
+  String? get idToken => _idToken;
+  String? get accessToken => _accessToken;
 
   Stream<GoogleSignInAccount?> get onCurrentUserChanged =>
       _googleSignIn.onCurrentUserChanged;
 
-  Future<void> signInSilently() => _googleSignIn.signInSilently();
-
-  
-
-  Future<void> handleSignIn() async {
+  Future<void> signInSilently() async {
     try {
-await gis.loadWebSdk();
+      _currentUser = await _googleSignIn.signInSilently();
 
-  id.initialize(idConfiguration);
-      //await _googleSignIn.signIn();
-      id.setLogLevel('debug');
-  id.prompt();
-    } catch (error) {
-      print(error);
+      print("silently:${_currentUser}");
+      if (_currentUser != null) {
+        _isAuthorized = true;
+        _updateIdToken();
+      }
+      print("User after silent sign-in: $_currentUser");
+    } catch (e) {
+      print("Error in signInSilently: $e");
     }
   }
 
-  
+  Future<void> onError(GoogleIdentityServicesError? error) async {
+    print('Error! ${error?.type} (${error?.message})');
+  }
+
+  Future<void> signIn() async {
+    try {
+      _currentUser = await _googleSignIn.signIn();
+      if (_currentUser != null) {
+        _isAuthorized = true;
+        _updateIdToken();
+      }
+      print("User after sign-in: $_currentUser");
+    } catch (e) {
+      print("Error in signIn: $e");
+    }
+  }
+
+  void onTokenResponse(TokenResponse response) {
+    _accessToken = response.access_token;
+    print("Access Token: $_accessToken");
+  }
+
+  void _updateIdToken() async {
+    if (_currentUser != null) {
+      try {
+        final auth = await _currentUser!.authentication;
+        _idToken = auth.idToken;
+      } catch (e) {
+        print("Error getting idToken: $e");
+      }
+    }
+  }
+
+  Future<void> handleSignIn() async {
+    print("handle alla vamoosss!!!");
+    _idToken = accessToken ?? (await _currentUser?.authentication)?.accessToken;
+    print("rellenarTOOOOOOOKKKEEEEEENNNNNN: ${_idToken}");
+    try {
+      if (kIsWeb) {
+        print("Loading GIS SDK for web...");
+        await gis.loadWebSdk();
+        print("GIS SDK loaded.");
+
+        // print("que me vas a decir si yo acabo de llegar: ${call}");
+
+        final state = generateState();
+        storedState = state;
+        print("Generated state: $state");
+
+        print(
+            "iiiiiiidddddddddttttttooooooookkkkkkeeeeeeeeennnnnnnnn:${_idToken}");
+        // print("esto es el id ${id}, esto es el idConfigutarion ${idConfiguration}");
+        print("IdConfiguration initialized.");
+        print("HANDLE SIGNINSERVICE: el token es ${_token}");
+      } else {
+        await signIn();
+      }
+    } catch (error) {
+      print("Error in handleSignIn: $error");
+    }
+  }
 
   Future<void> handleSignOut() => _googleSignIn.disconnect();
 
-  Future<void> handleAuthorizeScopes() async {
-    final bool isAuthorized = await _googleSignIn.requestScopes(scopes);
-    _isAuthorized = isAuthorized;
-    if (isAuthorized) {
-      await handleGetContact(_currentUser!);
+  void onCredentialResponse(CredentialResponse response) {
+    final Map<String, dynamic>? payload =
+        jwt.decodePayload(response.credential);
+    if (payload != null) {
+      _token = response.credential!;
+      print("este si toca:${_token}");
+
+      // Aquí puedes manejar el ID Token utilizando GoogleSignInAuthentication
+
+      print("ID Token from GoogleSignInAuthentication: ${_idToken}");
+    } else {
+      print('Could not decode ${response.credential}');
     }
   }
 
-  Future<void> handleGetContact(GoogleSignInAccount user) async {
-    _contactText = 'Loading contact info...';
-    final http.Response response = await http.get(
-      Uri.parse('https://people.googleapis.com/v1/people/me/connections'
-          '?requestMask.includeField=person.names'),
-      headers: await user.authHeaders,
-    );
-    if (response.statusCode != 200) {
-      _contactText = 'People API gave a ${response.statusCode} '
-          'response. Check logs for details.';
-      print('People API ${response.statusCode} response: ${response.body}');
-      return;
-    }
-    final Map<String, dynamic> data =
-        json.decode(response.body) as Map<String, dynamic>;
-    final String? namedContact = _pickFirstNamedContact(data);
-    _contactText = namedContact != null
-        ? 'I see you know $namedContact!'
-        : 'No contacts to display.';
+  void onPromptMoment(PromptMomentNotification o) {
+    final MomentType type = o.getMomentType();
+    print("Prompt moment: ${type}");
   }
 
-  String? _pickFirstNamedContact(Map<String, dynamic> data) {
-    final List<dynamic>? connections = data['connections'] as List<dynamic>?;
-    final Map<String, dynamic>? contact = connections?.firstWhere(
-      (dynamic contact) => (contact as Map<Object?, dynamic>)['names'] != null,
-      orElse: () => null,
-    ) as Map<String, dynamic>?;
-    if (contact != null) {
-      final List<dynamic> names = contact['names'] as List<dynamic>;
-      final Map<String, dynamic>? name = names.firstWhere(
-        (dynamic name) =>
-            (name as Map<Object?, dynamic>)['displayName'] != null,
-        orElse: () => null,
-      ) as Map<String, dynamic>?;
-      if (name != null) {
-        return name['displayName'] as String?;
-      }
+/* Future<int> logIn(Map<String, dynamic> logInData) async {
+  print('Logging In...');
+
+  try {
+    Response response = await dio.post('$baseUrl/signin', data: logInData);
+
+    String data = response.data.toString();
+    print('Data: $data');
+
+    int statusCode = response.statusCode ?? 0;
+    print('Status code: $statusCode');
+
+    if (statusCode == 200) {
+      var token = response.data['token'];
+      var id = response.data['id'];
+      //saveToken(token);
+      saveId(id);
+      print('Logged in successfully');
+
+      // Aquí añadimos el nombre, email y token al backend
+      var googleName = _currentUser?.displayName;
+      var googleEmail = _currentUser?.email;
+      var googleToken = _idToken;
+
+      await sendGoogleDataToBackend(googleName, googleEmail, googleToken);
+
+      return 200;
+    } else if (statusCode == 400) {
+      print('Bad request: Missing fields');
+      return 400;
+    } else if (statusCode == 500) {
+      print('Internal server error');
+      return 500;
+    } else {
+      print('Unknown error');
+      return -1;
     }
-    return null;
+  } catch (e) {
+    print('Error logging in: $e');
+    return -1;
   }
+}
+
+Future<void> sendGoogleDataToBackend(String? name, String? email, String? token) async {
+  try {
+    // Aquí construyes el cuerpo de la solicitud que enviarás al backend
+    var requestData = {
+      'name': name,
+      'email': email,
+      'token': token,
+    };
+
+    // Realizas la solicitud POST al endpoint adecuado en tu backend para guardar estos datos
+    Response response = await dio.post('$baseUrl/google-data', data: requestData);
+
+    print('Google data sent to backend successfully');
+  } catch (e) {
+    print('Error sending Google data to backend: $e');
+    throw e;
+  }
+}
+ */
 }

@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:spotfinder/Screens/home_page.dart';
 import 'package:flutter/material.dart';
 
 /// The type of the onClick callback for the (mobile) Sign In Button.

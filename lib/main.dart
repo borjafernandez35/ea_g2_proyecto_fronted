@@ -15,11 +15,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init(); // Espera la inicialización de GetStorage
-  
 
-   // Inicializa GoogleSignIn
+  // Inicializa GoogleSignIn
   final UserService userService = UserService();
   final String? token = await userService.getToken();
 
@@ -28,10 +27,6 @@ void main() async {
   runApp(MyApp(token: token));
 }
 
-
-
-
-
 class MyApp extends StatelessWidget {
   final String? token;
   const MyApp({Key? key, this.token}) : super(key: key);
@@ -39,6 +34,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'SpotFinder',
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Pallete.whiteColor,
@@ -55,10 +51,6 @@ class MyApp extends StatelessWidget {
         ),
       ],
       initialRoute: token != null ? '/home' : '/',
-
-      
     );
   }
 }
-
-
