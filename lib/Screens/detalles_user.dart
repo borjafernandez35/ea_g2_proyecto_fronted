@@ -56,15 +56,15 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Pallete.whiteColor,
-        iconTheme: IconThemeData(color: Pallete.backgroundColor),
-        title: const Text(
+        backgroundColor: Pallete.backgroundColor,
+        iconTheme: IconThemeData(color: Pallete.textColor),
+        title: Text(
           'User details',
           style: TextStyle(
-              color: Pallete.backgroundColor), // Color del texto del app bar
+              color: Pallete.textColor), // Color del texto del app bar
         ),
       ),
-      backgroundColor: Pallete.whiteColor,
+      backgroundColor: Pallete.backgroundColor,
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
         child: Column(
@@ -82,7 +82,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             ),
             Visibility(
               visible: controller.invalid,
-              child: const Text(
+              child: Text(
                 'Invalid',
                 style: TextStyle(
                   color: Pallete.salmonColor,
@@ -107,23 +107,22 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                           value: value,
                           child: Text(
                             value,
-                            style: const TextStyle(
-                              color: Pallete.backgroundColor,
+                            style: TextStyle(
+                              color: Pallete.textColor,
                             ),
                           ),
                         );
                       }).toList(),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Prefix',
                         labelStyle: TextStyle(
                           color:
-                              Pallete.accentColor, // Color del texto del label
+                              Pallete.paleBlueColor, // Color del texto del label
                         ),
                         border: OutlineInputBorder(),
                       ),
-                      icon: const Icon(Icons.arrow_drop_down,
-                          color: Pallete
-                              .backgroundColor), // Color de la flecha de desplegar
+                      icon: Icon(Icons.arrow_drop_down,
+                          color: Pallete.accentColor), // Color de la flecha de desplegar
                     ),
                   ),
                 ),
@@ -152,9 +151,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.calendar_today,
-                      color:
-                          Pallete.accentColor), // Color del icono de la fecha
+                  icon: Icon(Icons.calendar_today,
+                      color: Pallete.paleBlueColor), 
                   onPressed: () => controller.selectDate(context),
                 ),
               ],
@@ -175,7 +173,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                   child: const Text('Update'),
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Pallete.primaryColor,
+                    backgroundColor: Pallete.accentColor,
                   ),
                 ),
                 SizedBox(width: 25),
@@ -253,7 +251,7 @@ class UpdateScreenController extends GetxController {
     }
   }
 
-  TextStyle textStyleError = const TextStyle(
+  TextStyle textStyleError = TextStyle(
     color: Pallete.salmonColor, // Define el color del texto
     fontWeight: FontWeight.bold, // Aplica negrita al texto
   );
@@ -273,7 +271,7 @@ class UpdateScreenController extends GetxController {
           'Error',
           style: textStyleError, // Cambia el color del título
         ),
-        messageText: const Text(
+        messageText: Text(
           'Empty fields',
           style: TextStyle(
               color: Pallete.backgroundColor), // Cambia el color del mensaje
@@ -304,7 +302,7 @@ class UpdateScreenController extends GetxController {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            messageText: const Text(
+            messageText: Text(
               'User edited!',
               style: TextStyle(
                   color:
@@ -322,9 +320,8 @@ class UpdateScreenController extends GetxController {
             ),
             messageText: Text(
               'Error sending user to backend: $error',
-              style: const TextStyle(
-                  color:
-                      Pallete.backgroundColor), // Cambia el color del mensaje
+              style: TextStyle(
+                  color: Pallete.backgroundColor), // Cambia el color del mensaje
             ),
           );
         });
@@ -337,7 +334,7 @@ class UpdateScreenController extends GetxController {
             'Error',
             style: textStyleError, // Cambia el color del título
           ),
-          messageText: const Text(
+          messageText: Text(
             'Invalid email or phone number',
             style: TextStyle(
                 color: Pallete.backgroundColor), // Cambia el color del mensaje

@@ -1,6 +1,3 @@
-import 'package:latlong2/latlong.dart';
-
-import 'dart:html';
 
 class Activity {
   final String? id;
@@ -37,6 +34,7 @@ class Activity {
       'date': date.toIso8601String(),
       'listUsers': listUsers ?? [],
       'comments': comments ?? [],
+      'image': imageUrl,
       'active': true,
       'location': location != null
           ? {

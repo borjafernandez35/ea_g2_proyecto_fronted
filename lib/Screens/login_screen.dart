@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Widgets/button_sign_in.dart';
 import 'package:spotfinder/Widgets/paramTextBox.dart';
 import 'package:spotfinder/Services/UserService.dart';
@@ -60,19 +59,13 @@ class _LoginScreen extends State<LoginScreen> {
                 height: 150,
                 width: 150,
               ),
-              const SizedBox(
-                  height: 20), // Separación entre el logo y el cuadro negro
-              // Cuadro negro con el formulario de inicio de sesión
+              const SizedBox(height: 20),
               Container(
-                margin: const EdgeInsets.all(
-                    20), // Ajusta el margen del cuadro negro aquí
-                padding: const EdgeInsets.all(
-                    20), // Ajusta el padding del cuadro negro aquí
+                margin: const EdgeInsets.all(20), // Ajusta el margen del cuadro negro aquí
+                padding: const EdgeInsets.all(20), // Ajusta el padding del cuadro negro aquí
                 decoration: BoxDecoration(
-                  color: Colors.black
-                      .withOpacity(0.7), // Color del cuadro negro con opacidad
-                  borderRadius: BorderRadius.circular(
-                      20), // Bordes redondeados del cuadro
+                  color: Colors.black.withOpacity(0.7), // Color del cuadro negro con opacidad
+                  borderRadius: BorderRadius.circular(20), // Bordes redondeados del cuadro
                 ),
                 child: Column(
                   children: [
@@ -86,12 +79,16 @@ class _LoginScreen extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 10),
                     ParamTextBox(
-                        controller: controller.mailController, text: 'e-mail'),
+                        controller: controller.mailController,
+                        text: 'e-mail',
+                        prefixIcon: Icon(Icons.email)
+                    ),
                     const SizedBox(height: 10),
                     ParamTextBox(
                       controller: controller.contrasenaController,
                       text: 'Password',
                       obscureText: _obscureText,
+                      prefixIcon: Icon(Icons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscureText
@@ -151,13 +148,13 @@ class Controller extends GetxController {
         );
 
         userService.logIn(logIn).then((statusCode) {
-          // La solicitud se completó exitosamente, puedes realizar acciones adicionales si es necesario
           print('Usuario logeado exitosamente');
           if (id != null) {
             Get.toNamed('/activity/$id');
           } else {
             Get.toNamed('/home');
           }
+          contrasenaController.text = '';
         }).catchError((error) {
           // Manejar errores de solicitud HTTP
           Get.snackbar(

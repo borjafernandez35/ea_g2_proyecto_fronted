@@ -1,11 +1,15 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Models/CommentModel.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:get/get.dart';
 import 'package:spotfinder/Screens/activity_list_page.dart';
+import 'package:spotfinder/Screens/map.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Services/CommentService.dart';
 import 'package:spotfinder/Services/UserService.dart';
@@ -14,6 +18,9 @@ import 'package:spotfinder/Widgets/comment_card2.dart';
 import 'package:spotfinder/Widgets/user_card.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart' as ltld;
 
 late ActivityService activityService;
 late CommentService commentService;
@@ -24,6 +31,7 @@ late List<Comment> comments = [];
 late User user;
 late Activity activity;
 late VoidCallback? onUpdate;
+bool isParticipating = false;
 
 class ActivityDetail extends StatefulWidget {
   const ActivityDetail({Key? key}) : super(key: key);
@@ -33,13 +41,18 @@ class ActivityDetail extends StatefulWidget {
 }
 
 class _ActivityDetail extends State<ActivityDetail> {
-  final ActivityDetailController controllerActivityDetail =Get.put(ActivityDetailController());
+  final ActivityDetailController controllerActivityDetail =
+      Get.put(ActivityDetailController());
 
+  Future<String?>? _addressFuture;
   bool isLoading = true;
   bool showReviewForm = false;
+  bool showReviews = false;
   bool alreadyCommented = false;
   late String activityId;
   bool isLoggedIn = false;
+  bool showMap = false;
+  late TileLayer _tileLayer;
 
   @override
   void initState() {
@@ -51,12 +64,15 @@ class _ActivityDetail extends State<ActivityDetail> {
     activityId = Get.parameters['id']!;
     onUpdate = Get.arguments?['onUpdate'];
     getActivity();
+    setupMapTheme();
   }
 
   Future<void> getActivity() async {
     try {
       activity = await activityService.getActivity(activityId);
+      isParticipating = activity.listUsers!.contains(userService.getId());
       await getData(activity.listUsers?.length ?? 0);
+      _addressFuture = _getAddressFromCoordinates(activity.location!.latitude, activity.location!.longitude);
     } catch (error) {
       Get.snackbar(
         'Error',
@@ -134,6 +150,26 @@ class _ActivityDetail extends State<ActivityDetail> {
     });
   }
 
+  void setupMapTheme() async {
+    final box = GetStorage();
+    String? theme = box.read('theme');
+
+    setState(() {
+      if (theme == 'Dark') {
+        _tileLayer = TileLayer(
+          urlTemplate:
+              'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+        );
+      } else {
+        _tileLayer = TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+        );
+      }
+    });
+  }
+
   void confirmDeleteComment(BuildContext context, String id, int index) async {
     showDialog(
       context: context,
@@ -190,6 +226,43 @@ class _ActivityDetail extends State<ActivityDetail> {
     }
   }
 
+  Future<String?> _getAddressFromCoordinates(
+      double latitude, double longitude) async {
+    final url =
+        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        final address = data['address'];
+        if (address != null) {
+          final road = address['road'] ?? '';
+          final houseNumber = address['house_number'] ?? '';
+          final postcode = address['postcode'] ?? '';
+          final city =
+              address['city'] ?? address['town'] ?? address['village'] ?? '';
+          final country = address['country'] ?? '';
+
+          List<String> parts = [];
+
+          if (road.isNotEmpty) parts.add(road);
+          if (houseNumber.isNotEmpty) parts.add(houseNumber);
+          if (postcode.isNotEmpty) parts.add(postcode);
+          if (city.isNotEmpty) parts.add(city);
+          if (country.isNotEmpty) parts.add(country);
+
+          String formattedAddress = parts.join(', ');
+          return formattedAddress;
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error al obtener la dirección desde las coordenadas: $e');
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -201,12 +274,12 @@ class _ActivityDetail extends State<ActivityDetail> {
           leading: isLoggedIn
               ? Builder(
                   builder: (context) => IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_back,
-                      color: Pallete.backgroundColor,
+                      color: Pallete.textColor,
                     ),
                     onPressed: () {
-                      Get.to(const ActivityListPage());
+                      Get.toNamed('/home');
                     },
                   ),
                 )
@@ -215,8 +288,8 @@ class _ActivityDetail extends State<ActivityDetail> {
             children: [
               Text(
                 activity.name,
-                style: const TextStyle(
-                  color: Pallete.backgroundColor,
+                style: TextStyle(
+                  color: Pallete.textColor,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -226,7 +299,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                 iconSize: 30,
                 color: Pallete.salmonColor,
                 onPressed: () {
-                  final formattedDate = '${activity.date.day}/${activity.date.month}/${activity.date.year}';
+                  final formattedDate =
+                      '${activity.date.day}/${activity.date.month}/${activity.date.year}';
                   final message =
                       'Echa un vistazo a este evento: *${activity.name}*\n'
                       'Fecha: 📅 $formattedDate\n'
@@ -239,125 +313,317 @@ class _ActivityDetail extends State<ActivityDetail> {
           ),
         ),
         body: SingleChildScrollView(
-          child: Center(
-            child: Column(
-              children: [
-                const SizedBox(
-                  height: 40,
-                ),
-                Container(
-                  margin: const EdgeInsets.only(left: 30),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Description:',
-                        style: TextStyle(
-                          color: Pallete.backgroundColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.fromLTRB(30, 0, 30, 30),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        const SizedBox(width: 40),
+                        RatingBarIndicator(
+                          rating: activity.rate!,
+                          itemBuilder: (context, index) => const Icon(
+                            Icons.star,
+                            size: 17,
+                            color: Colors.amber,
+                          ),
+                          itemCount: 5,
+                          itemSize: 17,
+                          direction: Axis.horizontal,
+                          unratedColor: Colors.blueAccent.withAlpha(50),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
+                        const SizedBox(width: 8),
+                        Text(
+                          activity.rate!.toStringAsFixed(1),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.amber,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(40, 10, 40, 0),
+                      child: Text(
                         activity.description,
-                        style: const TextStyle(
-                          color: Pallete.backgroundColor,
+                        style: TextStyle(
+                          color: Pallete.textColor,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 17,
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        '${activity.rate} ⭐',
-                        style: const TextStyle(
-                          color: Pallete.backgroundColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(40, 10, 40, 0),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.date_range,
+                            color: Pallete.accentColor,
+                            size: 17,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat('dd/MM/yy').format(activity.date),
+                            style: TextStyle(
+                              color: Pallete.textColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
                       ),
-                      Container(
-                        margin: const EdgeInsets.all(40),
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Pallete.primaryColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          children: [
-                            if (isLoggedIn)
-                              Column(
-                                children: [
-                                  const Text(
-                                    'Users participating',
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(40, 10, 40, 0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.location_on,
+                              color: Colors.red, size: 17),
+                          SizedBox(width: 4),
+                          Flexible(
+                            child: FutureBuilder<String?>(
+                              future: _addressFuture,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Text(
+                                    'Loading address...',
                                     style: TextStyle(
-                                      color: Pallete.whiteColor,
+                                      color: Pallete.textColor,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                                    ),
+                                  );
+                                } else if (snapshot.hasError) {
+                                  return Text(
+                                    'Error getting the address',
+                                    style: TextStyle(
+                                      color: Pallete.textColor,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  );
+                                } else {
+                                  final address =
+                                      snapshot.data ?? 'Address not found';
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        showMap = true;
+                                      });
+                                    },
+                                    child: MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+                                      child: Tooltip(
+                                        message: 'View on map',
+                                        child: Text(
+                                          address,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: Pallete.textColor,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            decoration:
+                                                TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (showMap)
+                      Container(
+                        child: Center(
+                          child: Container(
+                            margin: EdgeInsets.fromLTRB(40, 10, 40, 0),
+                            height: 200,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Stack(
+                              children: [
+                                FlutterMap(
+                                  options: MapOptions(
+                                    initialCenter: ltld.LatLng(
+                                        activity.location!.latitude,
+                                        activity.location!.longitude),
+                                    initialZoom: 12,
+                                    interactionOptions:
+                                        const InteractionOptions(
+                                      flags: ~InteractiveFlag.doubleTapZoom,
                                     ),
                                   ),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: activity.listUsers?.length ?? 0,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return Card(
-                                        color: Pallete.whiteColor,
-                                        child: UserCard(users[index].name),
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  SignUpButton(
-                                    onPressed: () {
-                                      controllerActivityDetail.joinActivity(activity.id);
-                                      onUpdate!();
-                                    },
-                                    text: 'Join',
-                                  ),
-                                ],
-                              )
-                            else
-                              // Contenido alternativo si el usuario no ha iniciado sesión
-                              Container(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
                                   children: [
-                                    const Text(
-                                      'Sign in or register to participate!',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 15),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Get.toNamed('/', arguments: {'id' : activityId});
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Pallete.salmonColor,
-                                      ),
-                                      child: const Text('Sign In/Register'),
+                                    _tileLayer,
+                                    MarkerLayer(
+                                      markers: [
+                                        Marker(
+                                          width: 45.0,
+                                          height: 45.0,
+                                          point: ltld.LatLng(
+                                              activity.location!.latitude,
+                                              activity.location!.longitude),
+                                          child: const Icon(
+                                            Icons.location_on,
+                                            color: Colors.red,
+                                            size: 50.0,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
+                                Positioned(
+                                  top: 5,
+                                  right: 5,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        showMap = false;
+                                      });
+                                    },
+                                    child: Icon(
+                                      Icons.close,
+                                      color: Pallete.textColor,
+                                      size: 23,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    Container(
+                      margin: const EdgeInsets.all(40),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Pallete.primaryColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        children: [
+                          if (isLoggedIn)
+                            Column(
+                              children: [
+                                Text(
+                                  'Users participating',
+                                  style: TextStyle(
+                                    color: Pallete.textColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 20,
+                                ),
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: activity.listUsers?.length ?? 0,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    return Card(
+                                      color: Pallete.paleBlueColor,
+                                      child: UserCard(users[index].name,
+                                          users[index].image),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(
+                                  height: 20,
+                                ),
+                                if(!isParticipating)
+                                  SignUpButton(
+                                    onPressed: () {
+                                      controllerActivityDetail
+                                          .joinActivity(activity.id);
+                                      Get.to(const ActivityDetail());
+                                    },
+                                    text: 'Join',
+                                  ),
+                                if(isParticipating)
+                                  SignUpButton(
+                                    onPressed: () {
+                                      controllerActivityDetail
+                                          .leaveActivity(activity.id);
+                                      Get.to(const ActivityDetail());
+                                    },
+                                    text: 'Leave',
+                                  ),
+                              ],
+                            )
+                          else
+                            // Contenido alternativo si el usuario no ha iniciado sesión
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                children: [
+                                  const Text(
+                                    'Sign in or register to participate!',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 15),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Get.toNamed('/',
+                                          arguments: {'id': activityId});
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Pallete.salmonColor,
+                                    ),
+                                    child: const Text('Sign In/Register'),
+                                  ),
+                                ],
                               ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(40, 0, 40, 0),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            showReviews = !showReviews;
+                          });
+                        },
+                        child: Row(
+                          children: [
+                            Icon(
+                              showReviews
+                                  ? Icons.expand_less
+                                  : Icons.expand_more,
+                              color: Pallete.textColor,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Reviews',
+                              style: TextStyle(
+                                color: Pallete.textColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      const Text(
-                        'Reviews:',
-                        style: TextStyle(
-                          color: Pallete.backgroundColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                    ),
+                    if (showReviews)
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -368,18 +634,18 @@ class _ActivityDetail extends State<ActivityDetail> {
                                   showReviewForm = !showReviewForm;
                                 });
                               },
-                              child: const Card(
-                                color: Pallete.backgroundColor,
-                                surfaceTintColor: Pallete.accentColor,
+                              child: Card(
+                                color: Pallete.primaryColor,
+                                surfaceTintColor: Pallete.primaryColor,
                                 elevation: 5,
                                 margin: EdgeInsets.all(10),
                                 child: Card(
-                                  color: Pallete.paleBlueColor,
+                                  color: Pallete.backgroundColor,
                                   child: Text(
                                     ' + Add ',
                                     style: TextStyle(
                                       fontSize: 18,
-                                      color: Pallete.primaryColor,
+                                      color: Pallete.paleBlueColor,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -390,8 +656,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                           Visibility(
                             visible: showReviewForm,
                             child: Card(
-                              color: Pallete.primaryColor,
-                              surfaceTintColor: Pallete.accentColor,
+                              color: Pallete.accentColor,
+                              surfaceTintColor: Pallete.primaryColor,
                               elevation: 5,
                               margin: const EdgeInsets.all(10),
                               child: Padding(
@@ -400,7 +666,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     // Campo de título
-                                    const Text(
+                                    Text(
                                       'Title:',
                                       style: TextStyle(
                                         fontSize: 18,
@@ -410,9 +676,10 @@ class _ActivityDetail extends State<ActivityDetail> {
                                     ),
                                     const SizedBox(height: 8),
                                     TextFormField(
-                                      controller: controllerActivityDetail.titleController,
-                                      style: const TextStyle(
-                                          color: Pallete.backgroundColor),
+                                      controller: controllerActivityDetail
+                                          .titleController,
+                                      style:
+                                          TextStyle(color: Pallete.textColor),
                                       decoration: InputDecoration(
                                         hintText: 'Enter title',
                                         filled: true,
@@ -425,7 +692,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                                     ),
                                     const SizedBox(height: 16),
                                     // Campo de contenido
-                                    const Text(
+                                    Text(
                                       'Content:',
                                       style: TextStyle(
                                         fontSize: 18,
@@ -435,9 +702,10 @@ class _ActivityDetail extends State<ActivityDetail> {
                                     ),
                                     const SizedBox(height: 8),
                                     TextFormField(
-                                      controller: controllerActivityDetail.contentController,
+                                      controller: controllerActivityDetail
+                                          .contentController,
                                       maxLines: 5,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: Pallete.backgroundColor),
                                       decoration: InputDecoration(
                                         hintText: 'Enter content',
@@ -451,8 +719,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                                     ),
                                     const SizedBox(height: 16),
                                     // Campo de revisión
-                                    const Text(
-                                      'Review:',
+                                    Text(
+                                      'Review',
                                       style: TextStyle(
                                         fontSize: 18,
                                         color: Pallete.paleBlueColor,
@@ -489,16 +757,25 @@ class _ActivityDetail extends State<ActivityDetail> {
                                         // Botón de enviar
                                         ElevatedButton(
                                           onPressed: () {
-                                            controllerActivityDetail.activityId = activity.id!;
-                                            controllerActivityDetail.addComment().then((success) {
+                                            controllerActivityDetail
+                                                .activityId = activity.id!;
+                                            controllerActivityDetail
+                                                .addComment()
+                                                .then((success) {
                                               if (success) {
                                                 setState(() {
                                                   alreadyCommented = true;
                                                   getUsers();
-                                                  showReviewForm =!showReviewForm;
-                                                  controllerActivityDetail.contentController.clear();
-                                                  controllerActivityDetail.titleController.clear();
-                                                  controllerActivityDetail.ratingValue = 0;
+                                                  showReviewForm =
+                                                      !showReviewForm;
+                                                  controllerActivityDetail
+                                                      .contentController
+                                                      .clear();
+                                                  controllerActivityDetail
+                                                      .titleController
+                                                      .clear();
+                                                  controllerActivityDetail
+                                                      .ratingValue = 0;
                                                 });
                                                 onUpdate!();
                                               }
@@ -514,7 +791,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                                               showReviewForm = !showReviewForm;
                                             });
                                           },
-                                          child: const Text(
+                                          child: Text(
                                             'Cancel',
                                             style: TextStyle(
                                               color: Pallete.salmonColor,
@@ -553,19 +830,10 @@ class _ActivityDetail extends State<ActivityDetail> {
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                  ],
                 ),
-                Text(
-                  'Position: ${activity.location?.latitude}, ${activity.location?.longitude}',
-                  style: const TextStyle(
-                    color: Pallete.backgroundColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );
@@ -581,6 +849,9 @@ class ActivityDetailController extends GetxController {
 
   void joinActivity(String? id) {
     activityService.joinActivity(id);
+  }
+  void leaveActivity(String? id) {
+    activityService.leaveActivity(id);
   }
 
   Future<bool> addComment() async {

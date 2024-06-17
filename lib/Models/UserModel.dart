@@ -1,6 +1,4 @@
-import 'package:latlong2/latlong.dart';
 
-import 'package:latlong2/latlong.dart';
 
 class User {
   final String? id;
@@ -13,6 +11,7 @@ class User {
   final List<String>? listActivities;
   final List<String>? comments;
   final bool? active;
+  String? image;
   final String password;
   final LatLng? location;
 
@@ -23,6 +22,7 @@ class User {
     required this.phone_number,
     required this.gender,
     this.active,
+    this.image,
     required this.password,
     this.birthday,
     this.activities,
@@ -38,6 +38,7 @@ class User {
       'phone_number': phone_number,
       'gender': gender,
       'active': active,
+      'image': image,
       'password': password,
       'birthday': birthday,
       'location': location != null
@@ -57,6 +58,7 @@ class User {
       phone_number: json['phone_number'],
       gender: json['gender'],
       active: json['active'],
+      image: json['image'],
       password: json['password'],
       birthday: json['birthday'],
       activities: (json['Activities'] as List<dynamic>?)?.cast<String>(),

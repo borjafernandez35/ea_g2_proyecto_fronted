@@ -6,13 +6,18 @@ class ParamTextBox extends StatelessWidget {
   final TextEditingController controller;
   final bool obscureText;
   final IconButton? suffixIcon;
+  final Icon? prefixIcon;
+  final String? Function(String?)? validator;
 
-  const ParamTextBox(
-      {super.key,
-      required this.controller,
-      required this.text,
-      this.obscureText = false,
-      this.suffixIcon});
+  const ParamTextBox({
+    super.key,
+    required this.controller,
+    required this.text,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.prefixIcon,
+    this.validator,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,20 +28,19 @@ class ParamTextBox extends StatelessWidget {
       child: TextFormField(
         controller: controller,
         obscureText: obscureText,
-        style: const TextStyle(
-            color: Color.fromARGB(255, 0, 0, 0)), // Cambia el color del texto a negro
+        style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
         decoration: InputDecoration(
           filled: true, // Habilita el relleno del campo de texto
           fillColor: Colors.white, // Establece el color de fondo blanco
           enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Pallete.backgroundColor,
-            width: 2,
-          ),
-          borderRadius: BorderRadius.circular(50),
+            borderSide: BorderSide(
+              color: Pallete.backgroundColor,
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(50),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(
+            borderSide: BorderSide(
               color: Pallete.salmonColor,
               width: 2,
             ),
@@ -52,8 +56,17 @@ class ParamTextBox extends StatelessWidget {
                   child: suffixIcon!,
                 )
               : null,
+          prefixIcon: prefixIcon != null
+              ? Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: prefixIcon!,
+                )
+              : null,
+          errorStyle: TextStyle(color: Colors.red),
         ),
+        validator: validator,
       ),
     );
   }
 }
+

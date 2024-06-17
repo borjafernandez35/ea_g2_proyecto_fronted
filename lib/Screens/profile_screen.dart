@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/detalles_user.dart';
@@ -11,6 +9,8 @@ import 'package:spotfinder/Screens/my_activities.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:crypto/crypto.dart';
 
 late UserService userService;
 User? user;
@@ -23,10 +23,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreen extends State<ProfileScreen> {
-  final GetStorage _storage = GetStorage();
-  String? _imagePath;
-  Uint8List? _webImage;
-
   bool isLoading = true;
 
   @override
@@ -39,10 +35,6 @@ class _ProfileScreen extends State<ProfileScreen> {
         phone_number: '',
         gender: '',
         password: ''); // Provide an initial value
-    _imagePath = _storage.read<String>('profile_image');
-    if (_imagePath != null && _imagePath!.startsWith('data:image')) {
-      _webImage = base64Decode(_imagePath!.split(',').last);
-    }
     getData();
   }
 
@@ -58,23 +50,105 @@ class _ProfileScreen extends State<ProfileScreen> {
     });
   }
 
-  Future<void> _pickImageFromGallery() async {
+  Future<void> _pickImage() async {
     final pickedImage =
         await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (pickedImage != null) {
       final bytes = await pickedImage.readAsBytes();
-      final imagePath = 'data:image/png;base64,' + base64Encode(bytes);
-      _saveImage(imagePath);
+      final url =
+          Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
+      final String filename =
+          'upload_${DateTime.now().millisecondsSinceEpoch}.png';
+      final request = http.MultipartRequest('POST', url)
+        ..fields['upload_preset'] = 'byxhgftn'
+        ..files.add(
+            http.MultipartFile.fromBytes('file', bytes, filename: filename));
+
+      try {
+        final response = await request.send();
+
+        if (response.statusCode == 200) {
+          final responseData = await http.Response.fromStream(response);
+          final jsonData = jsonDecode(responseData.body);
+          final imageUrl = jsonData['secure_url'];
+
+          user?.image = imageUrl;
+
+          userService.updateUser(user!).then((_) {
+            getData();
+          }).catchError((error) {
+            Get.snackbar(
+              'Error',
+              'Error sending user to backend: $error',
+              snackPosition: SnackPosition.BOTTOM,
+            );
+          });
+        } else {
+          Get.snackbar(
+            'Error',
+            'Error uploading image',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Pallete.textColor,
+          );
+        }
+      } catch (e) {
+        Get.snackbar(
+          'Error',
+          'Error unexpected: $e',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Pallete.textColor,
+        );
+      }
+    } else {
+      print('No se seleccionó ninguna imagen.');
     }
   }
 
-  void _saveImage(String path) {
-    setState(() {
-      _imagePath = path;
-      _webImage = base64Decode(_imagePath!.split(',').last);
-    });
-    _storage.write('profile_image', path);
+
+  Future<void> deleteImageFromUrl(String imageUrl) async {
+    final String cloudName = 'dgwbrwvux';
+    final String apiKey = '388645541249985';
+    final String apiSecret = 'MTRqeAf4459Akl-4NwIbzYP0jCM';
+    final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+
+    final Uri uri = Uri.parse(imageUrl);
+    final segments = uri.pathSegments;
+    final String publicId = segments.last.split('.').first;
+
+    // Create the signature
+    final String signatureBase =
+        'public_id=$publicId&timestamp=$timestamp$apiSecret';
+    final String signature =
+        sha1.convert(utf8.encode(signatureBase)).toString();
+
+    final url =
+        Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/destroy');
+
+    final response = await http.post(
+      url,
+      body: {
+        'public_id': publicId,
+        'api_key': apiKey,
+        'timestamp': timestamp,
+        'signature': signature,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      user?.image = null;
+      userService.updateUser(user!).then((_) {
+        getData();
+      }).catchError((error) {
+        Get.snackbar(
+          'Error',
+          'Error removing image',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      });
+    }
   }
 
   void _showImageSourceActionSheet(BuildContext context) {
@@ -91,9 +165,18 @@ class _ProfileScreen extends State<ProfileScreen> {
                 title: const Text('Galería'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  _pickImageFromGallery();
+                  _pickImage();
                 },
               ),
+              if (user?.image != null)
+                ListTile(
+                  leading: const Icon(Icons.remove_circle),
+                  title: const Text('Remove image'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    deleteImageFromUrl(user!.image!);
+                  },
+                ),
             ],
           ),
         );
@@ -106,12 +189,8 @@ class _ProfileScreen extends State<ProfileScreen> {
     if (isLoading) {
       return Center(child: CircularProgressIndicator());
     } else {
-      ImageProvider<Object>? imageProvider;
-      if (_imagePath != null) {
-        imageProvider = MemoryImage(_webImage!);
-      }
       return Scaffold(
-        backgroundColor: Pallete.whiteColor,
+        backgroundColor: Pallete.backgroundColor,
         body: Padding(
           padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
           child: Column(
@@ -130,15 +209,21 @@ class _ProfileScreen extends State<ProfileScreen> {
                         // Avatar y botón de edición
                         CircleAvatar(
                           radius: 50,
-                          backgroundImage: imageProvider,
-                          backgroundColor: Pallete.accentColor,
-                          child: _imagePath == null
-                              ? const Icon(
+                          backgroundColor: Pallete.primaryColor,
+                          child: user?.image == null
+                              ? Icon(
                                   Icons.person,
-                                  size: 60,
+                                  size: 70,
                                   color: Pallete.paleBlueColor,
                                 )
-                              : null,
+                              : ClipOval(
+                                  child: Image.network(
+                                    user!.image!,
+                                    fit: BoxFit.cover,
+                                    height: 100,
+                                    width: 100,
+                                  ),
+                                ),
                         ),
                         Positioned(
                           bottom: -10,
@@ -152,7 +237,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                             onPressed: () {
                               _showImageSourceActionSheet(context);
                             },
-                            child: const Icon(
+                            child: Icon(
                               Icons.edit,
                               color: Pallete.primaryColor,
                               size: 24,
@@ -161,17 +246,16 @@ class _ProfileScreen extends State<ProfileScreen> {
                         ),
                         // Texto del nombre del usuario
                         Positioned(
-                          left: 140, // Ajusta la posición horizontal del nombre
+                          left: 140,
                           top: 27,
                           child: Align(
-                            alignment: Alignment
-                                .centerLeft, // Alinea el texto a la izquierda
+                            alignment: Alignment.centerLeft,
                             child: Text(
                               user!.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 26.0,
                                 fontWeight: FontWeight.bold,
-                                color: Pallete.primaryColor,
+                                color: Pallete.accentColor,
                               ),
                             ),
                           ),
@@ -179,7 +263,6 @@ class _ProfileScreen extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-
                   // Botones de navegación
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
@@ -188,14 +271,14 @@ class _ProfileScreen extends State<ProfileScreen> {
                       children: [
                         TextButton(
                           onPressed: () {
-                            Get.to(() => UserDetailsPage(user!,onUpdate: getData));
+                            Get.to(() =>
+                                UserDetailsPage(user!, onUpdate: getData));
                           },
-                          child: const Align(
+                          child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'My profile',
-                              style: TextStyle(
-                                  color: Pallete.primaryColor), 
+                              style: TextStyle(color: Pallete.accentColor),
                             ),
                           ),
                         ),
@@ -204,41 +287,41 @@ class _ProfileScreen extends State<ProfileScreen> {
                           onPressed: () {
                             Get.to(() => MyActivities());
                           },
-                          child: const Align(
+                          child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'My activities',
-                              style: TextStyle(color: Pallete.primaryColor),
+                              style: TextStyle(color: Pallete.accentColor),
                             ),
                           ),
                         ),
                         SizedBox(height: 20.0),
                         TextButton(
                           onPressed: () {
-                            Get.to(() => MyCommentsScreen(user!, onUpdate: getData));
+                            Get.to(() =>
+                                MyCommentsScreen(user!, onUpdate: getData));
                           },
-                          child: const Align(
+                          child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'My reviews',
-                              style: TextStyle(color: Pallete.primaryColor),
+                              style: TextStyle(color: Pallete.accentColor),
                             ),
                           ),
                         ),
-                        SizedBox(height: 20.0),
+   /*                     SizedBox(height: 20.0),
                         TextButton(
                           onPressed: () {
                             // Navegar a otra pantalla (puedes reemplazar esta función)
                           },
-                          child: const Align(
+                          child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'Preferences',
-                              style: TextStyle(
-                                  color: Pallete.primaryColor), // Texto en negro
+                              style: TextStyle(color: Pallete.accentColor),
                             ),
                           ),
-                        ),
+                        ), */
                         SizedBox(height: 20.0),
                         TextButton(
                           onPressed: () {
@@ -249,7 +332,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                             foregroundColor:
                                 Pallete.salmonColor, // Color del texto
                           ),
-                          child: const Align(
+                          child: Align(
                             alignment: Alignment.centerLeft,
                             child: Row(
                               children: [
@@ -257,14 +340,10 @@ class _ProfileScreen extends State<ProfileScreen> {
                                   Icons.exit_to_app, // Icono de log out
                                   color: Pallete.salmonColor, // Color del icono
                                 ),
-                                SizedBox(
-                                    width:
-                                        8), // Espaciado entre el icono y el texto
+                                const SizedBox(width: 8),
                                 Text(
                                   'Log out',
-                                  style: TextStyle(
-                                      color: Pallete
-                                          .salmonColor), // Color del texto
+                                  style: TextStyle(color: Pallete.salmonColor),
                                 ),
                               ],
                             ),
@@ -276,31 +355,32 @@ class _ProfileScreen extends State<ProfileScreen> {
                 ],
               ),
 
-              // Botón en la parte inferior
               Padding(
                 padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
                 child: TextButton(
-                  onPressed: () {
-                    // Acción para el nuevo botón en la parte inferior
+                  onPressed: () async {
+                    final result = await Get.toNamed('/settings');
+
+                    if (result == true) {
+                      setState(() {});
+                    }
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.all(12.0), // Padding del botón
                   ),
-                  child: const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.settings, // Icono de configuración
-                          color: Pallete.backgroundColor,
-                        ),
-                        SizedBox(width: 8), 
-                        Text(
-                          'Settings',
-                          style: TextStyle(color: Pallete.backgroundColor),
-                        ),
-                      ],
-                    ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.settings, // Icono de configuración
+                        color: Pallete.textColor,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Settings',
+                        style: TextStyle(color: Pallete.textColor),
+                        textAlign: TextAlign.left,
+                      ),
+                    ],
                   ),
                 ),
               ),

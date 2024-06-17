@@ -1,5 +1,7 @@
 // ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors
 
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
@@ -10,6 +12,8 @@ import 'package:get/get.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Widgets/activity_card.dart';
 import 'package:spotfinder/Resources/pallete.dart';
+import 'package:http/http.dart' as http;
+
 
 late ActivityService activityService;
 
@@ -49,6 +53,42 @@ class _MyActivities extends State<MyActivities> {
     }
   }
 
+   Future<String?> getAddressFromCoordinates(double latitude, double longitude) async {
+    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        final address = data['address'];
+        if (address != null) {
+          final road = address['road'] ?? '';
+          final houseNumber = address['house_number'] ?? '';
+          final postcode = address['postcode'] ?? '';
+          final city =address['city'] ?? address['town'] ?? address['village'] ?? '';
+          final country = address['country'] ?? '';
+
+          List<String> parts = [];
+
+          if (road.isNotEmpty) parts.add(road);
+          if (houseNumber.isNotEmpty) parts.add(houseNumber);
+          if (postcode.isNotEmpty) parts.add(postcode);
+          if (city.isNotEmpty) parts.add(city);
+          if (country.isNotEmpty) parts.add(country);
+
+          String formattedAddress = parts.join(', ');
+          return formattedAddress;
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error al obtener la dirección desde las coordenadas: $e');
+      return null;
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -56,10 +96,10 @@ class _MyActivities extends State<MyActivities> {
     } else {
       return Scaffold(
         appBar: AppBar(
-        title: const Text(
+        title: Text(
           'My activities',
           style: TextStyle(
-            color: Pallete.backgroundColor,
+            color: Pallete.textColor,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -67,12 +107,12 @@ class _MyActivities extends State<MyActivities> {
         backgroundColor: Colors.transparent,
         leading: Builder(
           builder: (context) => IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back,
-              color: Pallete.backgroundColor,
+              color: Pallete.textColor,
             ),
             onPressed: () {
-              Get.to(() => HomePage());
+              Get.to(() => HomePage(initialIndex: 3));
             },
           ),
         ),
@@ -80,13 +120,13 @@ class _MyActivities extends State<MyActivities> {
         body: ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return Card(
-              color: Pallete.backgroundColor,
+              color: Pallete.primaryColor,
               child: InkWell(
                 onTap: () {
                   print(lista_activities[index]);
-                  Get.to(() => EditActivity(onUpdate: getData, id: lista_activities[index].id));
+                  Get.to(() => EditActivity(lista_activities[index], onUpdate: getData));
                 },
-                child: ActivityCard(lista_activities[index]),
+                child: ActivityCard(getAddressFromCoordinates,lista_activities[index]),
               ),
             );
           },
@@ -95,8 +135,8 @@ class _MyActivities extends State<MyActivities> {
         floatingActionButton: Tooltip(
           message: 'Add new activity',
           child: FloatingActionButton(
-            backgroundColor: Pallete.backgroundColor,
-            child: Icon(Icons.add),
+            backgroundColor: Pallete.textColor,
+            child: Icon(Icons.add, color: Pallete.accentColor,),
             onPressed: () {
               Get.to(() => NewActivityScreen(onUpdate: getData));
             },

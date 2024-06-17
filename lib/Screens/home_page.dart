@@ -5,35 +5,44 @@ import 'package:spotfinder/Screens/activity_list_page.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:get/get.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:spotfinder/Screens/settingsScreen.dart';
 import 'profile_screen.dart';
 import 'chatScreen.dart';
-
+import 'package:latlong2/latlong.dart' as ltlg;
 
 class HomePage extends StatefulWidget {
-  // ignore: prefer_const_constructors_in_immutables
-  HomePage({super.key});
+  final int initialIndex;
+
+  HomePage({this.initialIndex = 0, Key? key}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _nameState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-// ignore: camel_case_types
-class _nameState extends State<HomePage> {
+class _HomePageState extends State<HomePage> {
   static HomeController homeController = Get.put(HomeController());
   int _selectedIndex = 0;
 
+  static final ltlg.LatLng defaultLocation =
+      ltlg.LatLng(41.27552212202214, 1.9863014220734023);
+
   static final List<Widget> _widgetOptions = <Widget>[
-    const MapScreen(),
+    MapScreen(defaultLocation: defaultLocation),
     const ActivityListPage(),
     const ChatScreen(),
-    const ProfileScreen()
+    const ProfileScreen(),
   ];
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Pallete.backgroundColor,
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
@@ -42,8 +51,8 @@ class _nameState extends State<HomePage> {
           color: Pallete.backgroundColor,
           boxShadow: [
             BoxShadow(
-              blurRadius: 20,
-              color: Pallete.backgroundColor.withOpacity(0.1),
+              blurRadius: 12,
+              color: Pallete.textColor.withOpacity(0.3),
             ),
           ],
         ),
@@ -59,27 +68,27 @@ class _nameState extends State<HomePage> {
               activeColor: Pallete.salmonColor,
               iconSize: 28,
               tabBackgroundColor: Colors.grey[100]!,
-              color: Pallete.whiteColor,
-              tabs: const [
+              color: Pallete.textColor,
+              tabs: [
                 GButton(
-                  iconColor: Colors.white,
+                  iconColor: Pallete.textColor,
                   icon: LineIcons.mapMarker,
-                  text: "Home"
+                  text: "Home",
                 ),
                 GButton(
-                  iconColor: Colors.white,
+                  iconColor: Pallete.textColor,
                   icon: LineIcons.hiking,
-                  text: "Activities"
+                  text: "Activities",
                 ),
                 GButton(
-                  iconColor: Colors.white,
+                  iconColor: Pallete.textColor,
                   icon: LineIcons.comment,
-                  text: "Chats"
+                  text: "Chats",
                 ),
                 GButton(
-                  iconColor: Colors.white,
+                  iconColor: Pallete.textColor,
                   icon: LineIcons.user,
-                  text: "Profile"
+                  text: "Profile",
                 ),
               ],
               selectedIndex: _selectedIndex,
@@ -88,7 +97,6 @@ class _nameState extends State<HomePage> {
                   _selectedIndex = index;
                 });
                 if (index == 2) {
-                  // Si se selecciona la pestaña de chats, cambiar a la pantalla de chat
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const ChatScreen()),
@@ -106,3 +114,4 @@ class _nameState extends State<HomePage> {
 class HomeController extends GetxController {
   final TextEditingController searchBarController = TextEditingController();
 }
+
