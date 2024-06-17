@@ -29,7 +29,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreen extends State<MapScreen> {
   final MapController mapController = Get.put(MapController());
   late List<Activity> lista_activities;
-  late List<Marker> markers = [];
+  late List<Marker> _markers = [];
   bool isLoading = true;
   Position? position;
   late ltlg.LatLng initialLocation;
@@ -44,7 +44,6 @@ class _MapScreen extends State<MapScreen> {
     userService = UserService();
     getData(null);
     setupMapTheme();
-
   }
 
   void setupMapTheme() async {
@@ -101,123 +100,130 @@ class _MapScreen extends State<MapScreen> {
 
       initialLocation = ltlg.LatLng(position!.latitude, position!.longitude);
 
-      if(byName == null){
-        lista_activities = await getAllActivities(distance, limit); 
-      }else{
-        mapController.searchByName(distance, limit);
+      List<Activity> activities;
+      if (byName == null) {
+        activities = await getAllActivities(distance, limit);
+      } else {
+        activities = await mapController.searchByName(distance, limit);
       }
-      
-      markers.add(
-        Marker(
-          point: initialLocation,
-          width: 60,
-          height: 60,
-          alignment: Alignment.centerLeft,
-          child: Icon(
-            Icons.circle,
-            size: 20,
-            color: Pallete.salmonColor
-          ),
-        )
-      );
-      
-      for(var actividad in lista_activities){
-        markers.add(
+
+      setState(() {
+        // Clear existing markers
+        _markers.clear();
+
+        // Add current location marker
+        _markers.add(
           Marker(
-            point: ltlg.LatLng(
-                actividad.location!.latitude, actividad.location!.longitude),
+            point: initialLocation,
             width: 60,
             height: 60,
             alignment: Alignment.centerLeft,
-            child: GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      content: SingleChildScrollView(
-                        child: Card(
-                          color: Pallete.primaryColor,
-                          surfaceTintColor: Pallete.accentColor,
-                          elevation: 5,
-                          margin: EdgeInsets.all(10),
-                          child: Row(
-                            children: [
-                              // Left side: Image
-                              Container(
-                                width: 100,
-                                height: 100,
-                                child: Image.network(
-                                  actividad.imageUrl ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              // Right side: Title, Description, and Value
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        actividad.name,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Description: ${actividad.description}',
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          RatingBarIndicator(
-                                            rating: actividad.rate!,
-                                            itemBuilder: (context, index) =>
-                                                const Icon(
-                                              Icons.star,
-                                              size: 18,
-                                              color: Colors.amber,
-                                            ),
-                                            itemCount: 5,
-                                            itemSize: 18,
-                                            direction: Axis.horizontal,
-                                            unratedColor:
-                                                Colors.blueAccent.withAlpha(50),
-                                          ),
-                                          const SizedBox(width:8), 
-                                          Text(
-                                            actividad.rate!.toStringAsFixed(1), 
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.amber, 
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-              child: Icon(Icons.location_pin,
-                  size: 60, color: Pallete.salmonColor),
+            child: Icon(
+              Icons.circle,
+              size: 20,
+              color: Pallete.salmonColor,
             ),
           ),
         );
-      }
-      setState(() {
+
+        // Add activity markers
+        for (var actividad in activities) {
+          _markers.add(
+            Marker(
+              point: ltlg.LatLng(
+                actividad.location!.latitude, actividad.location!.longitude),
+              width: 60,
+              height: 60,
+              alignment: Alignment.centerLeft,
+              child: GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        content: SingleChildScrollView(
+                          child: Card(
+                            color: Pallete.primaryColor,
+                            surfaceTintColor: Pallete.accentColor,
+                            elevation: 5,
+                            margin: EdgeInsets.all(10),
+                            child: Row(
+                              children: [
+                                // Left side: Image
+                                Container(
+                                  width: 100,
+                                  height: 100,
+                                  child: Image.network(
+                                    actividad.imageUrl ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                // Right side: Title, Description, and Value
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          actividad.name,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Description: ${actividad.description}',
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            RatingBarIndicator(
+                                              rating: actividad.rate!,
+                                              itemBuilder: (context, index) =>
+                                                  const Icon(
+                                                Icons.star,
+                                                size: 18,
+                                                color: Colors.amber,
+                                              ),
+                                              itemCount: 5,
+                                              itemSize: 18,
+                                              direction: Axis.horizontal,
+                                              unratedColor:
+                                                  Colors.blueAccent.withAlpha(50),
+                                            ),
+                                            const SizedBox(width:8), 
+                                            Text(
+                                              actividad.rate!.toStringAsFixed(1), 
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.amber, 
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: Icon(Icons.location_pin,
+                    size: 60, color: Pallete.salmonColor),
+              ),
+            ),
+          );
+        }
+
         isLoading = false;
       });
     } catch (error) {
@@ -251,7 +257,7 @@ class _MapScreen extends State<MapScreen> {
   void useDefaultLocation() {
     setState(() {
       initialLocation = widget.defaultLocation;
-      markers.add(
+      _markers.add(
         Marker(
           point: initialLocation,
           width: 60,
@@ -284,7 +290,7 @@ class _MapScreen extends State<MapScreen> {
             ),
             children: [
               _tileLayer,
-              MarkerLayer(markers: markers),
+              MarkerLayer(markers: _markers),
             ],
           ),
           Align(
@@ -337,6 +343,7 @@ class MapController extends GetxController {
       hasMore = activities.length == limit;
       page++;
     }
+    print(allActivities.length);
 
     return allActivities;
   }
