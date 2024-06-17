@@ -34,25 +34,27 @@ class _MapScreen extends State<MapScreen> {
   Position? position;
   late ltlg.LatLng initialLocation;
   late TileLayer _tileLayer;
+  double distance = 10000; 
+  int limit = 10;
 
   @override
   void initState() {
     super.initState();
     activityService = ActivityService();
     userService = UserService();
-    getData();
+    getData(null);
     setupMapTheme();
+
   }
 
   void setupMapTheme() async {
     final box = GetStorage();
     String? theme = box.read('theme');
-
+    
     setState(() {
       if (theme == 'Dark') {
         _tileLayer = TileLayer(
-          urlTemplate:
-              'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+          urlTemplate: 'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
           userAgentPackageName: 'dev.fleaflet.flutter_map.example',
         );
       } else {
@@ -64,7 +66,7 @@ class _MapScreen extends State<MapScreen> {
     });
   }
 
-  void getData() async {
+  void getData(byName) async {
     try {
       bool serviceEnabled;
       LocationPermission permission;
@@ -87,8 +89,7 @@ class _MapScreen extends State<MapScreen> {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        Get.snackbar('Error',
-            'Los permisos de ubicación están permanentemente denegados.');
+        Get.snackbar('Error', 'Los permisos de ubicación están permanentemente denegados.');
         useDefaultLocation();
         return;
       }
@@ -100,18 +101,27 @@ class _MapScreen extends State<MapScreen> {
 
       initialLocation = ltlg.LatLng(position!.latitude, position!.longitude);
 
-      double distance = 10000;
-      int limit = 10;
-      lista_activities = await getAllActivities(distance, limit);
-      markers.add(Marker(
-        point: initialLocation,
-        width: 60,
-        height: 60,
-        alignment: Alignment.centerLeft,
-        child: Icon(Icons.circle, size: 20, color: Pallete.salmonColor),
-      ));
-
-      for (var actividad in lista_activities) {
+      if(byName == null){
+        lista_activities = await getAllActivities(distance, limit); 
+      }else{
+        mapController.searchByName(distance, limit);
+      }
+      
+      markers.add(
+        Marker(
+          point: initialLocation,
+          width: 60,
+          height: 60,
+          alignment: Alignment.centerLeft,
+          child: Icon(
+            Icons.circle,
+            size: 20,
+            color: Pallete.salmonColor
+          ),
+        )
+      );
+      
+      for(var actividad in lista_activities){
         markers.add(
           Marker(
             point: ltlg.LatLng(
@@ -124,83 +134,76 @@ class _MapScreen extends State<MapScreen> {
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
-                    return GestureDetector(
-                      onTap: () {
-                        Get.toNamed('/activity/${actividad.id}');
-                      },
-                      child: AlertDialog(
-                        content: SingleChildScrollView(
-                          child: Card(
-                            color: Pallete.primaryColor,
-                            surfaceTintColor: Pallete.accentColor,
-                            elevation: 5,
-                            margin: EdgeInsets.all(10),
-                            child: Row(
-                              children: [
-                                // Left side: Image
-                                Container(
-                                  width: 100,
-                                  height: 100,
-                                  child: Image.network(
-                                    actividad.imageUrl ??
-                                        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
-                                    fit: BoxFit.cover,
-                                  ),
+                    return AlertDialog(
+                      content: SingleChildScrollView(
+                        child: Card(
+                          color: Pallete.primaryColor,
+                          surfaceTintColor: Pallete.accentColor,
+                          elevation: 5,
+                          margin: EdgeInsets.all(10),
+                          child: Row(
+                            children: [
+                              // Left side: Image
+                              Container(
+                                width: 100,
+                                height: 100,
+                                child: Image.network(
+                                  actividad.imageUrl ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
+                                  fit: BoxFit.cover,
                                 ),
-                                // Right side: Title, Description, and Value
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          actividad.name,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
+                              ),
+                              // Right side: Title, Description, and Value
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        actividad.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Description: ${actividad.description}',
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          RatingBarIndicator(
+                                            rating: actividad.rate!,
+                                            itemBuilder: (context, index) =>
+                                                const Icon(
+                                              Icons.star,
+                                              size: 18,
+                                              color: Colors.amber,
+                                            ),
+                                            itemCount: 5,
+                                            itemSize: 18,
+                                            direction: Axis.horizontal,
+                                            unratedColor:
+                                                Colors.blueAccent.withAlpha(50),
                                           ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          'Description: ${actividad.description}',
-                                          style: const TextStyle(fontSize: 14),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          children: [
-                                            RatingBarIndicator(
-                                              rating: actividad.rate!,
-                                              itemBuilder: (context, index) =>
-                                                  const Icon(
-                                                Icons.star,
-                                                size: 18,
-                                                color: Colors.amber,
-                                              ),
-                                              itemCount: 5,
-                                              itemSize: 18,
-                                              direction: Axis.horizontal,
-                                              unratedColor: Colors.blueAccent
-                                                  .withAlpha(50),
+                                          const SizedBox(width:8), 
+                                          Text(
+                                            actividad.rate!.toStringAsFixed(1), 
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.amber, 
                                             ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              actividad.rate!
-                                                  .toStringAsFixed(1),
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.amber,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -235,8 +238,7 @@ class _MapScreen extends State<MapScreen> {
     List<Activity> allActivities = [];
 
     while (hasMore) {
-      List<Activity> activities =
-          await activityService.getData(distance, page, limit);
+      List<Activity> activities = await activityService.getData(distance, page, limit);
       allActivities.addAll(activities);
 
       hasMore = activities.length == limit;
@@ -303,7 +305,9 @@ class _MapScreen extends State<MapScreen> {
                           size: 40,
                           color: Pallete.textColor,
                           LineIcons.searchLocation),
-                      onPressed: () {},
+                      onPressed: () {
+                        getData("byName");
+                      },
                     ),
                   ],
                 ),
@@ -317,6 +321,23 @@ class _MapScreen extends State<MapScreen> {
   }
 }
 
+
 class MapController extends GetxController {
   final TextEditingController searchBarController = TextEditingController();
+
+  Future<List<Activity>> searchByName(double distance, int limit) async {
+    int page = 1;
+    bool hasMore = true;
+    List<Activity> allActivities = [];
+
+    while (hasMore) {
+      List<Activity> activities = await activityService.getDataByName(distance, page, limit, searchBarController.text);
+      allActivities.addAll(activities);
+
+      hasMore = activities.length == limit;
+      page++;
+    }
+
+    return allActivities;
+  }
 }

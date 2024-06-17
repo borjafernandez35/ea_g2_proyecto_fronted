@@ -53,6 +53,20 @@ class ActivityService {
     }
   }
 
+  Future<List<Activity>> getDataByName(double selectedDistance, int page, int limit, String search) async {
+    print('getData');
+    String? id = user_service.getId();
+    try {
+      var res = await dio.get('$baseUrl/activity/$page/$limit/$id/$selectedDistance/$search');
+      final List<dynamic> responseData = res.data['activities'];
+      List<Activity> activities = responseData.map((data) => Activity.fromJson(data)).toList();
+      return activities;
+    } catch (e) {
+      print('Error fetching data: $e');
+      throw e;
+    }
+  }
+
   Future<int> joinActivity(String? aId) async {
     try {
       final id = getId();
