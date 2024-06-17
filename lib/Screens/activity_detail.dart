@@ -279,7 +279,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                       color: Pallete.textColor,
                     ),
                     onPressed: () {
-                      Get.to(const ActivityListPage());
+                      Get.back();
                     },
                   ),
                 )

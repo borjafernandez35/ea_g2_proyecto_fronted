@@ -7,6 +7,7 @@ import 'package:spotfinder/Resources/pallete.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
+import 'package:spotfinder/Screens/activity_detail.dart';
 import 'package:spotfinder/Widgets/paramTextBox_sign_up.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
@@ -130,8 +131,7 @@ class _MapScreen extends State<MapScreen> {
         for (var actividad in activities) {
           _markers.add(
             Marker(
-              point: ltlg.LatLng(
-                actividad.location!.latitude, actividad.location!.longitude),
+              point: ltlg.LatLng(actividad.location!.latitude, actividad.location!.longitude),
               width: 60,
               height: 60,
               alignment: Alignment.centerLeft,
@@ -142,77 +142,84 @@ class _MapScreen extends State<MapScreen> {
                     builder: (BuildContext context) {
                       return AlertDialog(
                         content: SingleChildScrollView(
-                          child: Card(
-                            color: Pallete.primaryColor,
-                            surfaceTintColor: Pallete.accentColor,
-                            elevation: 5,
-                            margin: EdgeInsets.all(10),
-                            child: Row(
-                              children: [
-                                // Left side: Image
-                                Container(
-                                  width: 100,
-                                  height: 100,
-                                  child: Image.network(
-                                    actividad.imageUrl ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                // Right side: Title, Description, and Value
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          actividad.name,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          'Description: ${actividad.description}',
-                                          style: const TextStyle(fontSize: 14),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          children: [
-                                            RatingBarIndicator(
-                                              rating: actividad.rate!,
-                                              itemBuilder: (context, index) =>
-                                                  const Icon(
-                                                Icons.star,
-                                                size: 18,
-                                                color: Colors.amber,
-                                              ),
-                                              itemCount: 5,
-                                              itemSize: 18,
-                                              direction: Axis.horizontal,
-                                              unratedColor:
-                                                  Colors.blueAccent.withAlpha(50),
-                                            ),
-                                            const SizedBox(width:8), 
-                                            Text(
-                                              actividad.rate!.toStringAsFixed(1), 
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.amber, 
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                          child: InkWell(
+                            onTap: () {
+                              Get.toNamed(
+                                '/activity/${actividad.id}',
+                              );
+                            },
+                            child: Card(
+                              color: Pallete.primaryColor,
+                              surfaceTintColor: Pallete.accentColor,
+                              elevation: 5,
+                              margin: EdgeInsets.all(10),
+                              child: Row(
+                                children: [
+                                  // Left side: Image
+                                  Container(
+                                    width: 100,
+                                    height: 100,
+                                    child: Image.network(
+                                      actividad.imageUrl ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
-                                ),
-                              ],
+                                  // Right side: Title, Description, and Value
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            actividad.name,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Description: ${actividad.description}',
+                                            style: const TextStyle(fontSize: 14),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              RatingBarIndicator(
+                                                rating: actividad.rate!,
+                                                itemBuilder: (context, index) =>
+                                                    const Icon(
+                                                  Icons.star,
+                                                  size: 18,
+                                                  color: Colors.amber,
+                                                ),
+                                                itemCount: 5,
+                                                itemSize: 18,
+                                                direction: Axis.horizontal,
+                                                unratedColor:
+                                                    Colors.blueAccent.withAlpha(50),
+                                              ),
+                                              const SizedBox(width:8), 
+                                              Text(
+                                                actividad.rate!.toStringAsFixed(1), 
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.amber, 
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
+                        )
                       );
                     },
                   );

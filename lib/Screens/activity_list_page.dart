@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:html';
+import 'package:get_storage/get_storage.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -33,10 +33,16 @@ class _ActivityListPageState extends State<ActivityListPage> {
   String selectedSort = "Date";
   final ScrollController _scrollController = ScrollController();
   final Distance distance = Distance();
+  final box = GetStorage();
 
   @override
   void initState() {
     super.initState();
+    if(box.read('distance') == null){
+      box.write('distance', selectedDistance);
+    }else{
+      selectedDistance = box.read('distance');
+    }
     activityService = ActivityService();
     listaActivities = [];
     getData();
@@ -112,6 +118,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
     if (newDistance != null) {
       setState(() {
         selectedDistance = newDistance;
+        box.write('distance', selectedDistance);
         listaActivities = [];
         getData();
       });
