@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -10,6 +9,7 @@ import 'package:spotfinder/Models/CommentModel.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:get/get.dart';
 import 'package:spotfinder/Screens/activity_list_page.dart';
+import 'package:spotfinder/Screens/map.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Services/CommentService.dart';
 import 'package:spotfinder/Services/UserService.dart';
@@ -279,7 +279,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                       color: Pallete.textColor,
                     ),
                     onPressed: () {
-                      Get.back();
+                      Get.toNamed('/home');
                     },
                   ),
                 )
@@ -552,6 +552,15 @@ class _ActivityDetail extends State<ActivityDetail> {
                                       Get.to(const ActivityDetail());
                                     },
                                     text: 'Join',
+                                  ),
+                                if(isParticipating)
+                                  SignUpButton(
+                                    onPressed: () {
+                                      controllerActivityDetail
+                                          .leaveActivity(activity.id);
+                                      Get.to(const ActivityDetail());
+                                    },
+                                    text: 'Leave',
                                   ),
                               ],
                             )
@@ -840,6 +849,9 @@ class ActivityDetailController extends GetxController {
 
   void joinActivity(String? id) {
     activityService.joinActivity(id);
+  }
+  void leaveActivity(String? id) {
+    activityService.leaveActivity(id);
   }
 
   Future<bool> addComment() async {

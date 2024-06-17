@@ -82,6 +82,21 @@ class ActivityService {
     }
   }
 
+  Future<int> leaveActivity(String? aId) async {
+    try {
+      final id = getId();
+      var res = await dio.put('$baseUrl/activity/leave/$id/$aId');
+      data = res.data.toString();
+      print('Data: $data');
+      statusCode = res.statusCode;
+      print('Status code: $statusCode');
+      return statusCode;
+    } catch (e) {
+      print('Error fetching data: $e');
+      throw e;
+    }
+  }
+
   Future<Activity> getActivity(String id) async {
     try {
       Response res = await dio.get('$baseUrl/activity/$id');
