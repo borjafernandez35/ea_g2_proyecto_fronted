@@ -58,14 +58,11 @@ class _TitleScreenState extends State<TitleScreen> {
       error_callback: signInService.onError,
     );
  */
-    
 
     signInService.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
       setState(() {
         gis_id.id.setLogLevel('debug');
         gis_id.id.initialize(signInService.idConfiguration);
-
-        
 
         //print("Que es TokenClient: ${tokenClient}");
 
@@ -74,7 +71,7 @@ class _TitleScreenState extends State<TitleScreen> {
 
         gis_id.id.prompt(signInService.onPromptMoment);
 
-        _handleSignIn();
+        //_handleSignIn();
 
         print("Sirve para algo?????, ${account}");
 
@@ -82,6 +79,7 @@ class _TitleScreenState extends State<TitleScreen> {
         // idToken=accessToken ?? (await _currentUser?.authentication)?.accessToken;;
         _isAuthorized = signInService.isAuthorized;
         print("ojala funcione el token:${signInService.idToken}");
+        Get.toNamed('/home');
       });
     });
     print("He salido!!");
@@ -93,19 +91,18 @@ class _TitleScreenState extends State<TitleScreen> {
 
   Future<void> _handleSignIn() async {
     try {
+      
       await signInService.handleSignIn();
-       //oauth2.initTokenClient(config);
+      //oauth2.initTokenClient(config);
+      Get.toNamed('/home');
 
-        //tokenClient.requestAccessToken();
+      //tokenClient.requestAccessToken();
       if (signInService.token.isNotEmpty) {
         setState(() {
           _token = signInService.idToken ?? '';
           print("que te voy a decir si yo acabo de llegar: ${_token}");
         });
         // Navigate to HomePage after successful sign-in
-        Get.offAll(() => TitleScreen());
-        
-        
       }
     } catch (error) {
       print('Error signing in: $error');
@@ -114,6 +111,7 @@ class _TitleScreenState extends State<TitleScreen> {
 
   Future<void> _handleSignOut() async {
     await signInService.handleSignOut();
+    Get.toNamed('/');
   }
 
   Widget _buildBody() {

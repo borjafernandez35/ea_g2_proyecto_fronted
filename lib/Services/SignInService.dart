@@ -9,9 +9,12 @@ import 'package:http/http.dart' as http;
 import 'package:google_identity_services_web/id.dart';
 import 'package:google_identity_services_web/google_identity_services_web.dart'
     as gis;
+import 'package:spotfinder/Resources/jwt.dart';
 import '../Resources/jwt.dart' as jwt;
 import 'dart:math';
 import 'package:google_identity_services_web/oauth2.dart';
+
+import '../Resources/jwt.dart';
 //import 'package:dio/dio.dart';
 
 /// The scopes required by this application.
@@ -40,6 +43,7 @@ class SignInService {
   String _token = '';
   String? _idToken;
   String? _accessToken;
+  //GoogleSignInAuthentication? _auth;
   // GoogleAccountsId _accountsId;
 
   SignInService({required String clientId})
@@ -126,6 +130,18 @@ class SignInService {
         print("Loading GIS SDK for web...");
         await gis.loadWebSdk();
         print("GIS SDK loaded.");
+        //id.setLogLevel('debug');
+        id.initialize(idConfiguration);
+        //_auth = _currentUser!.authentication as GoogleSignInAuthentication?;
+        //_idToken = _auth!.idToken;
+        
+
+        //print("Que es TokenClient: ${tokenClient}");
+
+        print(
+            "iniciiiiiaaaaaaaaaaaaaaaaa el putoooooooooo TOOOOOOOOKKKEEEEENNNNNNNN!!!!!!${_idToken}");
+
+        id.prompt(onPromptMoment);
 
         // print("que me vas a decir si yo acabo de llegar: ${call}");
 
