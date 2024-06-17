@@ -31,6 +31,7 @@ late List<Comment> comments = [];
 late User user;
 late Activity activity;
 late VoidCallback? onUpdate;
+bool isParticipating = false;
 
 class ActivityDetail extends StatefulWidget {
   const ActivityDetail({Key? key}) : super(key: key);
@@ -69,9 +70,9 @@ class _ActivityDetail extends State<ActivityDetail> {
   Future<void> getActivity() async {
     try {
       activity = await activityService.getActivity(activityId);
+      isParticipating = activity.listUsers!.contains(userService.getId());
       await getData(activity.listUsers?.length ?? 0);
-      _addressFuture = _getAddressFromCoordinates(
-          activity.location!.latitude, activity.location!.longitude);
+      _addressFuture = _getAddressFromCoordinates(activity.location!.latitude, activity.location!.longitude);
     } catch (error) {
       Get.snackbar(
         'Error',
@@ -543,14 +544,15 @@ class _ActivityDetail extends State<ActivityDetail> {
                                 const SizedBox(
                                   height: 20,
                                 ),
-                                SignUpButton(
-                                  onPressed: () {
-                                    controllerActivityDetail
-                                        .joinActivity(activity.id);
-                                    Get.to(const ActivityDetail());
-                                  },
-                                  text: 'Join',
-                                ),
+                                if(!isParticipating)
+                                  SignUpButton(
+                                    onPressed: () {
+                                      controllerActivityDetail
+                                          .joinActivity(activity.id);
+                                      Get.to(const ActivityDetail());
+                                    },
+                                    text: 'Join',
+                                  ),
                               ],
                             )
                           else
