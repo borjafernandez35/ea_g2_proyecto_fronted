@@ -19,7 +19,7 @@ import 'package:google_identity_services_web/id.dart';
 import 'package:google_identity_services_web/id.dart' as gis_id;
 import 'package:google_identity_services_web/oauth2.dart';
 
-late SignInService signInService;
+late SignInService _signInService;
 
 const List<String> scopes = <String>[
   'email',
@@ -48,7 +48,7 @@ class _TitleScreenState extends State<TitleScreen> {
     print("^*******************************************************");
     super.initState();
 
-    signInService = SignInService(
+    _signInService = SignInService(
       clientId: idClient,
     );
     /* config = TokenClientConfig(
@@ -59,32 +59,34 @@ class _TitleScreenState extends State<TitleScreen> {
     );
  */
 
-    signInService.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
+    _signInService.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
       setState(() {
         gis_id.id.setLogLevel('debug');
-        gis_id.id.initialize(signInService.idConfiguration);
+        gis_id.id.initialize(_signInService.idConfiguration);
 
         //print("Que es TokenClient: ${tokenClient}");
 
         print(
-            "iniciiiiiaaaaaaaaaaaaaaaaa el putoooooooooo TOOOOOOOOKKKEEEEENNNNNNNN!!!!!!${signInService.idToken}");
+            "iniciiiiiaaaaaaaaaaaaaaaaa el putoooooooooo TOOOOOOOOKKKEEEEENNNNNNNN!!!!!!${_signInService.idToken}");
 
-        gis_id.id.prompt(signInService.onPromptMoment);
+        gis_id.id.prompt(_signInService.onPromptMoment);
 
         //_handleSignIn();
 
         print("Sirve para algo?????, ${account}");
 
         _currentUser = account;
+        
+        
         // idToken=accessToken ?? (await _currentUser?.authentication)?.accessToken;;
-        _isAuthorized = signInService.isAuthorized;
-        print("ojala funcione el token:${signInService.idToken}");
-        Get.toNamed('/home');
+        _isAuthorized = _signInService.isAuthorized;
+        print("ojala funcione el token:${_signInService.idToken}");
+        //Get.toNamed('/home');
       });
     });
     print("He salido!!");
 
-    signInService.signInSilently();
+    _signInService.signInSilently();
 
     //signInService.signIn();
   }
@@ -92,14 +94,14 @@ class _TitleScreenState extends State<TitleScreen> {
   Future<void> _handleSignIn() async {
     try {
       
-      await signInService.handleSignIn();
+      await _signInService.handleSignIn();
       //oauth2.initTokenClient(config);
-      Get.toNamed('/home');
+      //Get.toNamed('/home');
 
       //tokenClient.requestAccessToken();
-      if (signInService.token.isNotEmpty) {
+      if (_signInService.token.isNotEmpty) {
         setState(() {
-          _token = signInService.idToken ?? '';
+          _token = _signInService.idToken ?? '';
           print("que te voy a decir si yo acabo de llegar: ${_token}");
         });
         // Navigate to HomePage after successful sign-in
@@ -110,8 +112,8 @@ class _TitleScreenState extends State<TitleScreen> {
   }
 
   Future<void> _handleSignOut() async {
-    await signInService.handleSignOut();
-    Get.toNamed('/');
+    await _signInService.handleSignOut();
+   // Get.toNamed('/');
   }
 
   Widget _buildBody() {
@@ -124,7 +126,7 @@ class _TitleScreenState extends State<TitleScreen> {
           ListTile(
             leading: GoogleUserCircleAvatar(identity: user),
             title: Text(user.displayName ?? ''),
-            subtitle: Text('Token: ${signInService.idToken}'),
+            subtitle: Text('Token: ${_signInService.idToken}'),
             trailing: Text(user.email),
           ),
           const Text('Signed in successfully.'),
