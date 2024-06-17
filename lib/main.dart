@@ -58,7 +58,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'SpotFinder',
       theme: getTheme(theme, font),
-
       getPages: [
         GetPage(name: '/', page: () => TitleScreen()),
         GetPage(name: '/home', page: () => HomePage()),
@@ -74,8 +73,6 @@ class MyApp extends StatelessWidget {
       initialRoute: token != null ? '/home' : '/',
     );
   }
-}
-
 
   TextTheme? getFontTextTheme(String? font) {
     switch (font) {
@@ -111,4 +108,4 @@ class MyApp extends StatelessWidget {
     }
     return themeData;
   }
-
+}
