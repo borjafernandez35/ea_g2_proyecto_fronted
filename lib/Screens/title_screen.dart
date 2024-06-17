@@ -224,7 +224,7 @@ class _TitleScreenState extends State<TitleScreen> {
                     ),
                     TextSpan(
                       text: "Sign up",
-                      style: const TextStyle(
+                      style:  TextStyle(
                         color: Pallete.salmonColor,
                         fontWeight: FontWeight.bold,
                         decoration: TextDecoration
