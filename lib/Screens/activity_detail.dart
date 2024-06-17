@@ -9,7 +9,7 @@ import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Models/CommentModel.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:get/get.dart';
-import 'package:spotfinder/Screens/activity_list_page.dart';
+import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Services/CommentService.dart';
 import 'package:spotfinder/Services/UserService.dart';
@@ -278,8 +278,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                       color: Pallete.textColor,
                     ),
                     onPressed: () {
-                      Get.to(const ActivityListPage());
-                    },
+ Get.to(() => HomePage(initialIndex: 1));
+                     },
                   ),
                 )
               : null,

@@ -5,7 +5,6 @@ import 'package:spotfinder/Screens/activity_list_page.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:get/get.dart';
 import 'package:line_icons/line_icons.dart';
-import 'package:spotfinder/Screens/settingsScreen.dart';
 import 'profile_screen.dart';
 import 'chatScreen.dart';
 import 'package:latlong2/latlong.dart' as ltlg;

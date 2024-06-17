@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/detalles_user.dart';
+import 'package:spotfinder/Screens/history.dart';
 import 'package:spotfinder/Screens/my_comments_screen.dart';
 import 'package:spotfinder/Screens/my_activities.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
@@ -312,12 +313,12 @@ class _ProfileScreen extends State<ProfileScreen> {
                         SizedBox(height: 20.0),
                         TextButton(
                           onPressed: () {
-                            // Navegar a otra pantalla (puedes reemplazar esta función)
+                            Get.to(() => HistoryPage(user!));
                           },
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'Preferences',
+                              'History',
                               style: TextStyle(color: Pallete.accentColor),
                             ),
                           ),

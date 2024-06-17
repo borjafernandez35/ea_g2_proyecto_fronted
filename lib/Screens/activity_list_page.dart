@@ -39,6 +39,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
     super.initState();
     activityService = ActivityService();
     listaActivities = [];
+    sortedActivities = [];
     getData();
 
     _scrollController.addListener(() {
@@ -113,6 +114,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
       setState(() {
         selectedDistance = newDistance;
         listaActivities = [];
+        sortedActivities = [];
         getData();
       });
     }
@@ -123,6 +125,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
       setState(() {
         selectedSort = newSort;
         listaActivities = [];
+        sortedActivities = [];
         getData();
       });
     }
@@ -262,10 +265,11 @@ class _ActivityListPageState extends State<ActivityListPage> {
                     child: InkWell(
                       onTap: () {
                         Get.toNamed(
-                          '/activity/${sortedActivities[index].id}',
+                          '/activity/${listaActivities[index].id}',
                           arguments: {'onUpdate': getData},
                         );
                         listaActivities=[];
+                        sortedActivities=[];
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,8 +291,9 @@ class _ActivityListPageState extends State<ActivityListPage> {
             backgroundColor: Pallete.textColor,
             child: Icon(Icons.add, color: Pallete.backgroundColor),
             onPressed: () {
-              Get.to(() => NewActivityScreen(onUpdate: getData));
               listaActivities.clear();
+              sortedActivities.clear();
+              Get.to(() => NewActivityScreen(onUpdate: getData));
             },
           ),
         ),
