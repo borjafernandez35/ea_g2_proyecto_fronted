@@ -18,6 +18,7 @@ import 'package:google_identity_services_web/google_identity_services_web.dart'
 import 'package:google_identity_services_web/id.dart';
 import 'package:google_identity_services_web/id.dart' as gis_id;
 import 'package:google_identity_services_web/oauth2.dart';
+import 'package:spotfinder/Screens/register_screen_google.dart';
 
 late SignInService _signInService;
 
@@ -37,6 +38,7 @@ class _TitleScreenState extends State<TitleScreen> {
   bool _isAuthorized = false;
   String _contactText = '';
   String _token = '';
+  String email = '';
   late TokenClient tokenClient;
   late TokenClientConfig config;
 
@@ -71,13 +73,12 @@ class _TitleScreenState extends State<TitleScreen> {
 
         gis_id.id.prompt(_signInService.onPromptMoment);
 
-        //_handleSignIn();
+        _handleSignIn();
 
         print("Sirve para algo?????, ${account}");
 
         _currentUser = account;
-        
-        
+
         // idToken=accessToken ?? (await _currentUser?.authentication)?.accessToken;;
         _isAuthorized = _signInService.isAuthorized;
         print("ojala funcione el token:${_signInService.idToken}");
@@ -93,17 +94,42 @@ class _TitleScreenState extends State<TitleScreen> {
 
   Future<void> _handleSignIn() async {
     try {
-      
       await _signInService.handleSignIn();
-      //oauth2.initTokenClient(config);
-      //Get.toNamed('/home');
 
-      //tokenClient.requestAccessToken();
-      if (_signInService.token.isNotEmpty) {
+      print(
+          'eeeeeeeeelllllllll cccccooooorrrrrreeeeeeoooooooooo!!!!!!! ${_currentUser!.email}');
+      email = _currentUser?.email ?? '';
+      print(
+          'VAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMMMMMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOSSSSSSSS: $email');
+
+      // Verificar si el usuario está registrado
+      final isRegistered = await _signInService.checkIfRegistered(email);
+
+      print('estoy registraaaaaaaadddoooooo????????$isRegistered');
+
+      if (!isRegistered) {
+        // Mostrar el diálogo de registro
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return RegisterGoogleScreen(
+              onRegistrationComplete: () {
+                // Actualizar estado de autorización y cerrar el diálogo
+                setState(() {
+                  _isAuthorized = true;
+                });
+                Navigator.of(context).pop();
+              },
+              currentUser: _currentUser,
+            );
+          },
+        );
+      } else {
         setState(() {
           _token = _signInService.idToken ?? '';
           print("que te voy a decir si yo acabo de llegar: ${_token}");
         });
+
         // Navigate to HomePage after successful sign-in
       }
     } catch (error) {
@@ -113,7 +139,7 @@ class _TitleScreenState extends State<TitleScreen> {
 
   Future<void> _handleSignOut() async {
     await _signInService.handleSignOut();
-   // Get.toNamed('/');
+    // Get.toNamed('/');
   }
 
   Widget _buildBody() {
@@ -224,7 +250,7 @@ class _TitleScreenState extends State<TitleScreen> {
                     ),
                     TextSpan(
                       text: "Sign up",
-                      style:  TextStyle(
+                      style: TextStyle(
                         color: Pallete.salmonColor,
                         fontWeight: FontWeight.bold,
                         decoration: TextDecoration

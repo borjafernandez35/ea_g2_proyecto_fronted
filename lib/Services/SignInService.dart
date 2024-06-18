@@ -15,7 +15,7 @@ import 'dart:math';
 import 'package:google_identity_services_web/oauth2.dart';
 
 import '../Resources/jwt.dart';
-//import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 
 /// The scopes required by this application.
 const List<String> scopes = <String>[
@@ -34,7 +34,7 @@ String? storedState;
 class SignInService {
   final GoogleSignIn _googleSignIn;
   late final IdConfiguration idConfiguration;
-  //final Dio dio = Dio();
+  final Dio dio = Dio();
   final String baseUrl = 'http://127.0.0.1:3000';
 
   GoogleSignInAccount? _currentUser;
@@ -43,6 +43,7 @@ class SignInService {
   String _token = '';
   String? _idToken;
   String? _accessToken;
+  bool _isRegistered = false;
   //GoogleSignInAuthentication? _auth;
   // GoogleAccountsId _accountsId;
 
@@ -69,6 +70,7 @@ class SignInService {
   String get token => _token;
   String? get idToken => _idToken;
   String? get accessToken => _accessToken;
+  bool get isRegistered => _isRegistered;
 
   Stream<GoogleSignInAccount?> get onCurrentUserChanged =>
       _googleSignIn.onCurrentUserChanged;
@@ -134,7 +136,6 @@ class SignInService {
         id.initialize(idConfiguration);
         //_auth = _currentUser!.authentication as GoogleSignInAuthentication?;
         //_idToken = _auth!.idToken;
-        
 
         //print("Que es TokenClient: ${tokenClient}");
 
@@ -162,6 +163,11 @@ class SignInService {
     }
   }
 
+  void onPromptMoment(PromptMomentNotification o) {
+    final MomentType type = o.getMomentType();
+    print("Prompt moment: ${type}");
+  }
+
   Future<void> handleSignOut() => _googleSignIn.disconnect();
 
   void onCredentialResponse(CredentialResponse response) {
@@ -179,71 +185,29 @@ class SignInService {
     }
   }
 
-  void onPromptMoment(PromptMomentNotification o) {
-    final MomentType type = o.getMomentType();
-    print("Prompt moment: ${type}");
-  }
+  Future<bool> checkIfRegistered(String email) async {
+    try {
+      final response = await dio.get('$baseUrl/user/check-email/$email');
 
-/* Future<int> logIn(Map<String, dynamic> logInData) async {
-  print('Logging In...');
+      print(
+          'laaaaa rrrrrreeeeeeeesssspuesta eeeeesssssss :~$response, ye status code!!!!!${response.statusCode}, lleeeeevvvaaa estos datos: ${response.data}');
 
-  try {
-    Response response = await dio.post('$baseUrl/signin', data: logInData);
-
-    String data = response.data.toString();
-    print('Data: $data');
-
-    int statusCode = response.statusCode ?? 0;
-    print('Status code: $statusCode');
-
-    if (statusCode == 200) {
-      var token = response.data['token'];
-      var id = response.data['id'];
-      //saveToken(token);
-      saveId(id);
-      print('Logged in successfully');
-
-      // Aquí añadimos el nombre, email y token al backend
-      var googleName = _currentUser?.displayName;
-      var googleEmail = _currentUser?.email;
-      var googleToken = _idToken;
-
-      await sendGoogleDataToBackend(googleName, googleEmail, googleToken);
-
-      return 200;
-    } else if (statusCode == 400) {
-      print('Bad request: Missing fields');
-      return 400;
-    } else if (statusCode == 500) {
-      print('Internal server error');
-      return 500;
-    } else {
-      print('Unknown error');
-      return -1;
+      if (response.statusCode == 200) {
+        print("Response data type: ${response.data.runtimeType}");
+        final Map<String, dynamic> data = response.data;
+        print(
+            'lllllllllllllllllllllloooooooooooooooooooooosssssssss daaaaaaaattttoooooooooossssss: $data');
+        final bool isRegistered = data['isRegistered'];
+        print(
+            'RRRREEEEEEEEGGGGGGGIIIIIIISSSSSTTTTTRRRRRRRAAAAADDDDOOOOOO?????? $isRegistered');
+        return isRegistered;
+      } else {
+        throw Exception(
+            'Failed to check registration status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error checking registration status: $e');
+      throw e;
     }
-  } catch (e) {
-    print('Error logging in: $e');
-    return -1;
   }
-}
-
-Future<void> sendGoogleDataToBackend(String? name, String? email, String? token) async {
-  try {
-    // Aquí construyes el cuerpo de la solicitud que enviarás al backend
-    var requestData = {
-      'name': name,
-      'email': email,
-      'token': token,
-    };
-
-    // Realizas la solicitud POST al endpoint adecuado en tu backend para guardar estos datos
-    Response response = await dio.post('$baseUrl/google-data', data: requestData);
-
-    print('Google data sent to backend successfully');
-  } catch (e) {
-    print('Error sending Google data to backend: $e');
-    throw e;
-  }
-}
- */
 }
