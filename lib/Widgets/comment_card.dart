@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:get/get.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Models/CommentModel.dart';
 import 'package:spotfinder/Resources/pallete.dart';
@@ -82,14 +83,20 @@ class _CommentCardState extends State<CommentCard> {
                 width: double.infinity,
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.fromLTRB(10.0, 10.0, 0, 8),
-                child: GestureDetector(
-                  child: Text(
-                    widget.activity.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Pallete.paleBlueColor,
+                child: Tooltip(
+                  message: 'See activity',
+                  child: GestureDetector(
+                    child: Text(
+                      widget.activity.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Pallete.paleBlueColor,
+                      ),
                     ),
+                    onTap: () {
+                      Get.toNamed('/activity/${widget.activity.id}');
+                    },
                   ),
                 ),
               ),
@@ -97,18 +104,17 @@ class _CommentCardState extends State<CommentCard> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    width: 100,
-                    height: 100,
-                    padding: EdgeInsets.fromLTRB(6, 0, 0, 8),
-                    child: ClipRRect(
-                    borderRadius:
-                        BorderRadius.circular(12), 
-                    child: Image.network(
-                      widget.activity.imageUrl ??
-                          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
-                      fit: BoxFit.cover,
-                    ),
-                  )),
+                      width: 100,
+                      height: 100,
+                      padding: EdgeInsets.fromLTRB(6, 0, 0, 8),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          widget.activity.imageUrl ??
+                              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
+                          fit: BoxFit.cover,
+                        ),
+                      )),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Card(

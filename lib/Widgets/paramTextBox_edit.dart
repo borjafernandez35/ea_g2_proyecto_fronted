@@ -14,22 +14,33 @@ class ParamTextBox extends StatelessWidget {
     required this.text,
     this.keyboardType = TextInputType.text,
     this.inputFormatters,
-    this.editable = true,
+    this.editable,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      readOnly: !editable!,
+      enabled: editable!,
       decoration: InputDecoration(
         labelText: text,
         labelStyle: TextStyle(
           color: Pallete.paleBlueColor, // Color del texto del label
         ),
-        border: OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(
-            color: Pallete.accentColor, // Color del borde
+            color:
+                Pallete.paleBlueColor, // Color del borde cuando está enfocado
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Pallete.accentColor.withOpacity(0.8), // Color del borde cuando deshabilitado
+          ),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Pallete.accentColor.withOpacity(0.3), // Color del borde cuando deshabilitado
           ),
         ),
       ),

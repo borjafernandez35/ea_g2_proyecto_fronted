@@ -1,15 +1,14 @@
 import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:intl/intl.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Models/CommentModel.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:get/get.dart';
-import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Services/CommentService.dart';
 import 'package:spotfinder/Services/UserService.dart';
@@ -18,7 +17,6 @@ import 'package:spotfinder/Widgets/comment_card2.dart';
 import 'package:spotfinder/Widgets/user_card.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as ltld;
 
@@ -31,6 +29,7 @@ late List<Comment> comments = [];
 late User user;
 late Activity activity;
 late VoidCallback? onUpdate;
+bool isParticipating = false;
 
 class ActivityDetail extends StatefulWidget {
   const ActivityDetail({Key? key}) : super(key: key);
@@ -52,6 +51,7 @@ class _ActivityDetail extends State<ActivityDetail> {
   bool isLoggedIn = false;
   bool showMap = false;
   late TileLayer _tileLayer;
+  String date = "";
 
   @override
   void initState() {
@@ -69,6 +69,11 @@ class _ActivityDetail extends State<ActivityDetail> {
   Future<void> getActivity() async {
     try {
       activity = await activityService.getActivity(activityId);
+      isParticipating = activity.listUsers!.contains(userService.getId());
+      final localActivityDateTime = activity.date.toLocal();
+      final formattedDate =
+          "${localActivityDateTime.day.toString().padLeft(2, '0')}/${localActivityDateTime.month.toString().padLeft(2, '0')}/${localActivityDateTime.year}";
+      date = formattedDate;
       await getData(activity.listUsers?.length ?? 0);
       _addressFuture = _getAddressFromCoordinates(
           activity.location!.latitude, activity.location!.longitude);
@@ -278,8 +283,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                       color: Pallete.textColor,
                     ),
                     onPressed: () {
- Get.to(() => HomePage(initialIndex: 1));
-                     },
+                      Get.toNamed('/home');
+                    },
                   ),
                 )
               : null,
@@ -298,11 +303,9 @@ class _ActivityDetail extends State<ActivityDetail> {
                 iconSize: 30,
                 color: Pallete.salmonColor,
                 onPressed: () {
-                  final formattedDate =
-                      '${activity.date.day}/${activity.date.month}/${activity.date.year}';
                   final message =
                       'Echa un vistazo a este evento: *${activity.name}*\n'
-                      'Fecha: 📅 $formattedDate\n'
+                      'Fecha: 📅 $date\n'
                       'Más información: 🔗 ${Uri.base} ';
                   Share.share(message);
                 },
@@ -368,7 +371,22 @@ class _ActivityDetail extends State<ActivityDetail> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            DateFormat('dd/MM/yy').format(activity.date),
+                            date,
+                            style: TextStyle(
+                              color: Pallete.textColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.access_time,
+                            color: Pallete.accentColor,
+                            size: 17,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat('hh:mm a').format(activity.date),
                             style: TextStyle(
                               color: Pallete.textColor,
                               fontWeight: FontWeight.bold,
@@ -543,14 +561,24 @@ class _ActivityDetail extends State<ActivityDetail> {
                                 const SizedBox(
                                   height: 20,
                                 ),
-                                SignUpButton(
-                                  onPressed: () {
-                                    controllerActivityDetail
-                                        .joinActivity(activity.id);
-                                    Get.to(const ActivityDetail());
-                                  },
-                                  text: 'Join',
-                                ),
+                                if (!isParticipating)
+                                  SignUpButton(
+                                    onPressed: () {
+                                      controllerActivityDetail
+                                          .joinActivity(activity.id);
+                                      Get.to(const ActivityDetail());
+                                    },
+                                    text: 'Join',
+                                  ),
+                                if (isParticipating)
+                                  SignUpButton(
+                                    onPressed: () {
+                                      controllerActivityDetail
+                                          .leaveActivity(activity.id);
+                                      Get.to(const ActivityDetail());
+                                    },
+                                    text: 'Leave',
+                                  ),
                               ],
                             )
                           else
@@ -838,6 +866,10 @@ class ActivityDetailController extends GetxController {
 
   void joinActivity(String? id) {
     activityService.joinActivity(id);
+  }
+
+  void leaveActivity(String? id) {
+    activityService.leaveActivity(id);
   }
 
   Future<bool> addComment() async {

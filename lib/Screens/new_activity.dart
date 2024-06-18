@@ -4,7 +4,9 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:spotfinder/Resources/pallete.dart';
+import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Services/UserService.dart';
@@ -35,6 +37,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   String? _image;
   Uint8List? _imageBytes;
   DateTime _selectedDate = DateTime.now();
+  TimeOfDay _selectedTime = TimeOfDay.now();
   String _userId = '';
   double _latitude = 41.27552212202214;
   double _longitude = 1.9863014220734023;
@@ -160,17 +163,31 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+  Future<void> _selectDateTime(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _selectedDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
     );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
+    if (pickedDate != null && pickedDate != _selectedDate) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: _selectedTime,
+      );
+
+      if (pickedTime != null && pickedTime != _selectedTime) {
+        setState(() {
+          _selectedDate = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+          _selectedTime = pickedTime;
+        });
+      }
     }
   }
 
@@ -202,11 +219,11 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
         name: _nameController.text,
         description: _descriptionController.text,
         imageUrl: await _uploadImage(),
-        date: _selectedDate,
+        date: DateTime.parse(_selectedDate.toIso8601String()),
         idUser: _userId,
         location: LatLng(latitude: _latitude, longitude: _longitude),
       );
-      await ActivityService().addActivity(newActivity).then((statusCode) {
+      await ActivityService().addActivity(newActivity).then((value) {
         Get.snackbar(
           'Successful',
           'Activity created!',
@@ -220,12 +237,14 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
           ),
           messageText: Text(
             'Activity created!',
-            style: TextStyle(color: Pallete.backgroundColor),
+            style: TextStyle(color: Pallete.textColor),
           ),
         );
+      }).catchError((error) {
+        print("Error: $error"); // Manejo de errores si la promesa falla
       });
       widget.onUpdate();
-      Get.back();
+      Get.to(() => HomePage(initialIndex: 1));
     } else {
       print('Formulario inválido. No se puede enviar la actividad.');
     }
@@ -498,9 +517,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                 TextFormField(
                   readOnly: true,
                   controller: TextEditingController(
-                    text:
-                        '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                  ),
+                      text: DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate)),
                   decoration: InputDecoration(
                     labelText: 'Date',
                     labelStyle: TextStyle(
@@ -529,7 +546,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                     ),
                   ),
                   style: TextStyle(color: Pallete.textColor),
-                  onTap: () => _selectDate(context),
+                  onTap: () => _selectDateTime(context),
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
                       return 'Please select a date';

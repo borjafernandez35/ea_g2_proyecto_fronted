@@ -7,12 +7,14 @@ import 'package:intl/intl.dart';
 class ActivityCard extends StatelessWidget {
   final Activity activity;
   final Function(double, double) onUpdate;
+  final bool isPast;
 
-  const ActivityCard(
+  ActivityCard(
     this.onUpdate,
     this.activity, {
-    super.key,
-  });
+    Key? key,
+  }) : isPast = activity.date.isBefore(DateTime.now()),
+       super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,26 +22,26 @@ class ActivityCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Card(
-          color: Pallete.backgroundColor,
-          surfaceTintColor: Pallete.accentColor,
+          color: isPast ? Pallete.backgroundColor.withOpacity(0.5) : Pallete.backgroundColor,
+          surfaceTintColor: Pallete.accentColor.withOpacity(isPast ? 0.5 : 1.0),
           elevation: 5,
           margin: EdgeInsets.all(10),
           child: Row(
             children: [
               // Lado izquierdo: Imagen
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Container(
-                  width: 100,
-                  height: 100,
-                  child: ClipRRect(
-                    borderRadius:
-                        BorderRadius.circular(12), 
-                    child: Image.network(
-                      activity.imageUrl ??
-                          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
-                      fit: BoxFit.cover,
-                    ),
-                  )),
+                width: 100,
+                height: 100,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    activity.imageUrl ??
+                        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
               // Lado derecho: Título, Descripción y Valor
               Expanded(
                 child: Padding(
@@ -50,15 +52,18 @@ class ActivityCard extends StatelessWidget {
                       Text(
                         activity.name,
                         style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Pallete.textColor),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Pallete.textColor,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Description: ${activity.description}',
-                        style:
-                            TextStyle(fontSize: 14, color: Pallete.textColor),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Pallete.textColor,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -87,55 +92,46 @@ class ActivityCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       ListTile(
-                        
-                        trailing: Text(DateFormat('dd/MM/yyyy').format(activity.date),
+                        trailing: Text(
+                          DateFormat('dd/MM/yyyy hh:mm a').format(activity.date),
                           style: const TextStyle(fontSize: 15),
                         ),
                         subtitle: activity.location != null
                             ? FutureBuilder<String?>(
-                                future: onUpdate(activity.location!.latitude,
-                                    activity.location!.longitude),
+                                future: onUpdate(activity.location!.latitude, activity.location!.longitude),
                                 builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
                                     return Row(
                                       children: [
-                                        const Icon(Icons.location_on,
-                                            color: Colors.red, size: 17),
-                                        SizedBox(width: 4),
+                                        const Icon(Icons.location_on, color: Colors.red, size: 17),
+                                        const SizedBox(width: 4),
                                         Text(
                                           'Loading address...',
-                                          style: TextStyle(
-                                              color: Pallete.textColor),
+                                          style: TextStyle(color: Pallete.textColor),
                                         ),
                                       ],
                                     );
                                   } else if (snapshot.hasError) {
                                     return Row(
                                       children: [
-                                        const Icon(Icons.location_on,
-                                            color: Colors.red, size: 17),
+                                        const Icon(Icons.location_on, color: Colors.red, size: 17),
                                         const SizedBox(width: 4),
                                         Text(
                                           'Error getting the address',
-                                          style: TextStyle(
-                                              color: Pallete.textColor),
+                                          style: TextStyle(color: Pallete.textColor),
                                         ),
                                       ],
                                     );
                                   } else {
                                     return Row(
                                       children: [
-                                        const Icon(Icons.location_on,
-                                            color: Colors.red, size: 17),
+                                        const Icon(Icons.location_on, color: Colors.red, size: 17),
                                         const SizedBox(width: 4),
                                         Expanded(
                                           child: Text(
-                                            snapshot.data ??
-                                                'Address not found',
+                                            snapshot.data ?? 'Address not found',
                                             overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                                color: Pallete.textColor),
+                                            style: TextStyle(color: Pallete.textColor),
                                           ),
                                         ),
                                       ],

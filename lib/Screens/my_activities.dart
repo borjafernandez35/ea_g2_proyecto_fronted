@@ -14,7 +14,6 @@ import 'package:spotfinder/Widgets/activity_card.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:http/http.dart' as http;
 
-
 late ActivityService activityService;
 
 class MyActivities extends StatefulWidget {
@@ -36,9 +35,27 @@ class _MyActivities extends State<MyActivities> {
   }
 
   void getData() async {
+    List<Activity> fetchedActivities = [];
+    List<Activity> pendingActivities = [];
+    List<Activity> pastActivities = [];
+
     try {
-      lista_activities = await activityService.getUserActivities();
+      fetchedActivities = await activityService.getUserActivities();
+
+      DateTime now = DateTime.now();
+      for (var activity in fetchedActivities) {
+        if (activity.date.isAfter(now)) {
+          pendingActivities.add(activity);
+        } else {
+          pastActivities.add(activity);
+        }
+      }
+
+      pendingActivities.sort((a, b) => a.date.compareTo(b.date));
+      pastActivities.sort((a, b) => b.date.compareTo(a.date));
       setState(() {
+        lista_activities = [...pendingActivities, ...pastActivities];
+
         isLoading = false;
       });
     } catch (error) {
@@ -53,8 +70,10 @@ class _MyActivities extends State<MyActivities> {
     }
   }
 
-   Future<String?> getAddressFromCoordinates(double latitude, double longitude) async {
-    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+  Future<String?> getAddressFromCoordinates(
+      double latitude, double longitude) async {
+    final url =
+        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -66,7 +85,8 @@ class _MyActivities extends State<MyActivities> {
           final road = address['road'] ?? '';
           final houseNumber = address['house_number'] ?? '';
           final postcode = address['postcode'] ?? '';
-          final city =address['city'] ?? address['town'] ?? address['village'] ?? '';
+          final city =
+              address['city'] ?? address['town'] ?? address['village'] ?? '';
           final country = address['country'] ?? '';
 
           List<String> parts = [];
@@ -88,7 +108,6 @@ class _MyActivities extends State<MyActivities> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -96,47 +115,70 @@ class _MyActivities extends State<MyActivities> {
     } else {
       return Scaffold(
         appBar: AppBar(
-        title: Text(
-          'My activities',
-          style: TextStyle(
-            color: Pallete.textColor,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(
-              Icons.arrow_back,
+          title: Text(
+            'My activities',
+            style: TextStyle(
               color: Pallete.textColor,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
             ),
-            onPressed: () {
-              Get.to(() => HomePage(initialIndex: 3));
-            },
+          ),
+          backgroundColor: Colors.transparent,
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: Pallete.textColor,
+              ),
+              onPressed: () {
+                Get.to(() => HomePage(initialIndex: 3));
+              },
+            ),
           ),
         ),
-      ),
-        body: ListView.builder(
-          itemBuilder: (BuildContext context, int index) {
-            return Card(
-              color: Pallete.primaryColor,
-              child: InkWell(
-                onTap: () {
-                  print(lista_activities[index]);
-                  Get.to(() => EditActivity(lista_activities[index], onUpdate: getData));
+        body: lista_activities.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'You have not created any activities yet',
+                    style: TextStyle(
+                      color: Pallete.textColor.withOpacity(0.5),
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              )
+            : ListView.builder(
+                itemBuilder: (BuildContext context, int index) {
+                  bool isPast =
+                      lista_activities[index].date.isBefore(DateTime.now());
+                  return Card(
+                    color: isPast
+                        ? Pallete.primaryColor.withOpacity(0.1)
+                        : Pallete.primaryColor,
+                    child: InkWell(
+                      onTap: () {
+                        print(lista_activities[index]);
+                        Get.to(() => EditActivity(lista_activities[index],
+                            onUpdate: getData));
+                      },
+                      child: ActivityCard(
+                          getAddressFromCoordinates, lista_activities[index]),
+                    ),
+                  );
                 },
-                child: ActivityCard(getAddressFromCoordinates,lista_activities[index]),
+                itemCount: lista_activities.length,
               ),
-            );
-          },
-          itemCount: lista_activities.length,
-        ),
         floatingActionButton: Tooltip(
           message: 'Add new activity',
           child: FloatingActionButton(
             backgroundColor: Pallete.textColor,
-            child: Icon(Icons.add, color: Pallete.accentColor,),
+            child: Icon(
+              Icons.add,
+              color: Pallete.accentColor,
+            ),
             onPressed: () {
               Get.to(() => NewActivityScreen(onUpdate: getData));
             },

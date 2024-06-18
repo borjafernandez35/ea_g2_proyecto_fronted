@@ -61,8 +61,10 @@ class _HistoryState extends State<HistoryPage> {
     });
   }
 
-  Future<String?> _getAddressFromCoordinates(double latitude, double longitude) async {
-    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+  Future<String?> _getAddressFromCoordinates(
+      double latitude, double longitude) async {
+    final url =
+        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -110,45 +112,53 @@ class _HistoryState extends State<HistoryPage> {
             style: TextStyle(color: Pallete.textColor),
           ),
         ),
-      body: SingleChildScrollView(
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: listaActivities.length,
-          itemBuilder: (BuildContext context, int index) {
-            bool isPast = listaActivities[index].date.isBefore(DateTime.now());
-            return GestureDetector(
-              onTap: () {
-                // Navigate to activity details page
-                Get.toNamed(
-                  '/activity/${listaActivities[index].id}',
-                  arguments: {'onUpdate': getData},
-                );
-              },
-              child: Stack(
-                children: [
-                  Card(
-                    color: Pallete.primaryColor,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ActivityCard(_getAddressFromCoordinates, listaActivities[index]),
-                      ],
+        body: SingleChildScrollView(
+          child: listaActivities.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'You have not participated or signed up for any activities yet',
+                      style: TextStyle(
+                        color: Pallete.textColor.withOpacity(0.5),
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                  if (isPast)
-                  Positioned.fill(
-                    child: Card(
-                      color: Pallete.textColor.withOpacity(0.2),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: listaActivities.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    bool isPast =
+                        listaActivities[index].date.isBefore(DateTime.now());
+                    Color cardColor = isPast
+                        ? Pallete.primaryColor.withOpacity(0.1)
+                        : Pallete.primaryColor;
+                    return Card(
+                      color: cardColor,
+                      child: InkWell(
+                        onTap: () {
+                          Get.toNamed(
+                            '/activity/${listaActivities[index].id}',
+                            arguments: {'onUpdate': getData},
+                          );
+                          listaActivities = [];
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ActivityCard(_getAddressFromCoordinates,
+                                listaActivities[index])
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
         ),
-      ),
-    );
+      );
+    }
   }
-
-  }
-  }
+}

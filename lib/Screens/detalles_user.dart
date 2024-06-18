@@ -23,6 +23,7 @@ class UserDetailsPage extends StatefulWidget {
 
 class _UserDetailsPageState extends State<UserDetailsPage> {
   final UpdateScreenController controller = Get.put(UpdateScreenController());
+  bool _isEditing = false;
 
   @override
   void initState() {
@@ -60,9 +61,34 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         iconTheme: IconThemeData(color: Pallete.textColor),
         title: Text(
           'User details',
-          style: TextStyle(
-              color: Pallete.textColor), // Color del texto del app bar
+          style: TextStyle(color: Pallete.textColor),
         ),
+        actions: [
+          if (!_isEditing)
+            IconButton(
+              icon: Icon(
+                Icons.edit,
+                color: Pallete.textColor,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isEditing = true;
+                });
+              },
+            )
+          else
+            IconButton(
+              icon: Icon(
+                Icons.cancel,
+                color: Pallete.textColor,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isEditing = false;
+                });
+              },
+            ),
+        ],
       ),
       backgroundColor: Pallete.backgroundColor,
       body: SingleChildScrollView(
@@ -74,11 +100,13 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             ParamTextBox(
               controller: controller.nombreController,
               text: 'Name',
+              editable: _isEditing,
             ),
             SizedBox(height: 15),
             ParamTextBox(
               controller: controller.mailController,
               text: 'E-Mail',
+              editable: _isEditing,
             ),
             Visibility(
               visible: controller.invalid,
@@ -98,9 +126,11 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                   child: Obx(
                     () => DropdownButtonFormField<String>(
                       value: controller.selectedPrefix.value,
-                      onChanged: (String? newValue) {
-                        controller.selectedPrefix.value = newValue!;
-                      },
+                      onChanged: _isEditing
+                          ? (String? newValue) {
+                              controller.selectedPrefix.value = newValue!;
+                            }
+                          : null,
                       items: PhoneUtils.phonePrefixes
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
@@ -116,13 +146,28 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                       decoration: InputDecoration(
                         labelText: 'Prefix',
                         labelStyle: TextStyle(
-                          color:
-                              Pallete.paleBlueColor, // Color del texto del label
+                          color: Pallete.paleBlueColor,
                         ),
-                        border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Pallete
+                                .paleBlueColor, 
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: _isEditing
+                                ? Pallete.accentColor.withOpacity(0.8)
+                                : Pallete.accentColor.withOpacity(0.2),
+                          ),
+                        ),
                       ),
-                      icon: Icon(Icons.arrow_drop_down,
-                          color: Pallete.accentColor), // Color de la flecha de desplegar
+                      icon: Icon(
+                        Icons.arrow_drop_down,
+                        color: _isEditing
+                            ? Pallete.accentColor.withOpacity(0.8)
+                            : Pallete.accentColor.withOpacity(0.3),
+                      ),
                     ),
                   ),
                 ),
@@ -136,6 +181,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[\d\s]')),
                     ],
+                    editable: _isEditing,
                   ),
                 ),
               ],
@@ -146,47 +192,47 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 Expanded(
                   child: ParamTextBox(
                     controller: controller.cumpleController,
-                    text: ('Birthdate'),
-                    editable: false,
+                    text: 'Birthdate',
+                    editable: _isEditing,
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.calendar_today,
-                      color: Pallete.paleBlueColor), 
-                  onPressed: () => controller.selectDate(context),
+                  icon:
+                      Icon(Icons.calendar_today, color: Pallete.paleBlueColor),
+                  onPressed:
+                      _isEditing ? () => controller.selectDate(context) : null,
                 ),
               ],
             ),
-            SizedBox(height: 15),
+            const SizedBox(height: 15),
             ParamTextBox(
               controller: controller.generoController,
               text: 'Gender',
+              editable: _isEditing,
             ),
-            SizedBox(height: 40),
-            Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    controller.updateUser(widget.user);
-                    widget.onUpdate();
-                  },
-                  child: const Text('Update'),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Pallete.accentColor,
-                  ),
-                ),
-                SizedBox(width: 25),
-                ElevatedButton(
-                  onPressed: () => _confirmDeleteAccount(context),
-                  child: const Text('Delete account'),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Pallete.salmonColor,
-                  ),
-                ),
-              ],
-            )
+            const SizedBox(height: 40),
+            Center(
+              child: _isEditing
+                  ? ElevatedButton(
+                      onPressed: () {
+                        controller.updateUser(widget.user);
+                        widget.onUpdate();
+                      },
+                      child: const Text('Update'),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Pallete.accentColor,
+                      ),
+                    )
+                  : ElevatedButton(
+                      onPressed: () => _confirmDeleteAccount(context),
+                      child: const Text('Delete account'),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Pallete.salmonColor,
+                      ),
+                    ),
+            ),
           ],
         ),
       ),
@@ -321,7 +367,8 @@ class UpdateScreenController extends GetxController {
             messageText: Text(
               'Error sending user to backend: $error',
               style: TextStyle(
-                  color: Pallete.backgroundColor), // Cambia el color del mensaje
+                  color:
+                      Pallete.backgroundColor), // Cambia el color del mensaje
             ),
           );
         });

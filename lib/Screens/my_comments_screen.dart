@@ -45,7 +45,7 @@ class _MyCommentsScreen extends State<MyCommentsScreen> {
     List<Comment> fetchedComments = [];
     for (var com in comments_id) {
       Comment comment = await commentService.getComment(com);
-      fetchedComments.add(comment);     
+      fetchedComments.add(comment);
     }
     setState(() {
       lista_comments = fetchedComments;
@@ -140,28 +140,41 @@ class _MyCommentsScreen extends State<MyCommentsScreen> {
           iconTheme: IconThemeData(color: Pallete.textColor),
           title: Text(
             'My reviews',
-            style: TextStyle(
-                color: Pallete.textColor),
+            style: TextStyle(color: Pallete.textColor),
           ),
         ),
-        body: SingleChildScrollView(
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemBuilder: (BuildContext context, int index) {
-              return Card(
-                color: Pallete.backgroundColor,
-                child: CommentCard(
-                  activity: lista_activities[index],
-                  comment: lista_comments[index],
-                  onDelete: confirmDeleteComment,
-                  onUpdate: updateComment,
-                  index: index,
+        body: lista_comments.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'You have not written any reviews yet',
+                    style: TextStyle(
+                      color: Pallete.textColor.withOpacity(0.5),
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              );
-            },
-            itemCount: lista_comments.length,
-          ),
-        ),
+              )
+            : SingleChildScrollView(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Card(
+                      color: Pallete.backgroundColor,
+                      child: CommentCard(
+                        activity: lista_activities[index],
+                        comment: lista_comments[index],
+                        onDelete: confirmDeleteComment,
+                        onUpdate: updateComment,
+                        index: index,
+                      ),
+                    );
+                  },
+                  itemCount: lista_comments.length,
+                ),
+              ),
       );
     }
   }
