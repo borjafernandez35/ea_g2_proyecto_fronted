@@ -185,29 +185,38 @@ class SignInService {
     }
   }
 
-  Future<bool> checkIfRegistered(String email) async {
-    try {
-      final response = await dio.get('$baseUrl/user/check-email/$email');
+Future<bool> checkIfRegistered(String email) async {
+  try {
+    final response = await Dio().get('$baseUrl/user/check-email/$email');
 
-      print(
-          'laaaaa rrrrrreeeeeeeesssspuesta eeeeesssssss :~$response, ye status code!!!!!${response.statusCode}, lleeeeevvvaaa estos datos: ${response.data}');
+    print('La respuesta es: $response, status code: ${response.statusCode}, datos: ${response.data}');
 
-      if (response.statusCode == 200) {
-        print("Response data type: ${response.data.runtimeType}");
-        final Map<String, dynamic> data = response.data;
-        print(
-            'lllllllllllllllllllllloooooooooooooooooooooosssssssss daaaaaaaattttoooooooooossssss: $data');
-        final bool isRegistered = data['isRegistered'];
-        print(
-            'RRRREEEEEEEEGGGGGGGIIIIIIISSSSSTTTTTRRRRRRRAAAAADDDDOOOOOO?????? $isRegistered');
-        return isRegistered;
+    if (response.statusCode == 200) {
+      // Parsea la respuesta como un objeto JSON
+      final dynamic responseData = response.data;
+
+      if (responseData is Map<String, dynamic>) {
+        print('Los datos: $responseData');
+
+        if (responseData.containsKey('isEmailRegistered')) {
+          final bool isRegistered = responseData['isEmailRegistered'];
+          print('Registrado? $isRegistered');
+          return isRegistered;
+        } else {
+          print('La clave "isEmailRegistered" está ausente en los datos de la respuesta.');
+          throw Exception('Datos de respuesta inválidos: falta "isEmailRegistered"');
+        }
       } else {
-        throw Exception(
-            'Failed to check registration status: ${response.statusCode}');
+        print('La respuesta no es un mapa válido.');
+        throw Exception('Datos de respuesta inválidos');
       }
-    } catch (e) {
-      print('Error checking registration status: $e');
-      throw e;
+    } else {
+      throw Exception('No se pudo verificar el estado de registro: ${response.statusCode}');
     }
+  } catch (e) {
+    print('Error al verificar el estado de registro: $e');
+    throw e;
   }
+}
+
 }

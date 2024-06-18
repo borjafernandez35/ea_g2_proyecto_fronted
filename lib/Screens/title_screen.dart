@@ -105,6 +105,8 @@ class _TitleScreenState extends State<TitleScreen> {
       // Verificar si el usuario está registrado
       final isRegistered = await _signInService.checkIfRegistered(email);
 
+      Get.toNamed('/home');
+
       print('estoy registraaaaaaaadddoooooo????????$isRegistered');
 
       if (!isRegistered) {

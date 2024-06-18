@@ -41,7 +41,7 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
 
   // Función para enviar datos al backend usando dio
   Future<void> sendDataToBackend() async {
-    final String baseUrl = _signInService.baseUrl; // Reemplaza con tu URL base
+    const String baseUrl = 'http://127.0.0.1:3000';
 
     try {
       // Construir el cuerpo de la solicitud
@@ -53,21 +53,18 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
         'phone_number': _phoneController.text,
         'gender': _gender,
         'birthday': _birthdayController.text,
-        'image': _imageController,
+        'image': _imageController.text,
         // Otros campos según sea necesario
       };
+
+      print('Enviando datos al backend: $requestData');
+
 
       // Realizar la solicitud POST al backend usando dio
 
       final response = await dio.post(
-        '$baseUrl/user/Google',
+        '$baseUrl/user/google',
         data: requestData,
-        options: Options(
-          headers: {
-            'Content-Type': 'application/json',
-            // Puedes añadir otros headers según sea necesario
-          },
-        ),
       );
 
       if (response.statusCode == 201) {
@@ -80,11 +77,19 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
         print(errorMessage);
         throw Exception(errorMessage);
       }
-    } catch (e) {
-      print('Error creating user: $e');
-      // Mostrar un mensaje de error al usuario si es necesario
-      // Implementar manejo de errores según tus requerimientos
+    }  catch (e) {
+  if (e is DioError) {
+    print('Error creating user: ${e.message}');
+    if (e.response != null) {
+      print('Response status: ${e.response!.statusCode}');
+      print('Response data: ${e.response!.data}');
+    } else {
+      print('No response received.');
     }
+  } else {
+    print('Error creating user: $e');
+  }
+}
   }
 
   Future<void> _selectDate(BuildContext context) async {
