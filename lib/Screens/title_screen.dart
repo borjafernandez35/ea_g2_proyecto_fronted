@@ -127,12 +127,7 @@ class _TitleScreenState extends State<TitleScreen> {
           },
         );
       } else {
-        setState(() {
-          _token = _signInService.idToken ?? '';
-          print("que te voy a decir si yo acabo de llegar: ${_token}");
-        });
-
-        // Navigate to HomePage after successful sign-in
+        _signInService.logIn(email);
       }
     } catch (error) {
       print('Error signing in: $error');
