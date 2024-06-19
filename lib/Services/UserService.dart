@@ -3,6 +3,7 @@ import 'package:spotfinder/Models/UserModel.dart';
 import 'package:dio/dio.dart'; // Usa un prefijo 'Dio' para importar la clase Response desde Dio
 import 'package:get_storage/get_storage.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:spotfinder/Services/SignInService.dart';
 import 'package:spotfinder/Services/TokenService.dart';
 
 class UserService {
@@ -10,7 +11,10 @@ class UserService {
   final Dio dio = DioSingleton.instance;
   var statusCode;
   var data;
-  final TokenRefreshService tokenRefreshService = TokenRefreshService(); 
+  final TokenRefreshService tokenRefreshService = TokenRefreshService();
+  String idClient =
+      '125785942229-p83mg0gugi4cebkqos62m6q2l86jabkc.apps.googleusercontent.com'; 
+  late SignInService signInService = SignInService(clientId: idClient);
 
   UserService(){
         dio.interceptors.add(tokenRefreshService.dio.interceptors.first);
@@ -39,6 +43,7 @@ class UserService {
   }
 
   void logout() {
+    signInService.handleSignOut();
     final box = GetStorage();
     box.remove('token');
     box.remove('refresh_token');

@@ -1,9 +1,116 @@
 import 'package:flutter/gestures.dart';
+import 'package:google_identity_services_web/oauth2.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:spotfinder/Resources/pallete.dart';
+import 'package:spotfinder/Resources/sign_in_button.dart';
+import 'package:spotfinder/Services/SignInService.dart';
+import 'package:google_identity_services_web/id.dart';
+import 'package:google_identity_services_web/id.dart' as gis_id;
+import 'package:spotfinder/Screens/register_screen_google.dart';
 
-class TitleScreen extends StatelessWidget {
+late SignInService _signInService;
+
+const List<String> scopes = <String>[
+  'email',
+  'https://www.googleapis.com/auth/contacts.readonly',
+];
+
+class TitleScreen extends StatefulWidget {
+  @override
+  _TitleScreenState createState() => _TitleScreenState();
+}
+
+class _TitleScreenState extends State<TitleScreen> {
+  // late SignInService signInService;
+  GoogleSignInAccount? _currentUser;
+  bool _isAuthorized = false;
+  String email = '';
+  late TokenClient tokenClient;
+  late TokenClientConfig config;
+
+  String idClient =
+      '125785942229-p83mg0gugi4cebkqos62m6q2l86jabkc.apps.googleusercontent.com';
+
+  @override
+  void initState() {
+    super.initState();
+
+   
+    _signInService = SignInService(
+      clientId: idClient,
+    );
+
+    _signInService.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
+      setState(() {
+        gis_id.id.setLogLevel('debug');
+        gis_id.id.initialize(_signInService.idConfiguration);
+    
+        gis_id.id.prompt(_signInService.onPromptMoment);
+
+        _handleSignIn();
+        _currentUser = account;
+        
+      });
+    });
+
+    _signInService.signInSilently();
+  }
+
+  Future<void> _handleSignIn() async {
+    try {
+      await _signInService.handleSignIn();
+
+      email = _currentUser?.email ?? '';
+
+      final isRegistered = await _signInService.checkIfRegistered(email);
+
+      if (!isRegistered) {
+        print("skdjf");
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return RegisterGoogleScreen(
+              onRegistrationComplete: () async {
+                setState(() {
+                  _isAuthorized = true;
+                });
+                Navigator.of(context).pop();
+              },
+              currentUser: _currentUser,
+            );
+          },
+        );
+      } else {
+        await _signInService.logIn(email);
+        Get.offAllNamed("/home");
+      }
+    } catch (error) {
+      print('Error signing in: $error');
+    }
+  }
+
+  Future<void> _handleSignOut() async {
+    await _signInService.handleSignOut();
+    // Get.toNamed('/');
+  }
+
+  Widget _buildBody() {
+    final GoogleSignInAccount? user = _currentUser;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        const Text(
+          'Google sign in.',
+          style: TextStyle(color: Colors.white),
+        ),
+        buildSignInButton(
+          onPressed: _handleSignIn,
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +141,7 @@ class TitleScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     // Acción al presionar el botón
-                    Get.toNamed('/login',  arguments: {'id' : id});
+                    Get.toNamed('/login', arguments: {'id': id});
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Pallete
@@ -64,16 +171,19 @@ class TitleScreen extends StatelessWidget {
                       style: TextStyle(
                         color: Pallete.salmonColor,
                         fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline, // Subraya el texto "Sign up"
+                        decoration: TextDecoration
+                            .underline, // Subraya el texto "Sign up"
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                           Get.toNamed('/register',  arguments: {'id' : id});
+                          Get.toNamed('/register', arguments: {'id': id});
                         },
                     ),
                   ],
                 ),
               ),
+              const SizedBox(height: 40),
+              _buildBody(),
             ],
           ),
         ],

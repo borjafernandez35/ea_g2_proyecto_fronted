@@ -36,12 +36,20 @@ class _MapScreen extends State<MapScreen> {
   late TileLayer _tileLayer;
   double distance = 10000; 
   int limit = 10;
+  double selectedDistance = 5.0; // Distancia inicial seleccionada
+  String selectedSort = "Date";
+  final box = GetStorage();
 
   @override
   void initState() {
     super.initState();
     activityService = ActivityService();
     userService = UserService();
+    if(box.read('distance') == null){
+      box.write('distance', selectedDistance);
+    }else{
+      selectedDistance = box.read('distance');
+    }
     getData(null);
     setupMapTheme();
   }
@@ -102,9 +110,9 @@ class _MapScreen extends State<MapScreen> {
 
       List<Activity> activities;
       if (byName == null) {
-        activities = await getAllActivities(distance, limit);
+        activities = await getAllActivities(selectedDistance * 1000, limit);
       } else {
-        activities = await mapController.searchByName(distance, limit);
+        activities = await mapController.searchByName(selectedDistance * 1000, limit);
       }
 
       setState(() {
@@ -244,6 +252,16 @@ class _MapScreen extends State<MapScreen> {
     }
   }
 
+  void _onDistanceChanged(double? newDistance) {
+    if (newDistance != null) {
+      setState(() {
+        selectedDistance = newDistance;
+        box.write('distance', selectedDistance);
+        getData(null);
+      });
+    }
+  }
+
   Future<List<Activity>> getAllActivities(double distance, int limit) async {
     int page = 1;
     bool hasMore = true;
@@ -301,30 +319,61 @@ class _MapScreen extends State<MapScreen> {
           ),
           Align(
             alignment: Alignment.topCenter,
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    ParamTextBox(
-                      controller: mapController.searchBarController,
-                      text: 'Scaperoom...',
+            child: Padding(
+              padding: const EdgeInsets.only(top: 20.0),
+              child: Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ParamTextBox(
+                          controller: mapController.searchBarController,
+                          text: 'Scaperoom...',
+                        ),
+                        IconButton(
+                          icon: Icon(
+                              size: 40,
+                              color: Pallete.textColor,
+                              LineIcons.searchLocation),
+                          onPressed: () {
+                            getData("byName");
+                          },
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: Icon(
-                          size: 40,
-                          color: Pallete.textColor,
-                          LineIcons.searchLocation),
-                      onPressed: () {
-                        getData("byName");
-                      },
+                  ),
+                  Positioned(
+                    top: 0,
+                    right: 20,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                      decoration: BoxDecoration(
+                        color: Pallete.textColor,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<double>(
+                          value: selectedDistance,
+                          onChanged: _onDistanceChanged,
+                          dropdownColor: Pallete.textColor,
+                          style: TextStyle(color: Pallete.backgroundColor),
+                          items: <double>[5.0, 10.0, 20.0, 50.0, 100.0].map((double value) {
+                            return DropdownMenuItem<double>(
+                              value: value,
+                              child: Text(
+                                'Hasta $value km',
+                                style: TextStyle(color: Pallete.backgroundColor),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],

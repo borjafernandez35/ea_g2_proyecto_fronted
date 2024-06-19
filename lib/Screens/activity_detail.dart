@@ -564,8 +564,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                                 if (!isParticipating)
                                   SignUpButton(
                                     onPressed: () {
-                                      controllerActivityDetail
-                                          .joinActivity(activity.id);
+                                      controllerActivityDetail.joinActivity(activity.id);
                                       Get.to(const ActivityDetail());
                                     },
                                     text: 'Join',
@@ -573,9 +572,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                                 if (isParticipating)
                                   SignUpButton(
                                     onPressed: () {
-                                      controllerActivityDetail
-                                          .leaveActivity(activity.id);
-                                      Get.to(const ActivityDetail());
+                                      controllerActivityDetail.leaveActivity(activity.id);
+                                      Get.toNamed('/home');
                                     },
                                     text: 'Leave',
                                   ),

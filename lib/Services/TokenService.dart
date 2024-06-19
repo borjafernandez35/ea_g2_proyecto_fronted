@@ -11,6 +11,7 @@ class TokenRefreshService {
   TokenRefreshService() {
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
+
         options.headers['x-access-token'] = await _getToken();
         return handler.next(options);
       },
