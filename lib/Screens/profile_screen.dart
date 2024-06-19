@@ -13,7 +13,6 @@ import 'package:spotfinder/Services/UserService.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
-
 late UserService userService;
 User? user;
 
@@ -21,10 +20,10 @@ class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  _ProfileScreen createState() => _ProfileScreen();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreen extends State<ProfileScreen> {
   bool isLoading = true;
   int _selectedIndex = 0;
 
@@ -42,33 +41,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> getData() async {
-    await userService.getUser().then((retrievedUser) {
+    try {
+      final retrievedUser = await userService.getUser();
       setState(() {
         user = retrievedUser;
         isLoading = false;
       });
-    }).catchError((error) {
-      // Handle error
-      print("Error fetching user data: $error");
-    });
+    } catch (error) {
+      setState(() {
+        isLoading = false;
+      });
+      Get.snackbar(
+        'Error',
+        'Error fetching user data: $error',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Pallete.textColor,
+      );
+    }
   }
 
   Future<void> _pickImage() async {
-    final pickedImage =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    try {
+      final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
 
-    if (pickedImage != null) {
-      final bytes = await pickedImage.readAsBytes();
-      final url =
-          Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
-      final String filename =
-          'upload_${DateTime.now().millisecondsSinceEpoch}.png';
-      final request = http.MultipartRequest('POST', url)
-        ..fields['upload_preset'] = 'byxhgftn'
-        ..files.add(
-            http.MultipartFile.fromBytes('file', bytes, filename: filename));
+      if (pickedImage != null) {
+        final bytes = await pickedImage.readAsBytes();
+        final url = Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
+        final String filename = 'upload_${DateTime.now().millisecondsSinceEpoch}.png';
+        final request = http.MultipartRequest('POST', url)
+          ..fields['upload_preset'] = 'byxhgftn'
+          ..files.add(http.MultipartFile.fromBytes('file', bytes, filename: filename));
 
-      try {
         final response = await request.send();
 
         if (response.statusCode == 200) {
@@ -78,15 +82,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           user?.image = imageUrl;
 
-          userService.updateUser(user!).then((_) {
+          try {
+            await userService.updateUser(user!);
             getData();
-          }).catchError((error) {
+          } catch (error) {
             Get.snackbar(
               'Error',
               'Error sending user to backend: $error',
               snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red,
+              colorText: Pallete.textColor,
             );
-          });
+          }
         } else {
           Get.snackbar(
             'Error',
@@ -96,60 +103,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
             colorText: Pallete.textColor,
           );
         }
-      } catch (e) {
+      } else {
+        print('No se seleccionó ninguna imagen.');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Error unexpected: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Pallete.textColor,
+      );
+    }
+  }
+
+  Future<void> deleteImageFromUrl(String imageUrl) async {
+    try {
+      final String cloudName = 'dgwbrwvux';
+      final String apiKey = '388645541249985';
+      final String apiSecret = 'MTRqeAf4459Akl-4NwIbzYP0jCM';
+      final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+
+      final Uri uri = Uri.parse(imageUrl);
+      final segments = uri.pathSegments;
+      final String publicId = segments.last.split('.').first;
+
+      // Create the signature
+      final String signatureBase =
+          'public_id=$publicId&timestamp=$timestamp$apiSecret';
+      final String signature =
+          sha1.convert(utf8.encode(signatureBase)).toString();
+
+      final url =
+          Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/destroy');
+
+      final response = await http.post(
+        url,
+        body: {
+          'public_id': publicId,
+          'api_key': apiKey,
+          'timestamp': timestamp,
+          'signature': signature,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        user?.image = null;
+        await userService.updateUser(user!);
+        getData();
+      } else {
         Get.snackbar(
           'Error',
-          'Error unexpected: $e',
+          'Error removing image',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Pallete.textColor,
         );
       }
-    } else {
-      print('No se seleccionó ninguna imagen.');
-    }
-  }
-
-  Future<void> deleteImageFromUrl(String imageUrl) async {
-    final String cloudName = 'dgwbrwvux';
-    final String apiKey = '388645541249985';
-    final String apiSecret = 'MTRqeAf4459Akl-4NwIbzYP0jCM';
-    final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-
-    final Uri uri = Uri.parse(imageUrl);
-    final segments = uri.pathSegments;
-    final String publicId = segments.last.split('.').first;
-
-    // Create the signature
-    final String signatureBase =
-        'public_id=$publicId&timestamp=$timestamp$apiSecret';
-    final String signature =
-        sha1.convert(utf8.encode(signatureBase)).toString();
-
-    final url =
-        Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/destroy');
-
-    final response = await http.post(
-      url,
-      body: {
-        'public_id': publicId,
-        'api_key': apiKey,
-        'timestamp': timestamp,
-        'signature': signature,
-      },
-    );
-
-    if (response.statusCode == 200) {
-      user?.image = null;
-      userService.updateUser(user!).then((_) {
-        getData();
-      }).catchError((error) {
-        Get.snackbar(
-          'Error',
-          'Error removing image',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      });
+    } catch (error) {
+      Get.snackbar(
+        'Error',
+        'Error removing image: $error',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Pallete.textColor,
+      );
     }
   }
 
@@ -186,11 +204,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _onItemTapped(int index) {
+    void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
