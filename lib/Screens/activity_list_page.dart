@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
+import 'package:get/get.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Screens/new_activity.dart';
-import 'package:get/get.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Widgets/activity_card.dart';
-import 'package:http/http.dart' as http;
 import 'package:spotfinder/Resources/pallete.dart';
 
 late ActivityService activityService;
@@ -21,7 +21,8 @@ class ActivityListPage extends StatefulWidget {
   _ActivityListPageState createState() => _ActivityListPageState();
 }
 
-class _ActivityListPageState extends State<ActivityListPage> with SingleTickerProviderStateMixin{
+class _ActivityListPageState extends State<ActivityListPage>
+    with SingleTickerProviderStateMixin {
   late List<Activity> listaActivities;
   late AnimationController _controller;
   late List<Activity> sortedActivities;
@@ -65,10 +66,12 @@ class _ActivityListPageState extends State<ActivityListPage> with SingleTickerPr
   @override
   void dispose() {
     _scrollController.dispose();
+    _controller.dispose(); // Dispose animation controller
     super.dispose();
   }
 
   void getData({int page = 1, int limit = 10}) async {
+    if (!mounted) return; // Check if the widget is still mounted
     setState(() {
       isLoading = true;
     });
@@ -81,12 +84,14 @@ class _ActivityListPageState extends State<ActivityListPage> with SingleTickerPr
       position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+      if (!mounted) return; // Check again if the widget is still mounted
       setState(() {
         listaActivities.addAll(activities);
         isLoading = false;
         hasMore = activities.length == limit;
       });
     } catch (error) {
+      if (!mounted) return; // Check if the widget is still mounted
       Get.snackbar(
         'Error',
         'No se han podido obtener los datos.',
@@ -100,6 +105,7 @@ class _ActivityListPageState extends State<ActivityListPage> with SingleTickerPr
 
   void _onDistanceChanged(double? newDistance) {
     if (newDistance != null) {
+      if (!mounted) return; // Check if the widget is still mounted
       setState(() {
         selectedDistance = newDistance;
         box.write('distance', selectedDistance);
@@ -112,6 +118,7 @@ class _ActivityListPageState extends State<ActivityListPage> with SingleTickerPr
 
   void _onSortChanged(String? newSort) {
     if (newSort != null) {
+      if (!mounted) return; // Check if the widget is still mounted
       setState(() {
         selectedSort = newSort;
         listaActivities = [];
@@ -157,7 +164,6 @@ class _ActivityListPageState extends State<ActivityListPage> with SingleTickerPr
       return null;
     }
   }
-
   @override
   Widget build(BuildContext context) {
     if (isLoading && listaActivities.isEmpty) {
