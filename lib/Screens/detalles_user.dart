@@ -9,6 +9,8 @@ import 'package:spotfinder/Utils/phone_utils.dart';
 import 'package:spotfinder/Widgets/paramTextBox_edit.dart';
 
 late UserService userService;
+bool _isEditing = false;
+
 
 class UserDetailsPage extends StatefulWidget {
   final User user;
@@ -23,7 +25,6 @@ class UserDetailsPage extends StatefulWidget {
 
 class _UserDetailsPageState extends State<UserDetailsPage> {
   final UpdateScreenController controller = Get.put(UpdateScreenController());
-  bool _isEditing = false;
 
   @override
   void initState() {
@@ -59,44 +60,46 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       appBar: AppBar(
         backgroundColor: Pallete.backgroundColor,
         iconTheme: IconThemeData(color: Pallete.textColor),
-        title: Text(
-          'User details',
-          style: TextStyle(color: Pallete.textColor),
-        ),
-        actions: [
-          if (!_isEditing)
-            IconButton(
-              icon: Icon(
-                Icons.edit,
-                color: Pallete.textColor,
-              ),
-              onPressed: () {
-                setState(() {
-                  _isEditing = true;
-                });
-              },
-            )
-          else
-            IconButton(
-              icon: Icon(
-                Icons.cancel,
-                color: Pallete.textColor,
-              ),
-              onPressed: () {
-                setState(() {
-                  _isEditing = false;
-                });
-              },
+        title: Row(
+          children: [
+            Text(
+              'User details',
+              style: TextStyle(color: Pallete.textColor),
             ),
-        ],
+            if (!_isEditing)
+              IconButton(
+                icon: Icon(
+                  Icons.edit,
+                  color: Pallete.textColor,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isEditing = true;
+                  });
+                },
+              )
+            else
+              IconButton(
+                icon: Icon(
+                  Icons.cancel,
+                  color: Pallete.textColor,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isEditing = false;
+                  });
+                },
+              ),
+          ],
+        ),
       ),
       backgroundColor: Pallete.backgroundColor,
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.all(30),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             ParamTextBox(
               controller: controller.nombreController,
               text: 'Name',
@@ -150,8 +153,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Pallete
-                                .paleBlueColor, 
+                            color: Pallete.paleBlueColor,
                           ),
                         ),
                         enabledBorder: OutlineInputBorder(
@@ -319,8 +321,7 @@ class UpdateScreenController extends GetxController {
         ),
         messageText: Text(
           'Empty fields',
-          style: TextStyle(
-              color: Pallete.textColor), 
+          style: TextStyle(color: Pallete.textColor),
         ),
       );
     } else {
@@ -337,6 +338,7 @@ class UpdateScreenController extends GetxController {
         );
         userService.updateUser(user).then((statusCode) {
           print('User successfully edited');
+          _isEditing = false;
           Get.snackbar(
             'Successful',
             'User edited!',
@@ -351,8 +353,7 @@ class UpdateScreenController extends GetxController {
             messageText: Text(
               'User edited!',
               style: TextStyle(
-                  color:
-                      Pallete.textColor), // Cambia el color del mensaje
+                  color: Pallete.textColor), // Cambia el color del mensaje
             ),
           );
         }).catchError((error) {
@@ -367,8 +368,7 @@ class UpdateScreenController extends GetxController {
             messageText: Text(
               'Error sending user to backend: $error',
               style: TextStyle(
-                  color:
-                      Pallete.textColor), // Cambia el color del mensaje
+                  color: Pallete.textColor), // Cambia el color del mensaje
             ),
           );
         });

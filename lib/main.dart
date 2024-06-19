@@ -1,5 +1,4 @@
 import 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -8,17 +7,21 @@ import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/activity_detail.dart';
 import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Screens/login_screen.dart';
+import 'package:spotfinder/Screens/profile_screen.dart';
 import 'package:spotfinder/Screens/register_screen.dart';
 import 'package:spotfinder/Screens/settingsScreen.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
+
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init(); // Espera la inicialización de GetStorage
+
+  // Inicializa GoogleSignIn
   final UserService userService = UserService();
-  final String? token = await userService.getToken();
+  String? token = await userService.getToken();
 
   setUrlStrategy(PathUrlStrategy());
 
@@ -39,34 +42,31 @@ class MyApp extends StatelessWidget {
     if (theme == null) {
       box.write('theme', "Light");
     }
-
+    getTheme(theme, font);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (token != null) {
-        if (Get.currentRoute != '/home' &&
-            !Get.currentRoute.contains('activity') &&
-            !Get.currentRoute.contains('settings')) {
+        if (!Get.currentRoute.contains('activity')) {
           Get.offAllNamed('/home');
         }
       }
     });
 
     return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'SpotFinder',
       theme: getTheme(theme, font),
-
       getPages: [
-        GetPage(name: '/', page: () => TitleScreen()),
-        GetPage(name: '/home', page: () => HomePage()),
-        GetPage(name: '/login', page: () => LoginScreen()),
-        GetPage(name: '/register', page: () => RegisterScreen()),
-        GetPage(name: '/settings', page: () => SettingsScreen()),
+        GetPage(name: '/', page: () => TitleScreen(), transition: Transition.fade,),
+        GetPage(name: '/home', page: () => HomePage(), transition: Transition.fade),
+        GetPage(name: '/login', page: () => LoginScreen(), transition: Transition.fade),
+        GetPage(name: '/register', page: () => RegisterScreen(), transition: Transition.fade),
         GetPage(
           name: '/activity/:id',
           page: () => ActivityDetail(),
           transition: Transition.fade,
         ),
       ],
-      initialRoute: token != null ? '/home' : '/',
+      initialRoute: '/',
     );
   }
 

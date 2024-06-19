@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Screens/edit_activity.dart';
-import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Screens/new_activity.dart'; // Importa la nueva pantalla
 import 'package:get/get.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
@@ -120,21 +119,9 @@ class _MyActivities extends State<MyActivities> {
             style: TextStyle(
               color: Pallete.textColor,
               fontSize: 24,
-              fontWeight: FontWeight.bold,
             ),
           ),
           backgroundColor: Colors.transparent,
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: Icon(
-                Icons.arrow_back,
-                color: Pallete.textColor,
-              ),
-              onPressed: () {
-                Get.to(() => HomePage(initialIndex: 3));
-              },
-            ),
-          ),
         ),
         body: lista_activities.isEmpty
             ? Center(
