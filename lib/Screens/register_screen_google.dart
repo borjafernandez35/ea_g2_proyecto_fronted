@@ -5,10 +5,8 @@ import 'dart:convert';
 import 'package:spotfinder/Services/SignInService.dart';
 import 'package:dio/dio.dart';
 import 'dart:math';
-import 'package:get/get.dart';
 
 
-late SignInService _signInService;
 
 // ignore: must_be_immutable
 class RegisterGoogleScreen extends StatefulWidget {
@@ -32,6 +30,12 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
   final _imageController = TextEditingController();
   String _gender = 'Male';
   final Dio dio = Dio();
+  
+
+       // ignore: prefer_final_fields
+       SignInService _signInService = SignInService(
+      clientId: '125785942229-p83mg0gugi4cebkqos62m6q2l86jabkc.apps.googleusercontent.com',
+    );
   //String _selectedPrefix = '+34';
 
 // Función para generar una contraseña aleatoria
@@ -80,7 +84,7 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
       _signInService.saveToken(token, refresh_token);
       _signInService.saveId(id);
 
-      Get.toNamed('/home');
+    
         // Llamar a la función de callback para indicar que el registro fue exitoso
         widget.onRegistrationComplete();
       } else {
