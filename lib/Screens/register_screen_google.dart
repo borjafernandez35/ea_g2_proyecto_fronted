@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:spotfinder/Services/SignInService.dart';
 import 'package:dio/dio.dart';
@@ -78,7 +79,7 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
       _signInService.saveToken(token, refresh_token);
       _signInService.saveId(id);
 
-    
+      Get.offAllNamed("/home");
         // Llamar a la función de callback para indicar que el registro fue exitoso
         widget.onRegistrationComplete();
       } else {

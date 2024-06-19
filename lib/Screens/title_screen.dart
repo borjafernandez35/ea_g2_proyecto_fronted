@@ -77,8 +77,6 @@ class _TitleScreenState extends State<TitleScreen> {
                   _isAuthorized = true;
                 });
                 Navigator.of(context).pop();
-                await _signInService.logIn(email);
-                Get.toNamed("/home");
               },
               currentUser: _currentUser,
             );
@@ -86,7 +84,7 @@ class _TitleScreenState extends State<TitleScreen> {
         );
       } else {
         await _signInService.logIn(email);
-        Get.toNamed("/home");
+        Get.offAllNamed("/home");
       }
     } catch (error) {
       print('Error signing in: $error');

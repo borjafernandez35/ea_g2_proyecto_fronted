@@ -43,11 +43,11 @@ class UserService {
   }
 
   void logout() {
+    signInService.handleSignOut();
     final box = GetStorage();
     box.remove('token');
     box.remove('refresh_token');
     box.remove('id');
-    signInService.handleSignOut();
   }
 
   //Función createUser

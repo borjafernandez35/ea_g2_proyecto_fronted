@@ -20,7 +20,7 @@ void main() async {
 
   // Inicializa GoogleSignIn
   final UserService userService = UserService();
-  final String? token = await userService.getToken();
+  String? token = await userService.getToken();  
 
   setUrlStrategy(PathUrlStrategy());
 
@@ -34,6 +34,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+  
     final box = GetStorage();
     String? font = box.read('font');
 
