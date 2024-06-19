@@ -42,69 +42,75 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Pallete.backgroundColor,
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Pallete.backgroundColor,
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 12,
-              color: Pallete.textColor.withOpacity(0.3),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 25, vertical: 8),
-            child: GNav(
-              tabBorderRadius: 10,
-              rippleColor: Colors.grey[300]!,
-              hoverColor: Colors.grey[100]!,
-              padding: EdgeInsets.all(10),
-              gap: 8,
-              activeColor: Pallete.salmonColor,
-              iconSize: 28,
-              tabBackgroundColor: Colors.grey[100]!,
-              color: Pallete.textColor,
-              tabs: [
-                GButton(
-                  iconColor: Pallete.textColor,
-                  icon: LineIcons.mapMarker,
-                  text: "Home",
-                ),
-                GButton(
-                  iconColor: Pallete.textColor,
-                  icon: LineIcons.hiking,
-                  text: "Activities",
-                ),
-                GButton(
-                  iconColor: Pallete.textColor,
-                  icon: LineIcons.comment,
-                  text: "Chats",
-                ),
-                GButton(
-                  iconColor: Pallete.textColor,
-                  icon: LineIcons.user,
-                  text: "Profile",
+      body: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Pallete.primaryColor,
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 12,
+                  color: Pallete.textColor.withOpacity(0.3),
                 ),
               ],
-              selectedIndex: _selectedIndex,
-              onTabChange: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-                if (index == 2) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ChatScreen()),
-                  );
-                }
-              },
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 25, vertical: 8),
+                child: GNav(
+                  tabBorderRadius: 10,
+                  rippleColor: Colors.grey[300]!,
+                  hoverColor: Colors.grey[100]!,
+                  padding: EdgeInsets.all(10),
+                  gap: 8,
+                  activeColor: Pallete.salmonColor,
+                  iconSize: 28,
+                  tabBackgroundColor: Colors.grey[100]!,
+                  color: Pallete.textColor,
+                  tabs: [
+                    GButton(
+                      iconColor: Pallete.textColor,
+                      icon: LineIcons.mapMarker,
+                      text: "Home",
+                    ),
+                    GButton(
+                      iconColor: Pallete.textColor,
+                      icon: LineIcons.hiking,
+                      text: "Activities",
+                    ),
+                    GButton(
+                      iconColor: Pallete.textColor,
+                      icon: LineIcons.comment,
+                      text: "Chats",
+                    ),
+                    GButton(
+                      iconColor: Pallete.textColor,
+                      icon: LineIcons.user,
+                      text: "Profile",
+                    ),
+                  ],
+                  selectedIndex: _selectedIndex,
+                  onTabChange: (index) {
+                    setState(() {
+                      _selectedIndex = index;
+                    });
+                    if (index == 2) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ChatScreen()),
+                      );
+                    }
+                  },
+                ),
+              ),
             ),
           ),
-        ),
+          Expanded(
+            child: Center(
+              child: _widgetOptions.elementAt(_selectedIndex),
+            ),
+          ),
+        ],
       ),
     );
   }

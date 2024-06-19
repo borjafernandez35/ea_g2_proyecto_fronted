@@ -146,22 +146,13 @@ class _ActivityListPageState extends State<ActivityListPage> {
     }
   }
 
-    @override
+  @override
   Widget build(BuildContext context) {
     if (isLoading && listaActivities.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     } else {
       return Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back,
-              color:Pallete.textColor, 
-            ),
-            onPressed: () {
-              Get.to(HomePage()); 
-            },
-          ),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

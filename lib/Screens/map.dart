@@ -324,13 +324,17 @@ class _MapScreen extends State<MapScreen> {
               child: Stack(
                 children: [
                   Align(
-                    alignment: Alignment.topCenter,
+                    alignment: Alignment.topLeft,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        ParamTextBox(
-                          controller: mapController.searchBarController,
-                          text: 'Scaperoom...',
+                        const SizedBox(width: 40),
+                        SizedBox(
+                          width: 400,  // Set the desired width here
+                          child: ParamTextBox(
+                            controller: mapController.searchBarController,
+                            text: 'Scaperoom...',
+                          ),
                         ),
                         IconButton(
                           icon: Icon(
