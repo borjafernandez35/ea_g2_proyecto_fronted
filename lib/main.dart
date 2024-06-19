@@ -10,9 +10,7 @@ import 'package:spotfinder/Screens/login_screen.dart';
 import 'package:spotfinder/Screens/register_screen.dart';
 import 'package:spotfinder/Screens/settingsScreen.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
-import 'package:spotfinder/Services/SignInService.dart';
 import 'package:spotfinder/Services/UserService.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
@@ -51,6 +49,8 @@ class MyApp extends StatelessWidget {
             !Get.currentRoute.contains('settings')) {
           Get.offAllNamed('/home');
         }
+      }else{
+        Get.offAllNamed("/");
       }
     });
 
@@ -70,7 +70,7 @@ class MyApp extends StatelessWidget {
           transition: Transition.fade,
         ),
       ],
-      initialRoute: token != null ? '/' : '/',
+      initialRoute: '/',
     );
   }
 

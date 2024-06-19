@@ -3,21 +3,11 @@ import 'package:google_identity_services_web/oauth2.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:spotfinder/Resources/jwt.dart';
 import 'package:spotfinder/Resources/pallete.dart';
-import 'package:spotfinder/Screens/home_page.dart';
-import 'package:spotfinder/Widgets/button_sign_in.dart';
-import 'package:spotfinder/Screens/login_screen.dart';
-import 'package:spotfinder/Screens/register_screen.dart';
-import 'package:get/get.dart';
 import 'package:spotfinder/Resources/sign_in_button.dart';
 import 'package:spotfinder/Services/SignInService.dart';
 import 'package:google_identity_services_web/id.dart';
-import 'package:google_identity_services_web/google_identity_services_web.dart'
-    as gis;
-import 'package:google_identity_services_web/id.dart';
 import 'package:google_identity_services_web/id.dart' as gis_id;
-import 'package:google_identity_services_web/oauth2.dart';
 import 'package:spotfinder/Screens/register_screen_google.dart';
 
 late SignInService _signInService;
@@ -36,8 +26,6 @@ class _TitleScreenState extends State<TitleScreen> {
   // late SignInService signInService;
   GoogleSignInAccount? _currentUser;
   bool _isAuthorized = false;
-  String _contactText = '';
-  String _token = '';
   String email = '';
   late TokenClient tokenClient;
   late TokenClientConfig config;
@@ -58,69 +46,47 @@ class _TitleScreenState extends State<TitleScreen> {
       setState(() {
         gis_id.id.setLogLevel('debug');
         gis_id.id.initialize(_signInService.idConfiguration);
-
-        //print("Que es TokenClient: ${tokenClient}");
-
-        
-
+    
         gis_id.id.prompt(_signInService.onPromptMoment);
 
         _handleSignIn();
-
-        print("Sirve para algo?????, ${account}");
-
         _currentUser = account;
-
         
       });
     });
-    print("He salido!!");
 
     _signInService.signInSilently();
-
-    //signInService.signIn();
   }
 
   Future<void> _handleSignIn() async {
     try {
       await _signInService.handleSignIn();
 
-      print(
-          'eeeeeeeeelllllllll cccccooooorrrrrreeeeeeoooooooooo!!!!!!! ${_currentUser!.email}');
       email = _currentUser?.email ?? '';
-      print(
-          'VAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMMMMMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOSSSSSSSS: $email');
 
-      // Verificar si el usuario está registrado
       final isRegistered = await _signInService.checkIfRegistered(email);
 
-      //Get.toNamed('/home');
-
-      print('estoy registraaaaaaaadddoooooo????????$isRegistered');
-
       if (!isRegistered) {
-        //Get.toNamed('/home');
-        // Mostrar el diálogo de registro
+        print("skdjf");
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return RegisterGoogleScreen(
-              onRegistrationComplete: () {
-                // Actualizar estado de autorización y cerrar el diálogo
+              onRegistrationComplete: () async {
                 setState(() {
                   _isAuthorized = true;
                 });
                 Navigator.of(context).pop();
+                await _signInService.logIn(email);
+                Get.toNamed("/home");
               },
               currentUser: _currentUser,
             );
           },
         );
       } else {
-        //Get.toNamed('/home');
-        print(
-            'ESTOOOOOOYYYYYYYYYY RRRRREEEEGIISSSTRADOOOOO LOGIIINNNN ALLLAAAAA VAAAAMMMMOOOSSS!!!! el email es : $email');
-        _signInService.logIn(email);
+        await _signInService.logIn(email);
+        Get.toNamed("/home");
       }
     } catch (error) {
       print('Error signing in: $error');
@@ -134,15 +100,18 @@ class _TitleScreenState extends State<TitleScreen> {
 
   Widget _buildBody() {
     final GoogleSignInAccount? user = _currentUser;
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          const Text('Google sign in.',style: TextStyle(color: Colors.white),),
-          buildSignInButton(
-            onPressed: _handleSignIn,
-          ),
-        ],
-      );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        const Text(
+          'Google sign in.',
+          style: TextStyle(color: Colors.white),
+        ),
+        buildSignInButton(
+          onPressed: _handleSignIn,
+        ),
+      ],
+    );
   }
 
   @override

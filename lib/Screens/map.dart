@@ -7,7 +7,6 @@ import 'package:spotfinder/Resources/pallete.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
-import 'package:spotfinder/Screens/activity_detail.dart';
 import 'package:spotfinder/Widgets/paramTextBox_sign_up.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:spotfinder/Services/ActivityService.dart';

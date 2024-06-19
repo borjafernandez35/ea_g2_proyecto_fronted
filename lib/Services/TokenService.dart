@@ -9,12 +9,9 @@ class TokenRefreshService {
   late String? _token;
 
   TokenRefreshService() {
-    print(
-        'ttttttooooookkkeeeeeeeeennnnnnnnnnnnnnnnnnnnnnnn!!!!!!!!!!!!!!!!!!!!!!!:${_getToken()}');
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        print(
-            'EEEEESSSSTTOOOOOOYYYYYYY DEEEEEEEENNNNNNNNNTTTTTRRRRRRROOOOOOOOOOOOOOOOOOO DEL REQUEEEEEEEEEEEEEEEEEEEEEEEEEEEEEESSSSSSSSSSSTTT!!!');
+
         options.headers['x-access-token'] = await _getToken();
         return handler.next(options);
       },

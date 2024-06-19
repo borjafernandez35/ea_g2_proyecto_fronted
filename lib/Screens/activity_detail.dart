@@ -8,8 +8,6 @@ import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Models/CommentModel.dart';
 import 'package:spotfinder/Models/UserModel.dart';
 import 'package:get/get.dart';
-import 'package:spotfinder/Screens/activity_list_page.dart';
-import 'package:spotfinder/Screens/map.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Services/CommentService.dart';
 import 'package:spotfinder/Services/UserService.dart';

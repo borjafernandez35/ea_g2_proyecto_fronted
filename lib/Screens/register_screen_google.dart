@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:spotfinder/Services/SignInService.dart';
 import 'package:dio/dio.dart';
 import 'dart:math';
+
+import 'package:spotfinder/Utils/phone_utils.dart';
 
 
 
@@ -29,6 +29,7 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
   final _birthdayController = TextEditingController();
   final _imageController = TextEditingController();
   String _gender = 'Male';
+  String _selectedPrefix = PhoneUtils.phonePrefixes[0];
   final Dio dio = Dio();
   
 
@@ -65,19 +66,12 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
         // Otros campos según sea necesario
       };
 
-      print('Enviando datos al backend: $requestData');
-
-      // Realizar la solicitud POST al backend usando dio
-
       final response = await dio.post(
         '$baseUrl/user/google',
         data: requestData,
       );
 
       if (response.statusCode == 201) {
-        var responseData = response.data;
-        print('User created successfully: $responseData');
-
             var token = response.data['token'];
       var refresh_token = response.data['refreshToken'];
       var id = response.data['id'];
@@ -134,7 +128,7 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('User do not Sign Up'),
+      title: Text('Sign Up'),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -160,15 +154,43 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
                   return null;
                 },
               ),
-              TextFormField(
-                controller: _phoneController,
-                decoration: InputDecoration(labelText: 'Phone number'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please, fill in your phone number';
-                  }
-                  return null;
-                },
+               Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedPrefix,
+                      decoration: InputDecoration(labelText: 'Prefix'),
+                      items: PhoneUtils.phonePrefixes.map((String prefix) {
+                        return DropdownMenuItem<String>(
+                          value: prefix,
+                          child: Text(prefix),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          _selectedPrefix = newValue!;
+                        });
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: TextFormField(
+                      controller: _phoneController,
+                      decoration: InputDecoration(labelText: 'Phone number'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please, fill in your phone number';
+                        }
+                        if (!PhoneUtils.validatePhoneNumber(value)) {
+                          return 'Invalid phone number';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
               ),
               DropdownButtonFormField<String>(
                 value: _gender,

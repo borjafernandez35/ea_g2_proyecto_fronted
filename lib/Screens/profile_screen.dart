@@ -309,19 +309,6 @@ class _ProfileScreen extends State<ProfileScreen> {
                             ),
                           ),
                         ),
-   /*                     SizedBox(height: 20.0),
-                        TextButton(
-                          onPressed: () {
-                            // Navegar a otra pantalla (puedes reemplazar esta función)
-                          },
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Preferences',
-                              style: TextStyle(color: Pallete.accentColor),
-                            ),
-                          ),
-                        ), */
                         SizedBox(height: 20.0),
                         TextButton(
                           onPressed: () {

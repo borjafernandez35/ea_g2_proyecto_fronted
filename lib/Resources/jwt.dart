@@ -24,17 +24,12 @@ String idToken = '';
 Map<String, Object?>? decodePayload(String? token) {
   if (token != null) {
     idToken = token;
-    print("el token es....:${token}");
     final RegExpMatch? match = _jwtTokenRegexp.firstMatch(token);
-    if (match != null) {
-      print("estoy aqui solito con este TOKEN: ${idToken}");
-      
+    if (match != null) {      
 
       return _decodeJwtPayload(match.namedGroup('payload'));
     }
   }
-  print("Estoy en jwt retornando idToken:${idToken}");
-
   return null;
 }
 
