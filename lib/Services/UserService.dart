@@ -13,7 +13,7 @@ class UserService {
   var data;
   final TokenRefreshService tokenRefreshService = TokenRefreshService();
   String idClient =
-      '125785942229-p83mg0gugi4cebkqos62m6q2l86jabkc.apps.googleusercontent.com'; 
+      '257534938006-c7hvo16718jppmasvep1oscbb5sa6398.apps.googleusercontent.com'; 
   late SignInService signInService = SignInService(clientId: idClient);
 
   UserService(){

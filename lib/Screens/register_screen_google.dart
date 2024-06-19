@@ -7,8 +7,6 @@ import 'dart:math';
 
 import 'package:spotfinder/Utils/phone_utils.dart';
 
-
-
 // ignore: must_be_immutable
 class RegisterGoogleScreen extends StatefulWidget {
   final VoidCallback onRegistrationComplete;
@@ -32,12 +30,12 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
   String _gender = 'Male';
   String _selectedPrefix = PhoneUtils.phonePrefixes[0];
   final Dio dio = Dio();
-  
 
-       // ignore: prefer_final_fields
-       SignInService _signInService = SignInService(
-      clientId: '125785942229-p83mg0gugi4cebkqos62m6q2l86jabkc.apps.googleusercontent.com',
-    );
+  // ignore: prefer_final_fields
+  SignInService _signInService = SignInService(
+    clientId:
+        '257534938006-c7hvo16718jppmasvep1oscbb5sa6398.apps.googleusercontent.com',
+  );
   //String _selectedPrefix = '+34';
 
 // Función para generar una contraseña aleatoria
@@ -73,13 +71,13 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
       );
 
       if (response.statusCode == 201) {
-            var token = response.data['token'];
-      var refresh_token = response.data['refreshToken'];
-      var id = response.data['id'];
-      _signInService.saveToken(token, refresh_token);
-      _signInService.saveId(id);
+        var token = response.data['token'];
+        var refresh_token = response.data['refreshToken'];
+        var id = response.data['id'];
+        _signInService.saveToken(token, refresh_token);
+        _signInService.saveId(id);
 
-      Get.offAllNamed("/home");
+        Get.offAllNamed("/home");
         // Llamar a la función de callback para indicar que el registro fue exitoso
         widget.onRegistrationComplete();
       } else {
@@ -155,7 +153,7 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
                   return null;
                 },
               ),
-               Row(
+              Row(
                 children: [
                   Expanded(
                     flex: 1,

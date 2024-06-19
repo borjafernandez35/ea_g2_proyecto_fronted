@@ -31,7 +31,7 @@ class _TitleScreenState extends State<TitleScreen> {
   late TokenClientConfig config;
 
   String idClient =
-      '125785942229-p83mg0gugi4cebkqos62m6q2l86jabkc.apps.googleusercontent.com';
+      '257534938006-c7hvo16718jppmasvep1oscbb5sa6398.apps.googleusercontent.com';
 
   @override
   void initState() {
