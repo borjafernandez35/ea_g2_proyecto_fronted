@@ -67,39 +67,12 @@ class _ActivityListPageState extends State<ActivityListPage> {
       isLoading = true;
     });
     try {
-      List<Activity> activities = await activityService.getData(selectedDistance * 1000, page, limit); // Filtrar por distancia
+      List<Activity> activities = await activityService.getData(selectedDistance * 1000, page, limit, selectedSort); // Filtrar por distancia
       position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      switch (selectedSort) {
-        case 'Date':
-          sortedActivities = activities.map((activity) => activity).toList()..sort((a, b) => a.date.compareTo(b.date));
-          break;
-        case 'Rate':
-          print("estas dentro");
-          sortedActivities = activities.map((activity) => activity).toList()..sort((a, b) => b.rate!.compareTo(a.rate!));
-          break;
-        case 'Proximity':
-          activities.sort((a, b) {
-            final double distanceA = Geolocator.distanceBetween(
-              position!.latitude,
-              position!.longitude,
-              a.location!.latitude,
-              a.location!.longitude,
-            );
-            final double distanceB = Geolocator.distanceBetween(
-              position!.latitude,
-              position!.longitude,
-              b.location!.latitude,
-              b.location!.longitude,
-            );
-            return distanceA.compareTo(distanceB);
-          });
-          sortedActivities = activities;
-          break;
-      }
       setState(() {
-        listaActivities.addAll(sortedActivities);
+        listaActivities.addAll(activities);
         isLoading = false;
         hasMore = activities.length == limit; 
       });

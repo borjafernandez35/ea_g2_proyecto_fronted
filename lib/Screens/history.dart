@@ -112,22 +112,22 @@ class _HistoryState extends State<HistoryPage> {
             style: TextStyle(color: Pallete.textColor),
           ),
         ),
-        body: SingleChildScrollView(
-          child: listaActivities.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'You have not participated or signed up for any activities yet',
-                      style: TextStyle(
-                        color: Pallete.textColor.withOpacity(0.5),
-                        fontSize: 16,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+        body: listaActivities.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'You have not participated or signed up for any activities yet',
+                  style: TextStyle(
+                    color: Pallete.textColor.withOpacity(0.5),
+                    fontSize: 16,
                   ),
-                )
-              : ListView.builder(
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          : SingleChildScrollView(
+              child:ListView.builder(
                   shrinkWrap: true,
                   itemCount: listaActivities.length,
                   itemBuilder: (BuildContext context, int index) {

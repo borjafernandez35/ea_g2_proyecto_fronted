@@ -33,6 +33,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   final MapController _mapController = MapController();
+  final TextEditingController _dateController = TextEditingController();
 
   String? _image;
   Uint8List? _imageBytes;
@@ -51,6 +52,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     _fetchUserId();
     _selectLocation();
     _setupMapTheme();
+    _dateController.text = DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate); 
   }
 
   Future<void> _fetchUserId() async {
@@ -164,32 +166,33 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   }
 
   Future<void> _selectDateTime(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
+  final DateTime? pickedDate = await showDatePicker(
+    context: context,
+    initialDate: _selectedDate,
+    firstDate: DateTime.now(),
+    lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+  );
+  if (pickedDate != null) {
+    final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+      initialTime: _selectedTime,
     );
-    if (pickedDate != null && pickedDate != _selectedDate) {
-      final TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: _selectedTime,
-      );
 
-      if (pickedTime != null && pickedTime != _selectedTime) {
-        setState(() {
-          _selectedDate = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
-            pickedTime.hour,
-            pickedTime.minute,
-          );
-          _selectedTime = pickedTime;
-        });
-      }
+    if (pickedTime != null) {
+      setState(() {
+        _selectedDate = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+        _selectedTime = pickedTime;
+        _dateController.text = DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate); 
+      });
     }
   }
+}
 
   Future<void> _selectLocation() async {
     try {
@@ -516,8 +519,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                 const SizedBox(height: 24),
                 TextFormField(
                   readOnly: true,
-                  controller: TextEditingController(
-                      text: DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate)),
+                  controller: _dateController,
                   decoration: InputDecoration(
                     labelText: 'Date',
                     labelStyle: TextStyle(

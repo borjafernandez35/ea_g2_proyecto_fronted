@@ -62,7 +62,7 @@ class _EditActivityState extends State<EditActivity> {
 
     _nameController.text = widget.activity.name;
     _descriptionController.text = widget.activity.description;
-    _selectedDate = widget.activity.date;
+    _selectedDate = widget.activity.date.toLocal();
     _selectedTime = TimeOfDay.fromDateTime(_selectedDate);
   }
 
@@ -268,7 +268,7 @@ class _EditActivityState extends State<EditActivity> {
       });
       widget.onUpdate();
       print('Actividad editada correctamente.');
-      Get.back();
+      Get.to(() => MyActivities());
     } else {
       print('Formulario inválido. No se puede enviar la actividad.');
     }

@@ -386,7 +386,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            DateFormat('hh:mm a').format(activity.date),
+                            DateFormat('hh:mm a').format(activity.date.toLocal()),
                             style: TextStyle(
                               color: Pallete.textColor,
                               fontWeight: FontWeight.bold,
@@ -723,7 +723,7 @@ class _ActivityDetail extends State<ActivityDetail> {
                                           .contentController,
                                       maxLines: 5,
                                       style: TextStyle(
-                                          color: Pallete.backgroundColor),
+                                          color: Pallete.textColor),
                                       decoration: InputDecoration(
                                         hintText: 'Enter content',
                                         filled: true,

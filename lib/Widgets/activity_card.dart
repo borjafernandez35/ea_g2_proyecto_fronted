@@ -93,7 +93,7 @@ class ActivityCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       ListTile(
                         trailing: Text(
-                          DateFormat('dd/MM/yyyy hh:mm a').format(activity.date),
+                          DateFormat('dd/MM/yyyy hh:mm a').format(activity.date.toLocal()),
                           style: const TextStyle(fontSize: 15),
                         ),
                         subtitle: activity.location != null

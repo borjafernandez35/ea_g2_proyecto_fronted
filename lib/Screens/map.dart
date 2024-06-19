@@ -250,7 +250,7 @@ class _MapScreen extends State<MapScreen> {
     List<Activity> allActivities = [];
 
     while (hasMore) {
-      List<Activity> activities = await activityService.getData(distance, page, limit);
+      List<Activity> activities = await activityService.getData(distance, page, limit, "Date");
       allActivities.addAll(activities);
 
       hasMore = activities.length == limit;
