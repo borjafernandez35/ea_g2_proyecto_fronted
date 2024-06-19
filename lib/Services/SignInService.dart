@@ -35,6 +35,8 @@ class SignInService {
   String _contactText = '';
   String _token = '';
   bool _isRegistered = false;
+  String idClient =
+      '125785942229-p83mg0gugi4cebkqos62m6q2l86jabkc.apps.googleusercontent.com';
 
 
   SignInService({required String clientId})
