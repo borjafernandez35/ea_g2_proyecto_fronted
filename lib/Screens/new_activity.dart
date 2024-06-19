@@ -52,7 +52,8 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
     _fetchUserId();
     _selectLocation();
     _setupMapTheme();
-    _dateController.text = DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate); 
+    _dateController.text =
+        DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate);
   }
 
   Future<void> _fetchUserId() async {
@@ -166,33 +167,61 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
   }
 
   Future<void> _selectDateTime(BuildContext context) async {
-  final DateTime? pickedDate = await showDatePicker(
-    context: context,
-    initialDate: _selectedDate,
-    firstDate: DateTime.now(),
-    lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
-  );
-  if (pickedDate != null) {
-    final TimeOfDay? pickedTime = await showTimePicker(
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialTime: _selectedTime,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
     );
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: _selectedTime,
+      );
 
-    if (pickedTime != null) {
-      setState(() {
-        _selectedDate = DateTime(
+      if (pickedTime != null) {
+        final DateTime pickedDateTime = DateTime(
           pickedDate.year,
           pickedDate.month,
           pickedDate.day,
           pickedTime.hour,
           pickedTime.minute,
         );
-        _selectedTime = pickedTime;
-        _dateController.text = DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate); 
-      });
+
+        if (pickedDateTime.isBefore(DateTime.now())) {
+          Get.snackbar(
+            'Error',
+            'The selected date and time cannot be earlier than the current date and time.',
+            snackPosition: SnackPosition.BOTTOM,
+            titleText: const Text(
+              'Error',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            messageText: Text(
+              'The selected date and time cannot be earlier than the current date and time. Please select a valid date and time.',
+              style: TextStyle(color: Pallete.textColor),
+            ),
+          );
+          setState(() {
+            _selectedDate = DateTime.now();
+            _selectedTime = TimeOfDay.fromDateTime(_selectedDate);
+            _dateController.text =
+                DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate);
+          });
+        } else {
+          setState(() {
+            _selectedDate = pickedDateTime;
+            _selectedTime = pickedTime;
+            _dateController.text =
+                DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate);
+          });
+        }
+      }
     }
   }
-}
 
   Future<void> _selectLocation() async {
     try {

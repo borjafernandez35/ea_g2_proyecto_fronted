@@ -320,7 +320,7 @@ class UpdateScreenController extends GetxController {
         messageText: Text(
           'Empty fields',
           style: TextStyle(
-              color: Pallete.backgroundColor), // Cambia el color del mensaje
+              color: Pallete.textColor), 
         ),
       );
     } else {
@@ -352,7 +352,7 @@ class UpdateScreenController extends GetxController {
               'User edited!',
               style: TextStyle(
                   color:
-                      Pallete.backgroundColor), // Cambia el color del mensaje
+                      Pallete.textColor), // Cambia el color del mensaje
             ),
           );
         }).catchError((error) {
@@ -368,7 +368,7 @@ class UpdateScreenController extends GetxController {
               'Error sending user to backend: $error',
               style: TextStyle(
                   color:
-                      Pallete.backgroundColor), // Cambia el color del mensaje
+                      Pallete.textColor), // Cambia el color del mensaje
             ),
           );
         });
@@ -384,7 +384,7 @@ class UpdateScreenController extends GetxController {
           messageText: Text(
             'Invalid email or phone number',
             style: TextStyle(
-                color: Pallete.backgroundColor), // Cambia el color del mensaje
+                color: Pallete.textColor), // Cambia el color del mensaje
           ),
         );
       }

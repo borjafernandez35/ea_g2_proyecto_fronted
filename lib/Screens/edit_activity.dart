@@ -33,6 +33,7 @@ class _EditActivityState extends State<EditActivity> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
   final MapController _mapController = MapController();
   ActivityService activityService = ActivityService();
 
@@ -53,17 +54,22 @@ class _EditActivityState extends State<EditActivity> {
     super.initState();
 
     _fetchUserId();
-    _selectLocation();
     activityService = ActivityService();
     _setupMapTheme();
     if (widget.activity.imageUrl != null) {
       _loadImage();
     }
 
+    _setInitialValues();
+  }
+
+  Future<void> _setInitialValues() async {
+    await  _selectLocation();
     _nameController.text = widget.activity.name;
     _descriptionController.text = widget.activity.description;
     _selectedDate = widget.activity.date.toLocal();
     _selectedTime = TimeOfDay.fromDateTime(_selectedDate);
+    _dateController.text = DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate);
   }
 
   Future<void> _fetchUserId() async {
@@ -192,34 +198,60 @@ class _EditActivityState extends State<EditActivity> {
     }
   }
 
-  Future<void> _selectDateTime(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
+Future<void> _selectDateTime(BuildContext context) async {
+  final DateTime? pickedDate = await showDatePicker(
+    context: context,
+    initialDate: _selectedDate,
+    firstDate: DateTime.now(),
+    lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+  );
+  if (pickedDate != null) {
+    final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+      initialTime: _selectedTime,
     );
 
-    if (pickedDate != null && pickedDate != _selectedDate) {
-      final TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: _selectedTime,
+    if (pickedTime != null) {
+      final DateTime pickedDateTime = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        pickedTime.hour,
+        pickedTime.minute,
       );
 
-      if (pickedTime != null && pickedTime != _selectedTime) {
+      if (pickedDateTime.isBefore(DateTime.now())) {
+        Get.snackbar(
+          'Error',
+          'The selected date and time cannot be earlier than the current date and time.',
+          snackPosition: SnackPosition.BOTTOM,
+          titleText: const Text(
+            'Error',
+            style: TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          messageText: Text(
+            'The selected date and time cannot be earlier than the current date and time. Please select a valid date and time.',
+            style: TextStyle(color: Pallete.textColor),
+          ),
+        );
         setState(() {
-          _selectedDate = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
-            pickedTime.hour,
-            pickedTime.minute,
-          );
+          _selectedDate = DateTime.now();
+          _selectedTime = TimeOfDay.fromDateTime(_selectedDate);
+          _dateController.text = DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate);
+        });
+      } else {
+        setState(() {
+          _selectedDate = pickedDateTime;
           _selectedTime = pickedTime;
+          _dateController.text = DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate);
         });
       }
     }
   }
+}
 
   Future<void> _selectLocation() async {
     try {
@@ -262,7 +294,7 @@ class _EditActivityState extends State<EditActivity> {
           ),
           messageText: Text(
             'Activity edited!',
-            style: TextStyle(color: Pallete.backgroundColor),
+            style: TextStyle(color: Pallete.textColor),
           ),
         );
       });
@@ -384,6 +416,7 @@ class _EditActivityState extends State<EditActivity> {
               onPressed: () {
                 setState(() {
                   _isEditing = !_isEditing;
+                  _setInitialValues();
                 });
               },
             ),
@@ -500,9 +533,7 @@ class _EditActivityState extends State<EditActivity> {
                 ),
                 const SizedBox(height: 24),
                 _buildTextField(
-                  controller: TextEditingController(
-                      text: DateFormat('dd/MM/yyyy hh:mm a')
-                          .format(_selectedDate)),
+                  controller: _dateController,
                   labelText: 'Date',
                   readOnly: true,
                   onTap: () {

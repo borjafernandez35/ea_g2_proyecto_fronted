@@ -94,7 +94,7 @@ class ActivityCard extends StatelessWidget {
                       ListTile(
                         trailing: Text(
                           DateFormat('dd/MM/yyyy hh:mm a').format(activity.date.toLocal()),
-                          style: const TextStyle(fontSize: 15),
+                          style: TextStyle(fontSize: 15, color: Pallete.textColor),
                         ),
                         subtitle: activity.location != null
                             ? FutureBuilder<String?>(
