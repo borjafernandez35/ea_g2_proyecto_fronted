@@ -40,33 +40,38 @@ class _ProfileScreen extends State<ProfileScreen> {
   }
 
   Future<void> getData() async {
-    await userService.getUser().then((retrievedUser) {
+    try {
+      final retrievedUser = await userService.getUser();
       setState(() {
         user = retrievedUser;
         isLoading = false;
       });
-    }).catchError((error) {
-      // Handle error
-      print("Error fetching user data: $error");
-    });
+    } catch (error) {
+      setState(() {
+        isLoading = false;
+      });
+      Get.snackbar(
+        'Error',
+        'Error fetching user data: $error',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Pallete.textColor,
+      );
+    }
   }
 
   Future<void> _pickImage() async {
-    final pickedImage =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    try {
+      final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
 
-    if (pickedImage != null) {
-      final bytes = await pickedImage.readAsBytes();
-      final url =
-          Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
-      final String filename =
-          'upload_${DateTime.now().millisecondsSinceEpoch}.png';
-      final request = http.MultipartRequest('POST', url)
-        ..fields['upload_preset'] = 'byxhgftn'
-        ..files.add(
-            http.MultipartFile.fromBytes('file', bytes, filename: filename));
+      if (pickedImage != null) {
+        final bytes = await pickedImage.readAsBytes();
+        final url = Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
+        final String filename = 'upload_${DateTime.now().millisecondsSinceEpoch}.png';
+        final request = http.MultipartRequest('POST', url)
+          ..fields['upload_preset'] = 'byxhgftn'
+          ..files.add(http.MultipartFile.fromBytes('file', bytes, filename: filename));
 
-      try {
         final response = await request.send();
 
         if (response.statusCode == 200) {
@@ -76,15 +81,18 @@ class _ProfileScreen extends State<ProfileScreen> {
 
           user?.image = imageUrl;
 
-          userService.updateUser(user!).then((_) {
+          try {
+            await userService.updateUser(user!);
             getData();
-          }).catchError((error) {
+          } catch (error) {
             Get.snackbar(
               'Error',
               'Error sending user to backend: $error',
               snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red,
+              colorText: Pallete.textColor,
             );
-          });
+          }
         } else {
           Get.snackbar(
             'Error',
@@ -94,61 +102,71 @@ class _ProfileScreen extends State<ProfileScreen> {
             colorText: Pallete.textColor,
           );
         }
-      } catch (e) {
+      } else {
+        print('No se seleccionó ninguna imagen.');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Error unexpected: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Pallete.textColor,
+      );
+    }
+  }
+
+  Future<void> deleteImageFromUrl(String imageUrl) async {
+    try {
+      final String cloudName = 'dgwbrwvux';
+      final String apiKey = '388645541249985';
+      final String apiSecret = 'MTRqeAf4459Akl-4NwIbzYP0jCM';
+      final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+
+      final Uri uri = Uri.parse(imageUrl);
+      final segments = uri.pathSegments;
+      final String publicId = segments.last.split('.').first;
+
+      // Create the signature
+      final String signatureBase =
+          'public_id=$publicId&timestamp=$timestamp$apiSecret';
+      final String signature =
+          sha1.convert(utf8.encode(signatureBase)).toString();
+
+      final url =
+          Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/destroy');
+
+      final response = await http.post(
+        url,
+        body: {
+          'public_id': publicId,
+          'api_key': apiKey,
+          'timestamp': timestamp,
+          'signature': signature,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        user?.image = null;
+        await userService.updateUser(user!);
+        getData();
+      } else {
         Get.snackbar(
           'Error',
-          'Error unexpected: $e',
+          'Error removing image',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Pallete.textColor,
         );
       }
-    } else {
-      print('No se seleccionó ninguna imagen.');
-    }
-  }
-
-
-  Future<void> deleteImageFromUrl(String imageUrl) async {
-    final String cloudName = 'dgwbrwvux';
-    final String apiKey = '388645541249985';
-    final String apiSecret = 'MTRqeAf4459Akl-4NwIbzYP0jCM';
-    final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-
-    final Uri uri = Uri.parse(imageUrl);
-    final segments = uri.pathSegments;
-    final String publicId = segments.last.split('.').first;
-
-    // Create the signature
-    final String signatureBase =
-        'public_id=$publicId&timestamp=$timestamp$apiSecret';
-    final String signature =
-        sha1.convert(utf8.encode(signatureBase)).toString();
-
-    final url =
-        Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/destroy');
-
-    final response = await http.post(
-      url,
-      body: {
-        'public_id': publicId,
-        'api_key': apiKey,
-        'timestamp': timestamp,
-        'signature': signature,
-      },
-    );
-
-    if (response.statusCode == 200) {
-      user?.image = null;
-      userService.updateUser(user!).then((_) {
-        getData();
-      }).catchError((error) {
-        Get.snackbar(
-          'Error',
-          'Error removing image',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      });
+    } catch (error) {
+      Get.snackbar(
+        'Error',
+        'Error removing image: $error',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Pallete.textColor,
+      );
     }
   }
 
@@ -192,201 +210,207 @@ class _ProfileScreen extends State<ProfileScreen> {
     } else {
       return Scaffold(
         backgroundColor: Pallete.backgroundColor,
-        body: Padding(
-          padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Sección de información del usuario
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(20.0),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        // Avatar y botón de edición
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Pallete.primaryColor,
-                          child: user?.image == null
-                              ? Icon(
-                                  Icons.person,
-                                  size: 70,
-                                  color: Pallete.paleBlueColor,
-                                )
-                              : ClipOval(
-                                  child: Image.network(
-                                    user!.image!,
-                                    fit: BoxFit.cover,
-                                    height: 100,
-                                    width: 100,
-                                  ),
-                                ),
-                        ),
-                        Positioned(
-                          bottom: -10,
-                          left: 50,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              shape: CircleBorder(),
-                              backgroundColor: Pallete.paleBlueColor,
-                              padding: EdgeInsets.all(8),
-                            ),
-                            onPressed: () {
-                              _showImageSourceActionSheet(context);
-                            },
-                            child: Icon(
-                              Icons.edit,
-                              color: Pallete.primaryColor,
-                              size: 24,
-                            ),
-                          ),
-                        ),
-                        // Texto del nombre del usuario
-                        Positioned(
-                          left: 140,
-                          top: 27,
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              user!.name,
-                              style: TextStyle(
-                                fontSize: 26.0,
-                                fontWeight: FontWeight.bold,
-                                color: Pallete.accentColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Botones de navegación
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
-                    child: Column(
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Sección de información del usuario
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        TextButton(
-                          onPressed: () {
-                            Get.to(() =>
-                                UserDetailsPage(user!, onUpdate: getData));
-                          },
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'My profile',
-                              style: TextStyle(color: Pallete.accentColor),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 20.0),
-                        TextButton(
-                          onPressed: () {
-                            Get.to(() => MyActivities());
-                          },
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'My activities',
-                              style: TextStyle(color: Pallete.accentColor),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 20.0),
-                        TextButton(
-                          onPressed: () {
-                            Get.to(() =>
-                                MyCommentsScreen(user!, onUpdate: getData));
-                          },
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'My reviews',
-                              style: TextStyle(color: Pallete.accentColor),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 20.0),
-                        TextButton(
-                          onPressed: () {
-                            Get.to(() => HistoryPage(user!));
-                          },
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'History',
-                              style: TextStyle(color: Pallete.accentColor),
-                            ),
-                          ),
-                        ), 
-                        SizedBox(height: 20.0),
-                        TextButton(
-                          onPressed: () {
-                            userService.logout();
-                            Get.to(() => TitleScreen());
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor:
-                                Pallete.salmonColor, // Color del texto
-                          ),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.exit_to_app, // Icono de log out
-                                  color: Pallete.salmonColor, // Color del icono
+                        Container(
+                          padding: EdgeInsets.all(20.0),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              // Avatar y botón de edición
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundColor: Pallete.primaryColor,
+                                child: user?.image == null
+                                    ? Icon(
+                                        Icons.person,
+                                        size: 70,
+                                        color: Pallete.paleBlueColor,
+                                      )
+                                    : ClipOval(
+                                        child: Image.network(
+                                          user!.image!,
+                                          fit: BoxFit.cover,
+                                          height: 100,
+                                          width: 100,
+                                        ),
+                                      ),
+                              ),
+                              Positioned(
+                                bottom: -10,
+                                left: 50,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    shape: CircleBorder(),
+                                    backgroundColor: Pallete.paleBlueColor,
+                                    padding: EdgeInsets.all(8),
+                                  ),
+                                  onPressed: () {
+                                    _showImageSourceActionSheet(context);
+                                  },
+                                  child: Icon(
+                                    Icons.edit,
+                                    color: Pallete.primaryColor,
+                                    size: 24,
+                                  ),
                                 ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Log out',
-                                  style: TextStyle(color: Pallete.salmonColor),
+                              ),
+                              // Texto del nombre del usuario
+                              Positioned(
+                                left: 140,
+                                top: 27,
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    user!.name,
+                                    style: TextStyle(
+                                      fontSize: 26.0,
+                                      fontWeight: FontWeight.bold,
+                                      color: Pallete.accentColor,
+                                    ),
+                                  ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Botones de navegación
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  Get.to(() =>
+                                      UserDetailsPage(user!, onUpdate: getData));
+                                },
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'My profile',
+                                    style: TextStyle(color: Pallete.accentColor),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 20.0),
+                              TextButton(
+                                onPressed: () {
+                                  Get.to(() => MyActivities());
+                                },
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'My activities',
+                                    style: TextStyle(color: Pallete.accentColor),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 20.0),
+                              TextButton(
+                                onPressed: () {
+                                  Get.to(() =>
+                                      MyCommentsScreen(user!, onUpdate: getData));
+                                },
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'My reviews',
+                                    style: TextStyle(color: Pallete.accentColor),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 20.0),
+                              TextButton(
+                                onPressed: () {
+                                  Get.to(() => HistoryPage(user!));
+                                },
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'History',
+                                    style: TextStyle(color: Pallete.accentColor),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 20.0),
+                              TextButton(
+                                onPressed: () {
+                                  userService.logout();
+                                  Get.to(() => TitleScreen());
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor:
+                                      Pallete.salmonColor, // Color del texto
+                                ),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.exit_to_app, // Icono de log out
+                                        color: Pallete.salmonColor, // Color del icono
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Log out',
+                                        style: TextStyle(color: Pallete.salmonColor),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
 
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
-                child: TextButton(
-                  onPressed: () async {
-                    final result = await Get.toNamed('/settings');
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
+                      child: TextButton(
+                        onPressed: () async {
+                          final result = await Get.toNamed('/settings');
 
-                    if (result == true) {
-                      setState(() {});
-                    }
-                  },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.all(12.0), // Padding del botón
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.settings, // Icono de configuración
-                        color: Pallete.textColor,
+                          if (result == true) {
+                            setState(() {});
+                          }
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.all(12.0), // Padding del botón
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.settings, // Icono de configuración
+                              color: Pallete.textColor,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Settings',
+                              style: TextStyle(color: Pallete.textColor),
+                              textAlign: TextAlign.left,
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Settings',
-                        style: TextStyle(color: Pallete.textColor),
-                        textAlign: TextAlign.left,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       );
     }
