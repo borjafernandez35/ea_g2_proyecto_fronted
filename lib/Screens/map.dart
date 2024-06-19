@@ -320,7 +320,7 @@ class _MapScreen extends State<MapScreen> {
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: const EdgeInsets.only(top: 20.0),
+              padding: const EdgeInsets.only(top: 10.0),
               child: Stack(
                 children: [
                   Align(
@@ -330,7 +330,7 @@ class _MapScreen extends State<MapScreen> {
                       children: [
                         const SizedBox(width: 40),
                         SizedBox(
-                          width: 400,  // Set the desired width here
+                          width: 350,  // Set the desired width here
                           child: ParamTextBox(
                             controller: mapController.searchBarController,
                             text: 'Scaperoom...',

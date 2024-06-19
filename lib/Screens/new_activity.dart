@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -374,7 +375,7 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 200.0),
           child: Form(
             key: _formKey,
             child: Column(
@@ -384,11 +385,12 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                   onTap: () {
                     _showImageSourceActionSheet(context);
                   },
-                  child: Column(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        height: 100,
+                        height: 150,
+                        width: 150,
                         decoration: BoxDecoration(
                           color: Pallete.primaryColor.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(12),
@@ -414,86 +416,104 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Activity Name',
-                    labelStyle: TextStyle(
-                      color: Pallete.textColor,
-                      fontWeight: FontWeight.bold,
+                Row(
+                  children: [
+                    SizedBox(
+                      height: 50,
+                      width: 500,
+                      child: TextFormField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Activity Name',
+                          labelStyle: TextStyle(
+                            color: Pallete.textColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          fillColor: Pallete.primaryColor.withOpacity(0.7),
+                          filled: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10.0, horizontal: 12.0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Pallete.textColor),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Pallete.textColor),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Pallete.salmonColor),
+                          ),
+                          floatingLabelStyle: TextStyle(
+                            color: Pallete.salmonColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: TextStyle(color: Pallete.textColor),
+                        validator: (String? value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter the activity name';
+                          }
+                          return null;
+                        },
+                      ),
                     ),
-                    fillColor: Pallete.primaryColor.withOpacity(0.7),
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 10.0, horizontal: 12.0),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Pallete.textColor),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Pallete.textColor),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Pallete.salmonColor),
-                    ),
-                    floatingLabelStyle: TextStyle(
-                      color: Pallete.salmonColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: TextStyle(color: Pallete.textColor),
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the activity name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: _descriptionController,
-                  maxLines: 5,
-                  decoration: InputDecoration(
-                    labelText: 'Description',
-                    labelStyle: TextStyle(
-                      color: Pallete.textColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    fillColor: Pallete.primaryColor.withOpacity(0.7),
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 10.0, horizontal: 12.0),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Pallete.textColor),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Pallete.textColor),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Pallete.salmonColor),
-                    ),
-                    floatingLabelStyle: TextStyle(
-                      color: Pallete.salmonColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: TextStyle(color: Pallete.textColor),
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a description';
-                    }
-                    return null;
-                  },
+                  ],
                 ),
                 const SizedBox(height: 24),
                 Row(
                   children: [
-                    Expanded(
+                    SizedBox(
+                      height: 135,
+                      width: 1200,
+                      child: TextFormField(
+                        controller: _descriptionController,
+                        maxLines: 5,
+                        decoration: InputDecoration(
+                          labelText: 'Description',
+                          labelStyle: TextStyle(
+                            color: Pallete.textColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          fillColor: Pallete.primaryColor.withOpacity(0.7),
+                          filled: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10.0, horizontal: 12.0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Pallete.textColor),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Pallete.textColor),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Pallete.salmonColor),
+                          ),
+                          floatingLabelStyle: TextStyle(
+                            color: Pallete.salmonColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: TextStyle(color: Pallete.textColor),
+                        validator: (String? value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a description';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    SizedBox(
+                      height: 50,
+                      width: 700,
                       child: TextFormField(
                         controller: _locationController,
                         decoration: InputDecoration(
@@ -546,132 +566,149 @@ class _NewActivityScreenState extends State<NewActivityScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                TextFormField(
-                  readOnly: true,
-                  controller: _dateController,
-                  decoration: InputDecoration(
-                    labelText: 'Date',
-                    labelStyle: TextStyle(
-                      color: Pallete.textColor,
-                      fontWeight: FontWeight.bold,
+                Row(
+                  children: [
+                    SizedBox(
+                      height: 50,
+                      width: 200,
+                      child: TextFormField(
+                        readOnly: true,
+                        controller: _dateController,
+                        decoration: InputDecoration(
+                          labelText: 'Date',
+                          labelStyle: TextStyle(
+                            color: Pallete.textColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          fillColor: Pallete.primaryColor.withOpacity(0.7),
+                          filled: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10.0, horizontal: 12.0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Pallete.textColor),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Pallete.textColor),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Pallete.salmonColor),
+                          ),
+                          floatingLabelStyle: TextStyle(
+                            color: Pallete.salmonColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: TextStyle(color: Pallete.textColor),
+                        onTap: () => _selectDateTime(context),
+                        validator: (String? value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a date';
+                          }
+                          return null;
+                        },
+                      ),
                     ),
-                    fillColor: Pallete.primaryColor.withOpacity(0.7),
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 10.0, horizontal: 12.0),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Pallete.textColor),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Pallete.textColor),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Pallete.salmonColor),
-                    ),
-                    floatingLabelStyle: TextStyle(
-                      color: Pallete.salmonColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: TextStyle(color: Pallete.textColor),
-                  onTap: () => _selectDateTime(context),
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a date';
-                    }
-                    return null;
-                  },
+                  ],
                 ),
                 const SizedBox(height: 24),
                 Visibility(
                   visible: _isMapVisible,
                   child: _locationLoaded
-                      ? Container(
-                          height: 300,
-                          child: Stack(
-                            children: [
-                              FlutterMap(
-                                mapController: _mapController,
-                                options: MapOptions(
-                                  initialCenter:
-                                      ltld.LatLng(_latitude, _longitude),
-                                  initialZoom: 12,
-                                  interactionOptions: const InteractionOptions(
-                                      flags: ~InteractiveFlag.doubleTapZoom),
-                                  onTap: (tapPosition, point) {
-                                    setState(() {
-                                      _latitude = point.latitude;
-                                      _longitude = point.longitude;
-                                      _locationController.text =
-                                          '$_latitude,$_longitude';
-                                    });
-                                    getAddressFromCoordinates(
-                                        _latitude, _longitude);
-                                  },
-                                ),
-                                children: [
-                                  _tileLayer,
-                                  MarkerLayer(
-                                    markers: [
-                                      Marker(
-                                        width: 80.0,
-                                        height: 80.0,
-                                        point:
-                                            ltld.LatLng(_latitude, _longitude),
-                                        child: const Icon(
-                                          Icons.location_on,
-                                          color: Colors.red,
-                                          size: 50.0,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Positioned(
-                                top: 20,
-                                left: 20,
-                                right: 20,
-                                child: Container(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 16.0),
-                                  decoration: BoxDecoration(
-                                    color: Pallete.backgroundColor,
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextFormField(
-                                          controller: _searchController,
-                                          decoration: const InputDecoration(
-                                            hintText: 'Search...',
-                                            border: InputBorder.none,
-                                          ),
-                                          style: TextStyle(
-                                              color: Pallete.textColor),
-                                        ),
-                                      ),
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.search,
-                                          color: Pallete.textColor,
-                                        ),
-                                        onPressed: () {
-                                          getCoordinatesFromAddress(
-                                              _searchController.text);
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                      ? Center(
+                        child: Container(
+                          height: 500,
+                          width: 800,  // Set the desired width
+                          decoration: BoxDecoration(
+                            color: Colors.white,  // Set a background color to see the rounded corners
+                            borderRadius: BorderRadius.circular(16.0),  // Set the radius to make corners round
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 12,
+                                color: Colors.black.withOpacity(0.3),
                               ),
                             ],
                           ),
-                        )
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16.0),  // Same radius to clip the child widget
+                            child: Stack(
+                              children: [
+                                FlutterMap(
+                                  mapController: _mapController,
+                                  options: MapOptions(
+                                    initialCenter: ltld.LatLng(_latitude, _longitude),
+                                    initialZoom: 12,
+                                    interactionOptions: const InteractionOptions(
+                                        flags: ~InteractiveFlag.doubleTapZoom),
+                                    onTap: (tapPosition, point) {
+                                      setState(() {
+                                        _latitude = point.latitude;
+                                        _longitude = point.longitude;
+                                        _locationController.text = '$_latitude,$_longitude';
+                                      });
+                                      getAddressFromCoordinates(_latitude, _longitude);
+                                    },
+                                  ),
+                                  children: [
+                                    _tileLayer,
+                                    MarkerLayer(
+                                      markers: [
+                                        Marker(
+                                          width: 80.0,
+                                          height: 80.0,
+                                          point: ltld.LatLng(_latitude, _longitude),
+                                          child: const Icon(
+                                            Icons.location_on,
+                                            color: Colors.red,
+                                            size: 50.0,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                Positioned(
+                                  top: 20,
+                                  left: 20,
+                                  right: 20,
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                                    decoration: BoxDecoration(
+                                      color: Pallete.backgroundColor,
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextFormField(
+                                            controller: _searchController,
+                                            decoration: const InputDecoration(
+                                              hintText: 'Search...',
+                                              border: InputBorder.none,
+                                            ),
+                                            style: TextStyle(color: Pallete.textColor),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.search,
+                                            color: Pallete.textColor,
+                                          ),
+                                          onPressed: () {
+                                            getCoordinatesFromAddress(_searchController.text);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
                       : const Center(child: CircularProgressIndicator()),
                 ),
                 Padding(
