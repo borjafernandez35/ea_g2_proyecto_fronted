@@ -1,5 +1,4 @@
 import 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -12,13 +11,16 @@ import 'package:spotfinder/Screens/register_screen.dart';
 import 'package:spotfinder/Screens/settingsScreen.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
+
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init(); // Espera la inicialización de GetStorage
+
+  // Inicializa GoogleSignIn
   final UserService userService = UserService();
-  final String? token = await userService.getToken();
+  String? token = await userService.getToken();  
 
   setUrlStrategy(PathUrlStrategy());
 
@@ -32,6 +34,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+  
     final box = GetStorage();
     String? font = box.read('font');
 
@@ -47,13 +51,15 @@ class MyApp extends StatelessWidget {
             !Get.currentRoute.contains('settings')) {
           Get.offAllNamed('/home');
         }
+      }else{
+        Get.offAllNamed("/");
       }
     });
 
     return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'SpotFinder',
       theme: getTheme(theme, font),
-
       getPages: [
         GetPage(name: '/', page: () => TitleScreen()),
         GetPage(name: '/home', page: () => HomePage()),
@@ -66,7 +72,7 @@ class MyApp extends StatelessWidget {
           transition: Transition.fade,
         ),
       ],
-      initialRoute: token != null ? '/home' : '/',
+      initialRoute: '/',
     );
   }
 
