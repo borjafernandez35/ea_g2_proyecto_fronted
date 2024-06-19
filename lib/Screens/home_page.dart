@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Resources/pallete.dart';
 import 'package:spotfinder/Screens/map.dart';
@@ -18,9 +19,12 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   static HomeController homeController = Get.put(HomeController());
   int _selectedIndex = 0;
+
+  late AnimationController _controller;
+  bool _showLogo = true;
 
   static final ltlg.LatLng defaultLocation =
       ltlg.LatLng(41.27552212202214, 1.9863014220734023);
@@ -36,6 +40,25 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
+
+    // Inicializar el AnimationController
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+
+    // Configurar el Timer para ocultar el logo después de 5 segundos
+    Timer(const Duration(seconds: 5), () {
+      setState(() {
+        _showLogo = false;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -58,7 +81,7 @@ class _HomePageState extends State<HomePage> {
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 25, vertical: 8),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start, // Align items to the left
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     GNav(
                       tabBorderRadius: 10,
@@ -112,7 +135,24 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             child: Center(
-              child: _widgetOptions.elementAt(_selectedIndex),
+              child: _selectedIndex == 0
+                  ? Stack(
+                      children: [
+                        _widgetOptions.elementAt(_selectedIndex),
+                        if (_showLogo)
+                          Center(
+                            child: RotationTransition(
+                              turns: _controller,
+                              child: Image.asset(
+                                'assets/spotfinder.png',
+                                width: 100,
+                                height: 100,
+                              ),
+                            ),
+                          ),
+                      ],
+                    )
+                  : _widgetOptions.elementAt(_selectedIndex),
             ),
           ),
         ],
