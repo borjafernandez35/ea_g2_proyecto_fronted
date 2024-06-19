@@ -22,13 +22,19 @@ class MyActivities extends StatefulWidget {
   _MyActivities createState() => _MyActivities();
 }
 
-class _MyActivities extends State<MyActivities> {
+class _MyActivities extends State<MyActivities>
+    with SingleTickerProviderStateMixin {
   late List<Activity> lista_activities;
   bool isLoading = true;
+  late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
     activityService = ActivityService();
     getData();
   }
@@ -108,9 +114,27 @@ class _MyActivities extends State<MyActivities> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return Center(
+        child: Container(
+          color: Pallete.backgroundColor,
+          child: RotationTransition(
+            turns: _controller,
+            child: Image.asset(
+              'assets/spotfinder.png',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
     } else {
       return Scaffold(
         appBar: AppBar(

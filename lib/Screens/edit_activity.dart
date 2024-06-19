@@ -27,7 +27,8 @@ class EditActivity extends StatefulWidget {
   _EditActivityState createState() => _EditActivityState();
 }
 
-class _EditActivityState extends State<EditActivity> {
+class _EditActivityState extends State<EditActivity>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -36,6 +37,7 @@ class _EditActivityState extends State<EditActivity> {
   final TextEditingController _dateController = TextEditingController();
   final MapController _mapController = MapController();
   ActivityService activityService = ActivityService();
+  late AnimationController _controller;
 
   String? _image;
   Uint8List? _imageBytes;
@@ -52,7 +54,10 @@ class _EditActivityState extends State<EditActivity> {
   @override
   void initState() {
     super.initState();
-
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
     _fetchUserId();
     activityService = ActivityService();
     _setupMapTheme();
@@ -64,12 +69,13 @@ class _EditActivityState extends State<EditActivity> {
   }
 
   Future<void> _setInitialValues() async {
-    await  _selectLocation();
+    await _selectLocation();
     _nameController.text = widget.activity.name;
     _descriptionController.text = widget.activity.description;
     _selectedDate = widget.activity.date.toLocal();
     _selectedTime = TimeOfDay.fromDateTime(_selectedDate);
-    _dateController.text = DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate);
+    _dateController.text =
+        DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate);
   }
 
   Future<void> _fetchUserId() async {
@@ -198,67 +204,70 @@ class _EditActivityState extends State<EditActivity> {
     }
   }
 
-Future<void> _selectDateTime(BuildContext context) async {
-  final DateTime? pickedDate = await showDatePicker(
-    context: context,
-    initialDate: _selectedDate,
-    firstDate: DateTime.now(),
-    lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
-  );
-  if (pickedDate != null) {
-    final TimeOfDay? pickedTime = await showTimePicker(
+  Future<void> _selectDateTime(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialTime: _selectedTime,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
     );
-
-    if (pickedTime != null) {
-      final DateTime pickedDateTime = DateTime(
-        pickedDate.year,
-        pickedDate.month,
-        pickedDate.day,
-        pickedTime.hour,
-        pickedTime.minute,
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: _selectedTime,
       );
 
-      if (pickedDateTime.isBefore(DateTime.now())) {
-        Get.snackbar(
-          'Error',
-          'The selected date and time cannot be earlier than the current date and time.',
-          snackPosition: SnackPosition.BOTTOM,
-          titleText: const Text(
-            'Error',
-            style: TextStyle(
-              color: Colors.red,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          messageText: Text(
-            'The selected date and time cannot be earlier than the current date and time. Please select a valid date and time.',
-            style: TextStyle(color: Pallete.textColor),
-          ),
+      if (pickedTime != null) {
+        final DateTime pickedDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
         );
-        setState(() {
-          _selectedDate = DateTime.now();
-          _selectedTime = TimeOfDay.fromDateTime(_selectedDate);
-          _dateController.text = DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate);
-        });
-      } else {
-        setState(() {
-          _selectedDate = pickedDateTime;
-          _selectedTime = pickedTime;
-          _dateController.text = DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate);
-        });
+
+        if (pickedDateTime.isBefore(DateTime.now())) {
+          Get.snackbar(
+            'Error',
+            'The selected date and time cannot be earlier than the current date and time.',
+            snackPosition: SnackPosition.BOTTOM,
+            titleText: const Text(
+              'Error',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            messageText: Text(
+              'The selected date and time cannot be earlier than the current date and time. Please select a valid date and time.',
+              style: TextStyle(color: Pallete.textColor),
+            ),
+          );
+          setState(() {
+            _selectedDate = DateTime.now();
+            _selectedTime = TimeOfDay.fromDateTime(_selectedDate);
+            _dateController.text =
+                DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate);
+          });
+        } else {
+          setState(() {
+            _selectedDate = pickedDateTime;
+            _selectedTime = pickedTime;
+            _dateController.text =
+                DateFormat('dd/MM/yyyy hh:mm a').format(_selectedDate);
+          });
+        }
       }
     }
   }
-}
 
   Future<void> _selectLocation() async {
     try {
       _latitude = widget.activity.location!.latitude;
       _longitude = widget.activity.location!.longitude;
       setState(() async {
-        _locationController.text =(await getAddressFromCoordinates(_latitude, _longitude))!;
+        _locationController.text =
+            (await getAddressFromCoordinates(_latitude, _longitude))!;
       });
     } catch (e) {
       setState(() {
@@ -381,57 +390,68 @@ Future<void> _selectDateTime(BuildContext context) async {
     print('Actividad eliminada correctamente.');
     Get.back();
   }
+  
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     if (!_locationLoaded) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: Container(
+          color: Pallete.backgroundColor,
+          child: RotationTransition(
+            turns: _controller,
+            child: Image.asset(
+              'assets/spotfinder.png',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
     } else {
       return Scaffold(
         appBar: AppBar(
-          title: Text(
-            'Edit Activity',
-            style: TextStyle(
-              color: Pallete.textColor,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
           backgroundColor: Pallete.backgroundColor.withOpacity(0.7),
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back,
-              color: Pallete.textColor,
-            ),
-            onPressed: () {
-              Get.to(() => MyActivities());
-            },
+          title: Row(
+            children: [
+              Text(
+                'Edit Activity',
+                style: TextStyle(
+                  color: Pallete.textColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  _isEditing ? Icons.cancel : Icons.edit,
+                  color: Pallete.textColor,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isEditing = !_isEditing;
+                    _setInitialValues();
+                  });
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  _isMapVisible ? Icons.close : Icons.map,
+                  color: Pallete.textColor,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isMapVisible = !_isMapVisible;
+                  });
+                },
+              ),
+            ],
           ),
-          actions: [
-            IconButton(
-              icon: Icon(
-                _isEditing ? Icons.cancel : Icons.edit,
-                color: Pallete.textColor,
-              ),
-              onPressed: () {
-                setState(() {
-                  _isEditing = !_isEditing;
-                  _setInitialValues();
-                });
-              },
-            ),
-            IconButton(
-              icon: Icon(
-                _isMapVisible ? Icons.close : Icons.map,
-                color: Pallete.textColor,
-              ),
-              onPressed: () {
-                setState(() {
-                  _isMapVisible = !_isMapVisible;
-                });
-              },
-            ),
-          ],
         ),
         body: SingleChildScrollView(
           child: Form(

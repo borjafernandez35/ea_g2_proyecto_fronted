@@ -13,6 +13,7 @@ import 'package:spotfinder/Services/UserService.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
+
 late UserService userService;
 User? user;
 
@@ -23,13 +24,18 @@ class ProfileScreen extends StatefulWidget {
   _ProfileScreen createState() => _ProfileScreen();
 }
 
-class _ProfileScreen extends State<ProfileScreen> {
+class _ProfileScreen extends State<ProfileScreen> with SingleTickerProviderStateMixin {
   bool isLoading = true;
   int _selectedIndex = 0;
+  late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
+     _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
     userService = UserService();
     user = User(
         name: '',
@@ -63,15 +69,19 @@ class _ProfileScreen extends State<ProfileScreen> {
 
   Future<void> _pickImage() async {
     try {
-      final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+      final pickedImage =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
 
       if (pickedImage != null) {
         final bytes = await pickedImage.readAsBytes();
-        final url = Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
-        final String filename = 'upload_${DateTime.now().millisecondsSinceEpoch}.png';
+        final url =
+            Uri.parse('https://api.cloudinary.com/v1_1/dgwbrwvux/image/upload');
+        final String filename =
+            'upload_${DateTime.now().millisecondsSinceEpoch}.png';
         final request = http.MultipartRequest('POST', url)
           ..fields['upload_preset'] = 'byxhgftn'
-          ..files.add(http.MultipartFile.fromBytes('file', bytes, filename: filename));
+          ..files.add(
+              http.MultipartFile.fromBytes('file', bytes, filename: filename));
 
         final response = await request.send();
 
@@ -204,17 +214,34 @@ class _ProfileScreen extends State<ProfileScreen> {
     );
   }
 
-    void _onItemTapped(int index) {
+  void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: Container(
+          color: Pallete.backgroundColor,
+          child: RotationTransition(
+            turns: _controller,
+            child: Image.asset(
+              'assets/spotfinder.png',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
     } else {
       return Scaffold(
         backgroundColor: Pallete.backgroundColor,
@@ -296,35 +323,40 @@ class _ProfileScreen extends State<ProfileScreen> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.person),
-                    title: Text('My Profile', style: TextStyle(color: Pallete.textColor)),
+                    title: Text('My Profile',
+                        style: TextStyle(color: Pallete.textColor)),
                     onTap: () {
                       _onItemTapped(0);
                     },
                   ),
                   ListTile(
                     leading: const Icon(Icons.local_activity),
-                    title: Text('My Activities', style: TextStyle(color: Pallete.textColor)),
+                    title: Text('My Activities',
+                        style: TextStyle(color: Pallete.textColor)),
                     onTap: () {
                       _onItemTapped(1);
                     },
                   ),
                   ListTile(
                     leading: const Icon(Icons.comment),
-                    title: Text('My Reviews', style: TextStyle(color: Pallete.textColor)),
+                    title: Text('My Reviews',
+                        style: TextStyle(color: Pallete.textColor)),
                     onTap: () {
                       _onItemTapped(2);
                     },
                   ),
                   ListTile(
                     leading: const Icon(Icons.history),
-                    title: Text('History', style: TextStyle(color: Pallete.textColor)),
+                    title: Text('History',
+                        style: TextStyle(color: Pallete.textColor)),
                     onTap: () {
                       _onItemTapped(3);
                     },
                   ),
                   ListTile(
                     leading: const Icon(Icons.settings),
-                    title: Text('Settings', style: TextStyle(color: Pallete.textColor)),
+                    title: Text('Settings',
+                        style: TextStyle(color: Pallete.textColor)),
                     onTap: () {
                       _onItemTapped(4);
                     },

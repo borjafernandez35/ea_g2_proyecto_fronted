@@ -23,17 +23,22 @@ class MyCommentsScreen extends StatefulWidget {
   _MyCommentsScreen createState() => _MyCommentsScreen();
 }
 
-class _MyCommentsScreen extends State<MyCommentsScreen> {
+class _MyCommentsScreen extends State<MyCommentsScreen> with SingleTickerProviderStateMixin{
   // ignore: non_constant_identifier_names
   late List<Comment> lista_comments;
   late List<Activity> lista_activities;
   late List<String> comments_id;
+  late AnimationController _controller;
 
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
     activityService = ActivityService();
     commentService = CommentService();
     comments_id = widget.user.comments!;
@@ -129,10 +134,28 @@ class _MyCommentsScreen extends State<MyCommentsScreen> {
     }
   }
 
+   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return Center(
+        child: Container(
+          color: Pallete.backgroundColor,
+          child: RotationTransition(
+            turns: _controller,
+            child: Image.asset(
+              'assets/spotfinder.png',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
     } else {
       return Scaffold(
         appBar: AppBar(

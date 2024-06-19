@@ -26,15 +26,16 @@ class MapScreen extends StatefulWidget {
   _MapScreen createState() => _MapScreen();
 }
 
-class _MapScreen extends State<MapScreen> {
+class _MapScreen extends State<MapScreen> with SingleTickerProviderStateMixin {
   final MapController mapController = Get.put(MapController());
+  late AnimationController _controller;
   late List<Activity> lista_activities;
   late List<Marker> _markers = [];
   bool isLoading = true;
   Position? position;
   late ltlg.LatLng initialLocation;
   late TileLayer _tileLayer;
-  double distance = 10000; 
+  double distance = 10000;
   int limit = 10;
   double selectedDistance = 5.0; // Distancia inicial seleccionada
   String selectedSort = "Date";
@@ -43,25 +44,37 @@ class _MapScreen extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
+    // Inicializar el AnimationController
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
     activityService = ActivityService();
     userService = UserService();
-    if(box.read('distance') == null){
+    if (box.read('distance') == null) {
       box.write('distance', selectedDistance);
-    }else{
+    } else {
       selectedDistance = box.read('distance');
     }
     getData(null);
     setupMapTheme();
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   void setupMapTheme() async {
     final box = GetStorage();
     String? theme = box.read('theme');
-    
+
     setState(() {
       if (theme == 'Dark') {
         _tileLayer = TileLayer(
-          urlTemplate: 'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+          urlTemplate:
+              'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
           userAgentPackageName: 'dev.fleaflet.flutter_map.example',
         );
       } else {
@@ -96,7 +109,8 @@ class _MapScreen extends State<MapScreen> {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        Get.snackbar('Error', 'Los permisos de ubicación están permanentemente denegados.');
+        Get.snackbar('Error',
+            'Los permisos de ubicación están permanentemente denegados.');
         useDefaultLocation();
         return;
       }
@@ -112,7 +126,8 @@ class _MapScreen extends State<MapScreen> {
       if (byName == null) {
         activities = await getAllActivities(selectedDistance * 1000, limit);
       } else {
-        activities = await mapController.searchByName(selectedDistance * 1000, limit);
+        activities =
+            await mapController.searchByName(selectedDistance * 1000, limit);
       }
 
       setState(() {
@@ -138,7 +153,8 @@ class _MapScreen extends State<MapScreen> {
         for (var actividad in activities) {
           _markers.add(
             Marker(
-              point: ltlg.LatLng(actividad.location!.latitude, actividad.location!.longitude),
+              point: ltlg.LatLng(
+                  actividad.location!.latitude, actividad.location!.longitude),
               width: 60,
               height: 60,
               alignment: Alignment.centerLeft,
@@ -148,86 +164,87 @@ class _MapScreen extends State<MapScreen> {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        content: SingleChildScrollView(
-                          child: InkWell(
-                            onTap: () {
-                              Get.toNamed(
-                                '/activity/${actividad.id}',
-                              );
-                            },
-                            child: Card(
-                              color: Pallete.primaryColor,
-                              surfaceTintColor: Pallete.accentColor,
-                              elevation: 5,
-                              margin: EdgeInsets.all(10),
-                              child: Row(
-                                children: [
-                                  // Left side: Image
-                                  Container(
-                                    width: 100,
-                                    height: 100,
-                                    child: Image.network(
-                                      actividad.imageUrl ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
-                                      fit: BoxFit.cover,
-                                    ),
+                          content: SingleChildScrollView(
+                        child: InkWell(
+                          onTap: () {
+                            Get.toNamed(
+                              '/activity/${actividad.id}',
+                            );
+                          },
+                          child: Card(
+                            color: Pallete.primaryColor,
+                            surfaceTintColor: Pallete.accentColor,
+                            elevation: 5,
+                            margin: EdgeInsets.all(10),
+                            child: Row(
+                              children: [
+                                // Left side: Image
+                                Container(
+                                  width: 100,
+                                  height: 100,
+                                  child: Image.network(
+                                    actividad.imageUrl ??
+                                        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
+                                    fit: BoxFit.cover,
                                   ),
-                                  // Right side: Title, Description, and Value
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            actividad.name,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
+                                ),
+                                // Right side: Title, Description, and Value
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          actividad.name,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Description: ${actividad.description}',
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            RatingBarIndicator(
+                                              rating: actividad.rate!,
+                                              itemBuilder: (context, index) =>
+                                                  const Icon(
+                                                Icons.star,
+                                                size: 18,
+                                                color: Colors.amber,
+                                              ),
+                                              itemCount: 5,
+                                              itemSize: 18,
+                                              direction: Axis.horizontal,
+                                              unratedColor: Colors.blueAccent
+                                                  .withAlpha(50),
                                             ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            'Description: ${actividad.description}',
-                                            style: const TextStyle(fontSize: 14),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              RatingBarIndicator(
-                                                rating: actividad.rate!,
-                                                itemBuilder: (context, index) =>
-                                                    const Icon(
-                                                  Icons.star,
-                                                  size: 18,
-                                                  color: Colors.amber,
-                                                ),
-                                                itemCount: 5,
-                                                itemSize: 18,
-                                                direction: Axis.horizontal,
-                                                unratedColor:
-                                                    Colors.blueAccent.withAlpha(50),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              actividad.rate!
+                                                  .toStringAsFixed(1),
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.amber,
                                               ),
-                                              const SizedBox(width:8), 
-                                              Text(
-                                                actividad.rate!.toStringAsFixed(1), 
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.amber, 
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
-                        )
-                      );
+                        ),
+                      ));
                     },
                   );
                 },
@@ -268,7 +285,8 @@ class _MapScreen extends State<MapScreen> {
     List<Activity> allActivities = [];
 
     while (hasMore) {
-      List<Activity> activities = await activityService.getData(distance, page, limit, "Date");
+      List<Activity> activities =
+          await activityService.getData(distance, page, limit, "Date");
       allActivities.addAll(activities);
 
       hasMore = activities.length == limit;
@@ -301,7 +319,19 @@ class _MapScreen extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: Container(
+          color: Pallete.backgroundColor,
+          child: RotationTransition(
+            turns: _controller,
+            child: Image.asset(
+              'assets/spotfinder.png',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
     } else {
       return Stack(
         children: [
@@ -330,7 +360,7 @@ class _MapScreen extends State<MapScreen> {
                       children: [
                         const SizedBox(width: 40),
                         SizedBox(
-                          width: 350,  // Set the desired width here
+                          width: 350, // Set the desired width here
                           child: ParamTextBox(
                             controller: mapController.searchBarController,
                             text: 'Scaperoom...',
@@ -363,12 +393,14 @@ class _MapScreen extends State<MapScreen> {
                           onChanged: _onDistanceChanged,
                           dropdownColor: Pallete.textColor,
                           style: TextStyle(color: Pallete.backgroundColor),
-                          items: <double>[5.0, 10.0, 20.0, 50.0, 100.0].map((double value) {
+                          items: <double>[5.0, 10.0, 20.0, 50.0, 100.0]
+                              .map((double value) {
                             return DropdownMenuItem<double>(
                               value: value,
                               child: Text(
                                 'Hasta $value km',
-                                style: TextStyle(color: Pallete.backgroundColor),
+                                style:
+                                    TextStyle(color: Pallete.backgroundColor),
                               ),
                             );
                           }).toList(),
@@ -386,7 +418,6 @@ class _MapScreen extends State<MapScreen> {
   }
 }
 
-
 class MapController extends GetxController {
   final TextEditingController searchBarController = TextEditingController();
 
@@ -396,7 +427,8 @@ class MapController extends GetxController {
     List<Activity> allActivities = [];
 
     while (hasMore) {
-      List<Activity> activities = await activityService.getDataByName(distance, page, limit, searchBarController.text);
+      List<Activity> activities = await activityService.getDataByName(
+          distance, page, limit, searchBarController.text);
       allActivities.addAll(activities);
 
       hasMore = activities.length == limit;
