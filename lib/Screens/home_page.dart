@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 25, vertical: 8),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,  // Align items to the right
+                  mainAxisAlignment: MainAxisAlignment.start, // Align items to the left
                   children: [
                     GNav(
                       tabBorderRadius: 10,
@@ -124,4 +124,3 @@ class _HomePageState extends State<HomePage> {
 class HomeController extends GetxController {
   final TextEditingController searchBarController = TextEditingController();
 }
-
