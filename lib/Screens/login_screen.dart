@@ -143,7 +143,7 @@ class _LoginScreen extends State<LoginScreen> {
                             const SizedBox(height: 20),
                             GestureDetector(
                               onTap: () {
-                                // Aquí puedes agregar la acción para olvidar la contraseña
+                                Get.toNamed('/password_recovery');
                               },
                               child: const Text(
                                 'Forgot password?',
