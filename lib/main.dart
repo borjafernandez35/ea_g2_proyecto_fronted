@@ -22,6 +22,7 @@ void main() async {
   final UserService userService = UserService();
   String? token = await userService.getToken();  
 
+token=null;
   setUrlStrategy(PathUrlStrategy());
 
   runApp(MyApp(token: token));
@@ -29,6 +30,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   final String? token;
+
 
   const MyApp({Key? key, this.token}) : super(key: key);
 
@@ -46,13 +48,9 @@ class MyApp extends StatelessWidget {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (token != null) {
-        if (Get.currentRoute != '/home' &&
-            !Get.currentRoute.contains('activity') &&
-            !Get.currentRoute.contains('settings')) {
+        if (!Get.currentRoute.contains('activity')) {
           Get.offAllNamed('/home');
         }
-      }else{
-        Get.offAllNamed("/");
       }
     });
 
