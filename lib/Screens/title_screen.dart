@@ -67,7 +67,6 @@ class _TitleScreenState extends State<TitleScreen> {
       final isRegistered = await _signInService.checkIfRegistered(email);
 
       if (!isRegistered) {
-        print("skdjf");
         showDialog(
           context: context,
           builder: (BuildContext context) {

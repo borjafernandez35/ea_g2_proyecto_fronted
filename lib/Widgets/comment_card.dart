@@ -135,6 +135,7 @@ class _CommentCardState extends State<CommentCard> {
                                       ? ParamTextBox(
                                           controller: titleController,
                                           text: 'Title',
+                                          editable: true,
                                         )
                                       : Text(
                                           widget.comment.title,
@@ -149,6 +150,7 @@ class _CommentCardState extends State<CommentCard> {
                                       ? ParamTextBox(
                                           controller: contentController,
                                           text: 'Content',
+                                          editable: true,
                                         )
                                       : Text(
                                           widget.comment.content,

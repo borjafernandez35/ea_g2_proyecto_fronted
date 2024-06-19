@@ -38,7 +38,6 @@ class _RegisterGoogleScreenState extends State<RegisterGoogleScreen> {
        SignInService _signInService = SignInService(
       clientId: '125785942229-p83mg0gugi4cebkqos62m6q2l86jabkc.apps.googleusercontent.com',
     );
-  //String _selectedPrefix = '+34';
 
 // Función para generar una contraseña aleatoria
   String generateRandomPassword({int length = 8}) {
