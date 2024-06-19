@@ -47,19 +47,12 @@ class _TitleScreenState extends State<TitleScreen> {
 
   @override
   void initState() {
-    print("^*******************************************************");
     super.initState();
 
+   
     _signInService = SignInService(
       clientId: idClient,
     );
-    /* config = TokenClientConfig(
-      client_id: idClient,
-      scope: scopes,
-      callback: signInService.onTokenResponse,
-      error_callback: signInService.onError,
-    );
- */
 
     _signInService.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
       setState(() {
@@ -68,8 +61,7 @@ class _TitleScreenState extends State<TitleScreen> {
 
         //print("Que es TokenClient: ${tokenClient}");
 
-        print(
-            "iniciiiiiaaaaaaaaaaaaaaaaa el putoooooooooo TOOOOOOOOKKKEEEEENNNNNNNN!!!!!!${_signInService.idToken}");
+        
 
         gis_id.id.prompt(_signInService.onPromptMoment);
 
@@ -79,10 +71,7 @@ class _TitleScreenState extends State<TitleScreen> {
 
         _currentUser = account;
 
-        // idToken=accessToken ?? (await _currentUser?.authentication)?.accessToken;;
-        _isAuthorized = _signInService.isAuthorized;
-        print("ojala funcione el token:${_signInService.idToken}");
-        //Get.toNamed('/home');
+        
       });
     });
     print("He salido!!");
@@ -105,11 +94,12 @@ class _TitleScreenState extends State<TitleScreen> {
       // Verificar si el usuario está registrado
       final isRegistered = await _signInService.checkIfRegistered(email);
 
-      Get.toNamed('/home');
+      //Get.toNamed('/home');
 
       print('estoy registraaaaaaaadddoooooo????????$isRegistered');
 
       if (!isRegistered) {
+        //Get.toNamed('/home');
         // Mostrar el diálogo de registro
         showDialog(
           context: context,
@@ -127,6 +117,9 @@ class _TitleScreenState extends State<TitleScreen> {
           },
         );
       } else {
+        //Get.toNamed('/home');
+        print(
+            'ESTOOOOOOYYYYYYYYYY RRRRREEEEGIISSSTRADOOOOO LOGIIINNNN ALLLAAAAA VAAAAMMMMOOOSSS!!!! el email es : $email');
         _signInService.logIn(email);
       }
     } catch (error) {
@@ -141,54 +134,15 @@ class _TitleScreenState extends State<TitleScreen> {
 
   Widget _buildBody() {
     final GoogleSignInAccount? user = _currentUser;
-    if (user != null) {
-      // The user is Authenticated
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          ListTile(
-            leading: GoogleUserCircleAvatar(identity: user),
-            title: Text(user.displayName ?? ''),
-            subtitle: Text('Token: ${_signInService.idToken}'),
-            trailing: Text(user.email),
-          ),
-          const Text('Signed in successfully.'),
-          if (_isAuthorized) ...<Widget>[
-            // The user has Authorized all required scopes
-            Text(_contactText),
-            /* ElevatedButton(
-              child: const Text('REFRESH'),
-              onPressed: () => _handleGetContact(user),
-            ), */
-          ],
-          if (!_isAuthorized) ...<Widget>[
-            // The user has NOT Authorized all required scopes.
-            const Text('Additional permissions needed to read your contacts.'),
-            /* ElevatedButton(
-              onPressed: _handleAuthorizeScopes,
-              child: const Text('REQUEST PERMISSIONS'),
-            ), */
-          ],
-          ElevatedButton(
-            onPressed: _handleSignOut,
-            child: const Text('SIGN OUT'),
-          ),
-        ],
-      );
-    } else {
-      // The user is NOT Authenticated
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          const Text('Google sign in.'),
-          // This method is used to separate mobile from web code with conditional exports.
-          // See: src/sign_in_button.dart
+          const Text('Google sign in.',style: TextStyle(color: Colors.white),),
           buildSignInButton(
             onPressed: _handleSignIn,
           ),
         ],
       );
-    }
   }
 
   @override

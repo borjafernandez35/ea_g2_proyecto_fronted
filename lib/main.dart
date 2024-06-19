@@ -70,7 +70,7 @@ class MyApp extends StatelessWidget {
           transition: Transition.fade,
         ),
       ],
-      initialRoute: token != null ? '/home' : '/',
+      initialRoute: token != null ? '/' : '/',
     );
   }
 

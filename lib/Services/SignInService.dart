@@ -4,7 +4,7 @@ import 'dart:convert' show base64Url, json, jsonDecode;
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_storage/get_storage.dart';
-//import 'package:get/get.dart'; Node Response, FormData, MultipartFile;
+//import 'package:get/get.dart'; Node Response;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:google_sign_in_web/google_sign_in_web.dart';
 import 'package:google_identity_services_web/id.dart';
@@ -38,8 +38,6 @@ class SignInService {
   bool _isAuthorized = false; // has granted permissions?
   String _contactText = '';
   String _token = '';
-  String? _idToken;
-  String? _accessToken;
   bool _isRegistered = false;
   //GoogleSignInAuthentication? _auth;
   // GoogleAccountsId _accountsId;
@@ -51,12 +49,7 @@ class SignInService {
         ) {
     idConfiguration = IdConfiguration(
       client_id: clientId,
-      callback: (CredentialResponse response) {
-        onCredentialResponse(response);
-        _idToken = response.credential;
-        print(
-            "Credential!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.........................................:${_idToken}");
-      },
+      callback: (onCredentialResponse),
       use_fedcm_for_prompt: true,
     );
   }
@@ -65,8 +58,6 @@ class SignInService {
   bool get isAuthorized => _isAuthorized;
   String get contactText => _contactText;
   String get token => _token;
-  String? get idToken => _idToken;
-  String? get accessToken => _accessToken;
   bool get isRegistered => _isRegistered;
 
   Stream<GoogleSignInAccount?> get onCurrentUserChanged =>
@@ -79,7 +70,6 @@ class SignInService {
       print("silently:${_currentUser}");
       if (_currentUser != null) {
         _isAuthorized = true;
-        _updateIdToken();
       }
       print("User after silent sign-in: $_currentUser");
     } catch (e) {
@@ -96,7 +86,6 @@ class SignInService {
       _currentUser = await _googleSignIn.signIn();
       if (_currentUser != null) {
         _isAuthorized = true;
-        _updateIdToken();
       }
       print("User after sign-in: $_currentUser");
     } catch (e) {
@@ -104,12 +93,12 @@ class SignInService {
     }
   }
 
-  void onTokenResponse(TokenResponse response) {
+  /* void onTokenResponse(TokenResponse response) {
     _accessToken = response.access_token;
     print("Access Token: $_accessToken");
-  }
+  } */
 
-  void _updateIdToken() async {
+  /*  void _updateIdToken() async {
     if (_currentUser != null) {
       try {
         final auth = await _currentUser!.authentication;
@@ -118,40 +107,26 @@ class SignInService {
         print("Error getting idToken: $e");
       }
     }
-  }
+  } */
 
   Future<void> handleSignIn() async {
     print("handle alla vamoosss!!!");
-    _idToken = accessToken ?? (await _currentUser?.authentication)?.accessToken;
-    print("rellenarTOOOOOOOKKKEEEEEENNNNNN: ${_idToken}");
     try {
       if (kIsWeb) {
         print("Loading GIS SDK for web...");
         await gis.loadWebSdk();
         print("GIS SDK loaded.");
-        //id.setLogLevel('debug');
+        id.setLogLevel('debug');
         id.initialize(idConfiguration);
-        //_auth = _currentUser!.authentication as GoogleSignInAuthentication?;
-        //_idToken = _auth!.idToken;
-
-        //print("Que es TokenClient: ${tokenClient}");
-
-        print(
-            "iniciiiiiaaaaaaaaaaaaaaaaa el putoooooooooo TOOOOOOOOKKKEEEEENNNNNNNN!!!!!!${_idToken}");
+     
 
         id.prompt(onPromptMoment);
 
-        // print("que me vas a decir si yo acabo de llegar: ${call}");
+       
 
         final state = generateState();
         storedState = state;
         print("Generated state: $state");
-
-        print(
-            "iiiiiiidddddddddttttttooooooookkkkkkeeeeeeeeennnnnnnnn:${_idToken}");
-        // print("esto es el id ${id}, esto es el idConfigutarion ${idConfiguration}");
-        print("IdConfiguration initialized.");
-        print("HANDLE SIGNINSERVICE: el token es ${_token}");
       } else {
         await signIn();
       }
@@ -159,8 +134,6 @@ class SignInService {
       print("Error in handleSignIn: $error");
     }
   }
-
- 
 
   void onPromptMoment(PromptMomentNotification o) {
     final MomentType type = o.getMomentType();
@@ -173,12 +146,7 @@ class SignInService {
     final Map<String, dynamic>? payload =
         jwt.decodePayload(response.credential);
     if (payload != null) {
-      saveToken(response.credential);
-      print("este si toca:${_token}");
-
-      // Aquí puedes manejar el ID Token utilizando GoogleSignInAuthentication
-
-      print("ID Token from GoogleSignInAuthentication: ${_idToken}");
+      saveTokenGoogle(response.credential ?? '');
     } else {
       print('Could not decode ${response.credential}');
     }
@@ -227,14 +195,25 @@ class SignInService {
     box.write('id', id);
   }
 
-  void saveToken(String? token) {
+  void saveTokenGoogle(String _token) {
     final box = GetStorage();
-    box.write('token', token);
+    box.write('token', _token);
   }
 
-   String? getId() {
+  void saveToken(String token, String refreshToken) {
+    final box = GetStorage();
+    box.write('token', token);
+    box.write('refresh_token', refreshToken);
+  }
+
+  String? getId() {
     final box = GetStorage();
     return box.read('id');
+  }
+
+  String? getTokenGoogle() {
+    final box = GetStorage();
+    return box.read('token');
   }
 
   String? getToken() {
@@ -243,50 +222,59 @@ class SignInService {
   }
 
   Future<int> logIn(String email) async {
-    print('LogIn');
-
-    // Aquí podrías implementar lógica adicional si necesitas algún tipo de preparación antes de hacer la solicitud
+    print('LogIn!!!!!!!!!!!!!!');
 
     try {
-      Response response = await dio.post(
-          '$baseUrl/signin/google/$email'); // Aquí ajusta según la ruta y datos que necesites enviar
+      Response response =
+          await dio.post('$baseUrl/signin/google', data: {'email': email});
 
-      var data = response.data.toString();
-      print('Data: $data');
+      var data = response.data;
+      print('Data!!!!!!!!!!!!!: $data');
 
       var statusCode = response.statusCode;
       print('Status code: $statusCode');
 
       if (statusCode == 200 || statusCode == 201) {
-        // Aquí manejas la respuesta exitosa según el código que esperas
-        //var token = response.data['token'];
-        //var refreshToken = response.data['refreshToken'];
-        var id = response.data['id'];
+        print("Success!");
 
-        //saveToken(token, refreshToken);
-        saveId(id);
-        if(statusCode ==201){
+        // Verifica si response.data es un Map y contiene el campo 'id'
+        if (data is Map<String, dynamic> && data.containsKey('id')) {
+          var token = response.data['token'];
+          var refresh_token = response.data['refreshToken'];
+          var id = response.data['id'];
+          saveToken(token, refresh_token);
+          saveId(id);
+        }
+        if (statusCode == 201) {
           return 201;
         }
-        return 200 ;
-      } else if (statusCode == 400) {
-      // Si hay campos faltantes, retornamos el código 400
-      print('400');
+        return 200;
+      }
+      if (statusCode == 400) {
+        // Si hay campos faltantes, retornamos el código 400
+        print('400');
 
-      return 400;
-    } else if (statusCode == 500) {
-      // Si hay un error interno del servidor, retornamos el código 500
-      print('500');
+        return 400;
+      } else if (statusCode == 500) {
+        // Si hay un error interno del servidor, retornamos el código 500
+        print('500');
 
-      return 500;
-    }else {
-      // En caso de otros códigos de estado no manejados explícitamente, puedes lanzar una excepción o devolver un valor adecuado.
-      return -1; // O cualquier otro valor que refleje un estado no manejado
-    }
-    } catch (e) {
-      // Manejo de errores, como problemas de conexión, etc.
-      print('Error: $e');
-      return -1; // Puedes definir otro código de error si es necesario
+        return 500;
+      } else {
+        // En caso de otros códigos de estado no manejados explícitamente, puedes lanzar una excepción o devolver un valor adecuado.
+        return -1; // O cualquier otro valor que refleje un estado no manejado
+      }
+      // ignore: deprecated_member_use
+    } on DioError catch (e) {
+      if (e.response != null) {
+        print('Error en la solicitud: ${e.response?.statusCode}');
+        print('Datos de respuesta: ${e.response?.data}');
+        print('Encabezados de respuesta: ${e.response?.headers}');
+        return e.response?.statusCode ?? -2;
+      } else {
+        print('Error enviando la solicitud: ${e.message}');
+        return -3;
+      }
     }
   }
 }
