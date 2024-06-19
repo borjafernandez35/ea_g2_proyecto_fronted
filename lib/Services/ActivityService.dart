@@ -57,7 +57,7 @@ class ActivityService {
     print('getData');
     String? id = user_service.getId();
     try {
-      var res = await dio.get('$baseUrl/activity/$page/$limit/$id/$selectedDistance/$search');
+      var res = await dio.get('$baseUrl/activityByName/$page/$limit/$id/$selectedDistance/$search');
       final List<dynamic> responseData = res.data['activities'];
       List<Activity> activities = responseData.map((data) => Activity.fromJson(data)).toList();
       return activities;
