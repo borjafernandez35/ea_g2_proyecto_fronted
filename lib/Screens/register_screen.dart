@@ -247,6 +247,13 @@ class RegisterController extends GetxController {
     }
   }
 
+  bool validatePassword(String password) {
+    final RegExp passwordRegExp = RegExp(
+      r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',
+    );
+    return passwordRegExp.hasMatch(password);
+  }
+
   void signUp() {
     if (contrasenaController.text.isEmpty || mailController.text.isEmpty) {
       Get.snackbar(
@@ -258,6 +265,12 @@ class RegisterController extends GetxController {
       Get.snackbar(
         'Error',
         'Las contraseñas no coinciden',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } else if (!validatePassword(contrasenaController.text)) {
+      Get.snackbar(
+        'Error',
+        'La contraseña debe contener al menos 8 carácteres: como mínimo tiene que tener 1 minúscula, 1 mayúscula, 1 número y 1 carácter especial',
         snackPosition: SnackPosition.BOTTOM,
       );
     } else {
@@ -294,3 +307,4 @@ class RegisterController extends GetxController {
     }
   }
 }
+
