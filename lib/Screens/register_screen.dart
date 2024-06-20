@@ -127,27 +127,36 @@ class _RegisterScreen extends State<RegisterScreen> {
                               text: 'Phone Number',
                               keyboardType: TextInputType.phone,
                               inputFormatters: [
-                                FilteringTextInputFormatter.allow(RegExp(r'[\d\s]')),
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[\d\s]')),
                               ],
-                              prefixWidget: DropdownButtonFormField<String>(
-                                value: controller.selectedPrefix.value,
-                                alignment: Alignment.centerRight,
-                                onChanged: (String? newValue) {
-                                  controller.selectedPrefix.value = newValue!;
-                                },
-                                items: PhoneUtils.phonePrefixes.map<DropdownMenuItem<String>>(
-                                  (String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value, style: TextStyle(color: Colors.grey)),
-                                    );
+                              prefixWidget: SizedBox(
+                                width: 80,
+                                child: DropdownButtonFormField<String>(
+                                  value: controller.selectedPrefix.value,
+                                  alignment: Alignment.centerRight,
+                                  onChanged: (String? newValue) {
+                                    controller.selectedPrefix.value = newValue!;
                                   },
-                                ).toList(),
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 5.6),
+                                  items: PhoneUtils.phonePrefixes
+                                      .map<DropdownMenuItem<String>>(
+                                    (String value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(value,
+                                            style:
+                                                TextStyle(color: Colors.grey)),
+                                      );
+                                    },
+                                  ).toList(),
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding:
+                                        EdgeInsets.symmetric(horizontal: 5.6),
+                                  ),
+                                  icon: const Icon(Icons.arrow_drop_down,
+                                      color: Colors.grey),
                                 ),
-                                icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -177,19 +186,24 @@ class _RegisterScreen extends State<RegisterScreen> {
                                     obscureText: _obscureText,
                                     suffixIcon: IconButton(
                                       icon: Icon(
-                                        _obscureText ? Icons.visibility : Icons.visibility_off,
+                                        _obscureText
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
                                       ),
                                       onPressed: _togglePasswordVisibility,
                                     ),
                                   ),
                                   const SizedBox(height: 10),
                                   ParamTextBox(
-                                    controller: controller.confirmcontrasenaController,
+                                    controller:
+                                        controller.confirmcontrasenaController,
                                     text: 'Confirm Password',
                                     obscureText: _obscureText,
                                     suffixIcon: IconButton(
                                       icon: Icon(
-                                        _obscureText ? Icons.visibility : Icons.visibility_off,
+                                        _obscureText
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
                                       ),
                                       onPressed: _togglePasswordVisibility,
                                     ),
@@ -197,6 +211,37 @@ class _RegisterScreen extends State<RegisterScreen> {
                                 ],
                               ),
                             ),
+                            const SizedBox(height: 20),
+                            Obx(() => Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'La contraseña debe contener:',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    _buildCriteriaItem(
+                                      'Al menos 8 caracteres',
+                                      controller.passwordCriteria['length']!,
+                                    ),
+                                    _buildCriteriaItem(
+                                      'Al menos una letra mayúscula',
+                                      controller.passwordCriteria['uppercase']!,
+                                    ),
+                                    _buildCriteriaItem(
+                                      'Al menos una letra minúscula',
+                                      controller.passwordCriteria['lowercase']!,
+                                    ),
+                                    _buildCriteriaItem(
+                                      'Al menos un número',
+                                      controller.passwordCriteria['number']!,
+                                    ),
+                                    _buildCriteriaItem(
+                                      'Al menos un carácter especial (@\$!%*?&)',
+                                      controller.passwordCriteria['special']!,
+                                    ),
+                                  ],
+                                )),
                             const SizedBox(height: 20),
                             SignUpButton(
                               onPressed: () => controller.signUp(),
@@ -206,13 +251,30 @@ class _RegisterScreen extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCriteriaItem(String text, bool met) {
+    return Row(
+      children: [
+        Icon(
+          met ? Icons.check_circle : Icons.cancel,
+          color: met ? Colors.green : Colors.red,
+          size: 20,
+        ),
+        const SizedBox(width: 10),
+        Text(
+          text,
+          style: TextStyle(color: Colors.white),
+        ),
+      ],
     );
   }
 }
@@ -223,14 +285,42 @@ class RegisterController extends GetxController {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController birthdayController = TextEditingController();
   final TextEditingController contrasenaController = TextEditingController();
-  final TextEditingController confirmcontrasenaController = TextEditingController();
+  final TextEditingController confirmcontrasenaController =
+      TextEditingController();
   final TextEditingController mailController = TextEditingController();
   late String date;
 
   var selectedPrefix = '+34'.obs;
+  var passwordCriteria = {
+    'length': false,
+    'uppercase': false,
+    'lowercase': false,
+    'number': false,
+    'special': false,
+  }.obs;
 
-  bool invalid = false;
-  bool parameters = false;
+  @override
+  void onInit() {
+    super.onInit();
+    contrasenaController.addListener(validatePasswordCriteria);
+  }
+
+  @override
+  void onClose() {
+    contrasenaController.removeListener(validatePasswordCriteria);
+    contrasenaController.dispose();
+    super.onClose();
+  }
+
+  void validatePasswordCriteria() {
+    String password = contrasenaController.text;
+    passwordCriteria['length'] = password.length >= 8;
+    passwordCriteria['uppercase'] = password.contains(RegExp(r'[A-Z]'));
+    passwordCriteria['lowercase'] = password.contains(RegExp(r'[a-z]'));
+    passwordCriteria['number'] = password.contains(RegExp(r'\d'));
+    passwordCriteria['special'] = password.contains(RegExp(r'[@$!%*?&]'));
+    passwordCriteria.refresh();
+  }
 
   void selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -241,7 +331,8 @@ class RegisterController extends GetxController {
     );
     if (pickedDate != null) {
       final utcDate = pickedDate.toUtc();
-      String formattedDate = "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year.toString()}";
+      String formattedDate =
+          "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year.toString()}";
       birthdayController.text = formattedDate;
       date = utcDate.toIso8601String();
     }
@@ -270,7 +361,7 @@ class RegisterController extends GetxController {
     } else if (!validatePassword(contrasenaController.text)) {
       Get.snackbar(
         'Error',
-        'La contraseña debe contener al menos 8 carácteres: como mínimo tiene que tener 1 minúscula, 1 mayúscula, 1 número y 1 carácter especial',
+        'La contraseña no es lo suficientemente robusta',
         snackPosition: SnackPosition.BOTTOM,
       );
     } else {
@@ -307,4 +398,3 @@ class RegisterController extends GetxController {
     }
   }
 }
-
