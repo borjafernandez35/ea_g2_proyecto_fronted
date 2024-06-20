@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:spotfinder/Resources/pallete.dart';
-import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/main.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -34,11 +33,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _changeTheme(String theme) {
     box.write('theme', theme);
     runApp(
-      MyApp(), 
+      MyApp(),
     );
     setState(() {
       _settingsChanged = true;
     });
+    Get.offAllNamed(
+      '/home',
+    );
   }
 
   void _showThemeDialog(BuildContext context) {
@@ -53,12 +55,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text('Select Theme',
                       style: TextStyle(color: Pallete.backgroundColor)),
-                  IconButton(
-                    onPressed: () {
-                      Get.back(result: _settingsChanged);
-                    },
-                    icon: const Icon(Icons.close),
-                  ),
                 ],
               ),
               content: Column(
@@ -125,22 +121,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Pallete.backgroundColor,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Pallete.textColor,
-          ),
-          onPressed: () {
-          Get.to(() => HomePage(initialIndex: 3));         },
-        ),
         title: Text(
           'Settings',
-          style: TextStyle(color: Pallete.textColor), 
+          style: TextStyle(color: Pallete.textColor),
         ),
       ),
       backgroundColor: Pallete.backgroundColor,
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -193,4 +181,3 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
-

@@ -26,15 +26,16 @@ class MapScreen extends StatefulWidget {
   _MapScreen createState() => _MapScreen();
 }
 
-class _MapScreen extends State<MapScreen> {
+class _MapScreen extends State<MapScreen> with SingleTickerProviderStateMixin {
   final MapController mapController = Get.put(MapController());
+  late AnimationController _controller;
   late List<Activity> lista_activities;
   late List<Marker> _markers = [];
   bool isLoading = true;
   Position? position;
   late ltlg.LatLng initialLocation;
   late TileLayer _tileLayer;
-  double distance = 10000; 
+  double distance = 10000;
   int limit = 10;
   double selectedDistance = 5.0; // Distancia inicial seleccionada
   String selectedSort = "Date";
@@ -43,34 +44,47 @@ class _MapScreen extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
     activityService = ActivityService();
     userService = UserService();
-    if(box.read('distance') == null){
+    if (box.read('distance') == null) {
       box.write('distance', selectedDistance);
-    }else{
+    } else {
       selectedDistance = box.read('distance');
     }
     getData(null);
     setupMapTheme();
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   void setupMapTheme() async {
     final box = GetStorage();
     String? theme = box.read('theme');
-    
-    setState(() {
-      if (theme == 'Dark') {
-        _tileLayer = TileLayer(
-          urlTemplate: 'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
-          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-        );
-      } else {
-        _tileLayer = TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-        );
-      }
-    });
+
+    if (mounted) {
+      setState(() {
+        if (theme == 'Dark') {
+          _tileLayer = TileLayer(
+            urlTemplate:
+                'https://tiles-eu.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+            userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+          );
+        } else {
+          _tileLayer = TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+          );
+        }
+      });
+    }
   }
 
   void getData(byName) async {
@@ -96,7 +110,8 @@ class _MapScreen extends State<MapScreen> {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        Get.snackbar('Error', 'Los permisos de ubicación están permanentemente denegados.');
+        Get.snackbar('Error',
+            'Los permisos de ubicación están permanentemente denegados.');
         useDefaultLocation();
         return;
       }
@@ -112,43 +127,45 @@ class _MapScreen extends State<MapScreen> {
       if (byName == null) {
         activities = await getAllActivities(selectedDistance * 1000, limit);
       } else {
-        activities = await mapController.searchByName(selectedDistance * 1000, limit);
+        activities =
+            await mapController.searchByName(selectedDistance * 1000, limit);
       }
+      if (mounted) {
+        setState(() {
+          // Update state only if widget is still mounted
+          _markers.clear();
 
-      setState(() {
-        // Clear existing markers
-        _markers.clear();
-
-        // Add current location marker
-        _markers.add(
-          Marker(
-            point: initialLocation,
-            width: 60,
-            height: 60,
-            alignment: Alignment.centerLeft,
-            child: Icon(
-              Icons.circle,
-              size: 20,
-              color: Pallete.salmonColor,
-            ),
-          ),
-        );
-
-        // Add activity markers
-        for (var actividad in activities) {
+          // Add current location marker
           _markers.add(
             Marker(
-              point: ltlg.LatLng(actividad.location!.latitude, actividad.location!.longitude),
+              point: initialLocation,
               width: 60,
               height: 60,
               alignment: Alignment.centerLeft,
-              child: GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        content: SingleChildScrollView(
+              child: Icon(
+                Icons.circle,
+                size: 20,
+                color: Pallete.salmonColor,
+              ),
+            ),
+          );
+
+          // Add activity markers
+          for (var actividad in activities) {
+            _markers.add(
+              Marker(
+                point: ltlg.LatLng(actividad.location!.latitude,
+                    actividad.location!.longitude),
+                width: 60,
+                height: 60,
+                alignment: Alignment.centerLeft,
+                child: GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                            content: SingleChildScrollView(
                           child: InkWell(
                             onTap: () {
                               Get.toNamed(
@@ -167,7 +184,8 @@ class _MapScreen extends State<MapScreen> {
                                     width: 100,
                                     height: 100,
                                     child: Image.network(
-                                      actividad.imageUrl ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
+                                      actividad.imageUrl ??
+                                          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCoUtOal33JWLqals1Wq7p6GGCnr3o-lwpQ&s',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -189,7 +207,8 @@ class _MapScreen extends State<MapScreen> {
                                           const SizedBox(height: 8),
                                           Text(
                                             'Description: ${actividad.description}',
-                                            style: const TextStyle(fontSize: 14),
+                                            style:
+                                                const TextStyle(fontSize: 14),
                                           ),
                                           const SizedBox(height: 8),
                                           Row(
@@ -205,15 +224,16 @@ class _MapScreen extends State<MapScreen> {
                                                 itemCount: 5,
                                                 itemSize: 18,
                                                 direction: Axis.horizontal,
-                                                unratedColor:
-                                                    Colors.blueAccent.withAlpha(50),
+                                                unratedColor: Colors.blueAccent
+                                                    .withAlpha(50),
                                               ),
-                                              const SizedBox(width:8), 
+                                              const SizedBox(width: 8),
                                               Text(
-                                                actividad.rate!.toStringAsFixed(1), 
+                                                actividad.rate!
+                                                    .toStringAsFixed(1),
                                                 style: const TextStyle(
                                                   fontSize: 14,
-                                                  color: Colors.amber, 
+                                                  color: Colors.amber,
                                                 ),
                                               ),
                                             ],
@@ -226,21 +246,22 @@ class _MapScreen extends State<MapScreen> {
                               ),
                             ),
                           ),
-                        )
-                      );
-                    },
-                  );
-                },
-                child: Icon(Icons.location_pin,
-                    size: 60, color: Pallete.salmonColor),
+                        ));
+                      },
+                    );
+                  },
+                  child: Icon(Icons.location_pin,
+                      size: 60, color: Pallete.salmonColor),
+                ),
               ),
-            ),
-          );
-        }
+            );
+          }
 
-        isLoading = false;
-      });
+          isLoading = false;
+        });
+      }
     } catch (error) {
+      // Handle error
       Get.snackbar(
         'Error',
         'No se han podido obtener los datos.',
@@ -254,11 +275,13 @@ class _MapScreen extends State<MapScreen> {
 
   void _onDistanceChanged(double? newDistance) {
     if (newDistance != null) {
-      setState(() {
-        selectedDistance = newDistance;
-        box.write('distance', selectedDistance);
-        getData(null);
-      });
+      if (mounted) {
+        setState(() {
+          selectedDistance = newDistance;
+          box.write('distance', selectedDistance);
+          getData(null);
+        });
+      }
     }
   }
 
@@ -268,7 +291,8 @@ class _MapScreen extends State<MapScreen> {
     List<Activity> allActivities = [];
 
     while (hasMore) {
-      List<Activity> activities = await activityService.getData(distance, page, limit, "Date");
+      List<Activity> activities =
+          await activityService.getData(distance, page, limit, "Date");
       allActivities.addAll(activities);
 
       hasMore = activities.length == limit;
@@ -279,29 +303,43 @@ class _MapScreen extends State<MapScreen> {
   }
 
   void useDefaultLocation() {
-    setState(() {
-      initialLocation = widget.defaultLocation;
-      _markers.add(
-        Marker(
-          point: initialLocation,
-          width: 60,
-          height: 60,
-          alignment: Alignment.centerLeft,
-          child: Icon(
-            Icons.circle,
-            size: 20,
-            color: Pallete.salmonColor,
+    if (mounted) {
+      setState(() {
+        initialLocation = widget.defaultLocation;
+        _markers.add(
+          Marker(
+            point: initialLocation,
+            width: 60,
+            height: 60,
+            alignment: Alignment.centerLeft,
+            child: Icon(
+              Icons.circle,
+              size: 20,
+              color: Pallete.salmonColor,
+            ),
           ),
-        ),
-      );
-      isLoading = false;
-    });
+        );
+        isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: Container(
+          color: Pallete.backgroundColor,
+          child: RotationTransition(
+            turns: _controller,
+            child: Image.asset(
+              'assets/spotfinder.png',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
     } else {
       return Stack(
         children: [
@@ -320,17 +358,21 @@ class _MapScreen extends State<MapScreen> {
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: const EdgeInsets.only(top: 20.0),
+              padding: const EdgeInsets.only(top: 10.0),
               child: Stack(
                 children: [
                   Align(
-                    alignment: Alignment.topCenter,
+                    alignment: Alignment.topLeft,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        ParamTextBox(
-                          controller: mapController.searchBarController,
-                          text: 'Scaperoom...',
+                        const SizedBox(width: 40),
+                        SizedBox(
+                          width: 350, // Set the desired width here
+                          child: ParamTextBox(
+                            controller: mapController.searchBarController,
+                            text: 'Scaperoom...',
+                          ),
                         ),
                         IconButton(
                           icon: Icon(
@@ -359,12 +401,14 @@ class _MapScreen extends State<MapScreen> {
                           onChanged: _onDistanceChanged,
                           dropdownColor: Pallete.textColor,
                           style: TextStyle(color: Pallete.backgroundColor),
-                          items: <double>[5.0, 10.0, 20.0, 50.0, 100.0].map((double value) {
+                          items: <double>[5.0, 10.0, 20.0, 50.0, 100.0]
+                              .map((double value) {
                             return DropdownMenuItem<double>(
                               value: value,
                               child: Text(
                                 'Hasta $value km',
-                                style: TextStyle(color: Pallete.backgroundColor),
+                                style:
+                                    TextStyle(color: Pallete.backgroundColor),
                               ),
                             );
                           }).toList(),
@@ -382,7 +426,6 @@ class _MapScreen extends State<MapScreen> {
   }
 }
 
-
 class MapController extends GetxController {
   final TextEditingController searchBarController = TextEditingController();
 
@@ -392,7 +435,8 @@ class MapController extends GetxController {
     List<Activity> allActivities = [];
 
     while (hasMore) {
-      List<Activity> activities = await activityService.getDataByName(distance, page, limit, searchBarController.text);
+      List<Activity> activities = await activityService.getDataByName(
+          distance, page, limit, searchBarController.text);
       allActivities.addAll(activities);
 
       hasMore = activities.length == limit;

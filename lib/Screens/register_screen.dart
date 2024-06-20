@@ -15,7 +15,6 @@ class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _RegisterScreen createState() => _RegisterScreen();
 }
 
@@ -43,128 +42,176 @@ class _RegisterScreen extends State<RegisterScreen> {
       appBar: AppBar(
         title: const Text('SpotFinder'),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/login_background.png'),
-              fit: BoxFit.cover,
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/login_background.png'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Image.asset(
-                'assets/spotfinder.png',
-                height: 90,
-                width: 90,
+          Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height * 0.8,
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(20),
               ),
-              const SizedBox(height: 5), 
-              Container(
-                margin: const EdgeInsets.all(3), 
-                padding: const EdgeInsets.all(3), 
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7), 
-                  borderRadius: BorderRadius.circular(20), 
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Welcome',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    ParamTextBox(controller: controller.nameController, text: 'name'),
-                    const SizedBox(height: 4),
-                    ParamTextBox(controller: controller.mailController, text: 'e-mail'),
-                    const SizedBox(height: 4),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: 200), 
-                      child: Row(
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Expanded(
-                            child: ParamTextBox(
-                              controller: controller.phoneController,
-                              text: 'phone number',
-                              keyboardType: TextInputType.phone,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                    RegExp(r'[\d\s]')),
-                              ],
-                              prefixWidget: Container(
-                                width: double.infinity, 
-                                child: DropdownButtonFormField<String>(
-                                  value: controller.selectedPrefix.value,
-                                  alignment: Alignment.centerRight,
-                                  onChanged: (String? newValue) {
-                                    controller.selectedPrefix.value = newValue!;
-                                  },
-                                  items: PhoneUtils.phonePrefixes
-                                      .map<DropdownMenuItem<String>>(
-                                    (String value) {
-                                      return DropdownMenuItem<String>(
-                                        value: value,
-                                        child: Text(value, style: TextStyle(color: Colors.grey)),
-                                      );
-                                    },
-                                 ).toList(),
-                                  decoration: const InputDecoration(
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 5.6), // Adjusts the padding
-                                  ),
-                                  icon: const Icon(Icons.arrow_drop_down, color: Colors.grey), // Icono de flecha hacia abajo
-                                ),
-                                
-                              ),
+                          Image.asset(
+                            'assets/spotfinder.png',
+                            height: 150,
+                            width: 150,
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'SpotFinder',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 30,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'Find the best spots around you!',
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.white,
                             ),
                           ),
                         ],
                       ),
-                    ), 
-                    const SizedBox(height: 4),
-                    ParamTextBox(
-                      controller: controller.birthdayController,
-                      text: 'birthday',
-                      suffixIcon: IconButton(
-                        icon: Icon(Icons.calendar_today),
-                        onPressed: () => controller.selectDate(context),
-                      ),
-                      editable: false, // Hace que el campo de cumpleaños no sea editable
                     ),
-                    const SizedBox(height: 4),
-                    ParamTextBox(controller: controller.genderController, text: 'gender'),
-                    const SizedBox(height: 4),
-                    ParamTextBox(
-                      controller: controller.contrasenaController, 
-                      text: 'password',
-                      obscureText: _obscureText,
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off,),
-                        onPressed: _togglePasswordVisibility,
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Register',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 30,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            ParamTextBox(
+                              controller: controller.nameController,
+                              text: 'Name',
+                            ),
+                            const SizedBox(height: 10),
+                            ParamTextBox(
+                              controller: controller.mailController,
+                              text: 'E-mail',
+                            ),
+                            const SizedBox(height: 10),
+                            ParamTextBox(
+                              controller: controller.phoneController,
+                              text: 'Phone Number',
+                              keyboardType: TextInputType.phone,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(RegExp(r'[\d\s]')),
+                              ],
+                              prefixWidget: DropdownButtonFormField<String>(
+                                value: controller.selectedPrefix.value,
+                                alignment: Alignment.centerRight,
+                                onChanged: (String? newValue) {
+                                  controller.selectedPrefix.value = newValue!;
+                                },
+                                items: PhoneUtils.phonePrefixes.map<DropdownMenuItem<String>>(
+                                  (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value, style: TextStyle(color: Colors.grey)),
+                                    );
+                                  },
+                                ).toList(),
+                                decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 5.6),
+                                ),
+                                icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            ParamTextBox(
+                              controller: controller.birthdayController,
+                              text: 'Birthday',
+                              suffixIcon: IconButton(
+                                icon: Icon(Icons.calendar_today),
+                                onPressed: () => controller.selectDate(context),
+                              ),
+                              editable: false,
+                            ),
+                            const SizedBox(height: 10),
+                            ParamTextBox(
+                              controller: controller.genderController,
+                              text: 'Gender',
+                            ),
+                            const SizedBox(height: 10),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              child: Column(
+                                key: ValueKey<bool>(_obscureText),
+                                children: [
+                                  ParamTextBox(
+                                    controller: controller.contrasenaController,
+                                    text: 'Password',
+                                    obscureText: _obscureText,
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscureText ? Icons.visibility : Icons.visibility_off,
+                                      ),
+                                      onPressed: _togglePasswordVisibility,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  ParamTextBox(
+                                    controller: controller.confirmcontrasenaController,
+                                    text: 'Confirm Password',
+                                    obscureText: _obscureText,
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscureText ? Icons.visibility : Icons.visibility_off,
+                                      ),
+                                      onPressed: _togglePasswordVisibility,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            SignUpButton(
+                              onPressed: () => controller.signUp(),
+                              text: 'Sign up',
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    ParamTextBox(
-                      controller: controller.confirmcontrasenaController, 
-                      text: 'confirm password', 
-                      obscureText: _obscureText,
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off,),
-                        onPressed: _togglePasswordVisibility,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    SignUpButton(onPressed: () => controller.signUp(), text: 'Sign up')
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -194,8 +241,7 @@ class RegisterController extends GetxController {
     );
     if (pickedDate != null) {
       final utcDate = pickedDate.toUtc();
-      String formattedDate =
-          "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year.toString()}";
+      String formattedDate = "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year.toString()}";
       birthdayController.text = formattedDate;
       date = utcDate.toIso8601String();
     }
@@ -227,7 +273,7 @@ class RegisterController extends GetxController {
         );
         userService.createUser(newUser).then((statusCode) {
           print('Usuario creado exitosamente');
-          Get.toNamed('/login', arguments: {'id' : id});
+          Get.toNamed('/login', arguments: {'id': id});
         }).catchError((error) {
           Get.snackbar(
             'Error',
@@ -248,4 +294,3 @@ class RegisterController extends GetxController {
     }
   }
 }
-

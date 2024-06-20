@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:spotfinder/Models/ActivityModel.dart';
 import 'package:spotfinder/Screens/edit_activity.dart';
-import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Screens/new_activity.dart'; // Importa la nueva pantalla
 import 'package:get/get.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
@@ -23,13 +22,19 @@ class MyActivities extends StatefulWidget {
   _MyActivities createState() => _MyActivities();
 }
 
-class _MyActivities extends State<MyActivities> {
+class _MyActivities extends State<MyActivities>
+    with SingleTickerProviderStateMixin {
   late List<Activity> lista_activities;
   bool isLoading = true;
+  late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
     activityService = ActivityService();
     getData();
   }
@@ -109,9 +114,27 @@ class _MyActivities extends State<MyActivities> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return Center(
+        child: Container(
+          color: Pallete.backgroundColor,
+          child: RotationTransition(
+            turns: _controller,
+            child: Image.asset(
+              'assets/spotfinder.png',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
     } else {
       return Scaffold(
         appBar: AppBar(
@@ -120,21 +143,9 @@ class _MyActivities extends State<MyActivities> {
             style: TextStyle(
               color: Pallete.textColor,
               fontSize: 24,
-              fontWeight: FontWeight.bold,
             ),
           ),
           backgroundColor: Colors.transparent,
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: Icon(
-                Icons.arrow_back,
-                color: Pallete.textColor,
-              ),
-              onPressed: () {
-                Get.to(() => HomePage(initialIndex: 3));
-              },
-            ),
-          ),
         ),
         body: lista_activities.isEmpty
             ? Center(

@@ -1,16 +1,15 @@
 import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:spotfinder/Models/ActivityModel.dart';
-import 'package:spotfinder/Screens/home_page.dart';
-import 'package:spotfinder/Screens/new_activity.dart';
+import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
 import 'package:get/get.dart';
+import 'package:spotfinder/Models/ActivityModel.dart';
+import 'package:spotfinder/Screens/new_activity.dart';
 import 'package:spotfinder/Services/ActivityService.dart';
 import 'package:spotfinder/Widgets/activity_card.dart';
-import 'package:http/http.dart' as http;
 import 'package:spotfinder/Resources/pallete.dart';
 
 late ActivityService activityService;
@@ -22,13 +21,15 @@ class ActivityListPage extends StatefulWidget {
   _ActivityListPageState createState() => _ActivityListPageState();
 }
 
-class _ActivityListPageState extends State<ActivityListPage> {
+class _ActivityListPageState extends State<ActivityListPage>
+    with SingleTickerProviderStateMixin {
   late List<Activity> listaActivities;
+  late AnimationController _controller;
   late List<Activity> sortedActivities;
   bool isLoading = true;
-  bool hasMore = true; 
+  bool hasMore = true;
   Position? position;
-  int currentPage = 1; 
+  int currentPage = 1;
   double selectedDistance = 5.0; // Distancia inicial seleccionada
   String selectedSort = "Date";
   final ScrollController _scrollController = ScrollController();
@@ -38,9 +39,13 @@ class _ActivityListPageState extends State<ActivityListPage> {
   @override
   void initState() {
     super.initState();
-    if(box.read('distance') == null){
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+    if (box.read('distance') == null) {
       box.write('distance', selectedDistance);
-    }else{
+    } else {
       selectedDistance = box.read('distance');
     }
     activityService = ActivityService();
@@ -49,7 +54,9 @@ class _ActivityListPageState extends State<ActivityListPage> {
     getData();
 
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && hasMore) {
+      if (_scrollController.position.pixels ==
+              _scrollController.position.maxScrollExtent &&
+          hasMore) {
         currentPage++;
         getData(page: currentPage);
       }
@@ -59,24 +66,32 @@ class _ActivityListPageState extends State<ActivityListPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _controller.dispose(); // Dispose animation controller
     super.dispose();
   }
 
   void getData({int page = 1, int limit = 10}) async {
+    if (!mounted) return; // Check if the widget is still mounted
     setState(() {
       isLoading = true;
     });
     try {
-      List<Activity> activities = await activityService.getData(selectedDistance * 1000, page, limit, selectedSort); // Filtrar por distancia
+      List<Activity> activities = await activityService.getData(
+          selectedDistance * 1000,
+          page,
+          limit,
+          selectedSort); // Filtrar por distancia
       position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+      if (!mounted) return; // Check again if the widget is still mounted
       setState(() {
         listaActivities.addAll(activities);
         isLoading = false;
-        hasMore = activities.length == limit; 
+        hasMore = activities.length == limit;
       });
     } catch (error) {
+      if (!mounted) return; // Check if the widget is still mounted
       Get.snackbar(
         'Error',
         'No se han podido obtener los datos.',
@@ -90,6 +105,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
 
   void _onDistanceChanged(double? newDistance) {
     if (newDistance != null) {
+      if (!mounted) return; // Check if the widget is still mounted
       setState(() {
         selectedDistance = newDistance;
         box.write('distance', selectedDistance);
@@ -102,6 +118,7 @@ class _ActivityListPageState extends State<ActivityListPage> {
 
   void _onSortChanged(String? newSort) {
     if (newSort != null) {
+      if (!mounted) return; // Check if the widget is still mounted
       setState(() {
         selectedSort = newSort;
         listaActivities = [];
@@ -111,8 +128,10 @@ class _ActivityListPageState extends State<ActivityListPage> {
     }
   }
 
-  Future<String?> _getAddressFromCoordinates(double latitude, double longitude) async {
-    final url = 'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
+  Future<String?> _getAddressFromCoordinates(
+      double latitude, double longitude) async {
+    final url =
+        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json';
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -145,23 +164,25 @@ class _ActivityListPageState extends State<ActivityListPage> {
       return null;
     }
   }
-
-    @override
+  @override
   Widget build(BuildContext context) {
     if (isLoading && listaActivities.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: Container(
+          color: Pallete.backgroundColor,
+          child: RotationTransition(
+            turns: _controller,
+            child: Image.asset(
+              'assets/spotfinder.png',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
     } else {
       return Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back,
-              color:Pallete.textColor, 
-            ),
-            onPressed: () {
-              Get.to(HomePage()); 
-            },
-          ),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -174,57 +195,64 @@ class _ActivityListPageState extends State<ActivityListPage> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                      decoration: BoxDecoration(
-                        color: Pallete.textColor,
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<double>(
-                          value: selectedDistance,
-                          onChanged: _onDistanceChanged,
-                          dropdownColor: Pallete.textColor,
-                          style: TextStyle(color: Pallete.backgroundColor),
-                          items: <double>[5.0, 10.0, 20.0, 50.0, 100.0]
-                              .map((double value) {
-                            return DropdownMenuItem<double>(
-                              value: value,
-                              child: Text('Hasta $value km', style: TextStyle(color: Pallete.backgroundColor)),
-                            );
-                          }).toList(),
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        decoration: BoxDecoration(
+                          color: Pallete.textColor,
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<double>(
+                            value: selectedDistance,
+                            onChanged: _onDistanceChanged,
+                            dropdownColor: Pallete.textColor,
+                            style: TextStyle(color: Pallete.backgroundColor),
+                            items: <double>[5.0, 10.0, 20.0, 50.0, 100.0]
+                                .map((double value) {
+                              return DropdownMenuItem<double>(
+                                value: value,
+                                child: Text('Hasta $value km',
+                                    style: TextStyle(
+                                        color: Pallete.backgroundColor)),
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10,),
-                    // Add your second Container and DropdownButton here
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                      decoration: BoxDecoration(
-                        color: Pallete.textColor,
-                        borderRadius: BorderRadius.circular(8.0),
+                      const SizedBox(
+                        width: 10,
                       ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: selectedSort, // Customize as needed
-                          onChanged: _onSortChanged, // Implement your onChanged function
-                          dropdownColor: Pallete.textColor,
-                          style: TextStyle(color: Pallete.backgroundColor),
-                          items: <String>['Date', 'Rate', 'Proximity']
-                              .map((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text('Sort: $value', style: TextStyle(color: Pallete.backgroundColor)),
-                            );
-                          }).toList(),
+                      // Add your second Container and DropdownButton here
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        decoration: BoxDecoration(
+                          color: Pallete.textColor,
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: selectedSort, // Customize as needed
+                            onChanged:
+                                _onSortChanged, // Implement your onChanged function
+                            dropdownColor: Pallete.textColor,
+                            style: TextStyle(color: Pallete.backgroundColor),
+                            items: <String>['Date', 'Rate', 'Proximity']
+                                .map((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text('Sort: $value',
+                                    style: TextStyle(
+                                        color: Pallete.backgroundColor)),
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ),
-                    ),
-                ],)
-              )
+                    ],
+                  ))
             ],
           ),
           backgroundColor: Colors.transparent,
@@ -248,19 +276,21 @@ class _ActivityListPageState extends State<ActivityListPage> {
                           '/activity/${listaActivities[index].id}',
                           arguments: {'onUpdate': getData},
                         );
-                        listaActivities=[];
-                        sortedActivities=[];
+                        listaActivities = [];
+                        sortedActivities = [];
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                           ActivityCard(_getAddressFromCoordinates,listaActivities[index])
+                          ActivityCard(_getAddressFromCoordinates,
+                              listaActivities[index])
                         ],
                       ),
                     ),
                   );
                 },
-                itemCount: listaActivities.length + (hasMore ? 1 : 0), // Incrementar el count si hay más datos
+                itemCount: listaActivities.length +
+                    (hasMore ? 1 : 0), // Incrementar el count si hay más datos
               ),
             ),
           ],

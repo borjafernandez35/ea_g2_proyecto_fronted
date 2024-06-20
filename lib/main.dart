@@ -8,7 +8,6 @@ import 'package:spotfinder/Screens/activity_detail.dart';
 import 'package:spotfinder/Screens/home_page.dart';
 import 'package:spotfinder/Screens/login_screen.dart';
 import 'package:spotfinder/Screens/register_screen.dart';
-import 'package:spotfinder/Screens/settingsScreen.dart';
 import 'package:spotfinder/Screens/title_screen.dart';
 import 'package:spotfinder/Services/UserService.dart';
 
@@ -45,7 +44,7 @@ class MyApp extends StatelessWidget {
     if (theme == null) {
       box.write('theme', "Light");
     }
-
+    getTheme(theme, font);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (token != null) {
         if (!Get.currentRoute.contains('activity')) {
@@ -59,11 +58,10 @@ class MyApp extends StatelessWidget {
       title: 'SpotFinder',
       theme: getTheme(theme, font),
       getPages: [
-        GetPage(name: '/', page: () => TitleScreen()),
-        GetPage(name: '/home', page: () => HomePage()),
-        GetPage(name: '/login', page: () => LoginScreen()),
-        GetPage(name: '/register', page: () => RegisterScreen()),
-        GetPage(name: '/settings', page: () => SettingsScreen()),
+        GetPage(name: '/', page: () => TitleScreen(), transition: Transition.fade,),
+        GetPage(name: '/home', page: () => HomePage(), transition: Transition.fade),
+        GetPage(name: '/login', page: () => LoginScreen(), transition: Transition.fade),
+        GetPage(name: '/register', page: () => RegisterScreen(), transition: Transition.fade),
         GetPage(
           name: '/activity/:id',
           page: () => ActivityDetail(),

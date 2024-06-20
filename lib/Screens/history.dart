@@ -19,14 +19,19 @@ class HistoryPage extends StatefulWidget {
   _HistoryState createState() => _HistoryState();
 }
 
-class _HistoryState extends State<HistoryPage> {
+class _HistoryState extends State<HistoryPage> with SingleTickerProviderStateMixin {
   late List<Activity> listaActivities;
   late List<String> activities_id;
   bool isLoading = true;
+  late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
     activityService = ActivityService();
     activities_id = widget.user.listActivities!;
     getData();
@@ -99,9 +104,27 @@ class _HistoryState extends State<HistoryPage> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return Center(
+        child: Container(
+          color: Pallete.backgroundColor,
+          child: RotationTransition(
+            turns: _controller,
+            child: Image.asset(
+              'assets/spotfinder.png',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
     } else {
       return Scaffold(
         appBar: AppBar(
@@ -113,21 +136,21 @@ class _HistoryState extends State<HistoryPage> {
           ),
         ),
         body: listaActivities.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'You have not participated or signed up for any activities yet',
-                  style: TextStyle(
-                    color: Pallete.textColor.withOpacity(0.5),
-                    fontSize: 16,
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'You have not participated or signed up for any activities yet',
+                    style: TextStyle(
+                      color: Pallete.textColor.withOpacity(0.5),
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
-            )
-          : SingleChildScrollView(
-              child:ListView.builder(
+              )
+            : SingleChildScrollView(
+                child: ListView.builder(
                   shrinkWrap: true,
                   itemCount: listaActivities.length,
                   itemBuilder: (BuildContext context, int index) {
@@ -157,7 +180,7 @@ class _HistoryState extends State<HistoryPage> {
                     );
                   },
                 ),
-        ),
+              ),
       );
     }
   }

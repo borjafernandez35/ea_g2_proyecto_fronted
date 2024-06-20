@@ -11,7 +11,6 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _LoginScreen createState() => _LoginScreen();
 }
 
@@ -40,7 +39,6 @@ class _LoginScreen extends State<LoginScreen> {
       ),
       body: Stack(
         children: [
-          // Fondo de pantalla
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -49,76 +47,120 @@ class _LoginScreen extends State<LoginScreen> {
               ),
             ),
           ),
-          // Contenido de la pantalla
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Logo de la empresa
-              Image.asset(
-                'assets/spotfinder.png',
-                height: 150,
-                width: 150,
+          Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height * 0.8,
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(20),
               ),
-              const SizedBox(height: 20),
-              Container(
-                margin: const EdgeInsets.all(20), // Ajusta el margen del cuadro negro aquí
-                padding: const EdgeInsets.all(20), // Ajusta el padding del cuadro negro aquí
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7), // Color del cuadro negro con opacidad
-                  borderRadius: BorderRadius.circular(20), // Bordes redondeados del cuadro
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Welcome',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 30,
-                        color: Colors.white,
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/spotfinder.png',
+                            height: 150,
+                            width: 150,
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'SpotFinder',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 30,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'Find the best activities around you!',
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    ParamTextBox(
-                        controller: controller.mailController,
-                        text: 'e-mail',
-                        prefixIcon: Icon(Icons.email)
-                    ),
-                    const SizedBox(height: 10),
-                    ParamTextBox(
-                      controller: controller.contrasenaController,
-                      text: 'Password',
-                      obscureText: _obscureText,
-                      prefixIcon: Icon(Icons.lock),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureText
-                              ? Icons.visibility
-                              : Icons.visibility_off,
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Welcome',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 30,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              child: Column(
+                                key: ValueKey<bool>(_obscureText),
+                                children: [
+                                  ParamTextBox(
+                                    controller: controller.mailController,
+                                    text: 'e-mail',
+                                    prefixIcon: Icon(Icons.email),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  ParamTextBox(
+                                    controller: controller.contrasenaController,
+                                    text: 'Password',
+                                    obscureText: _obscureText,
+                                    prefixIcon: Icon(Icons.lock),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscureText
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
+                                      ),
+                                      onPressed: _togglePasswordVisibility,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            SignInButton(
+                              onPressed: () => controller.logIn(),
+                              text: 'Sign in',
+                            ),
+                            const SizedBox(height: 20),
+                            GestureDetector(
+                              onTap: () {
+                                // Aquí puedes agregar la acción para olvidar la contraseña
+                              },
+                              child: const Text(
+                                'Forgot password?',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        onPressed: _togglePasswordVisibility,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    SignInButton(
-                        onPressed: () => controller.logIn(), text: 'Sign in'),
-                    const SizedBox(height: 10),
-                    // Nuevo texto para olvidar la contraseña
-                    GestureDetector(
-                      onTap: () {
-                        // Aquí puedes agregar la acción para olvidar la contraseña
-                      },
-                      child: const Text(
-                        'Forgot password?',
-                        style: TextStyle(
-                          color: Colors.white,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -156,7 +198,6 @@ class Controller extends GetxController {
           }
           contrasenaController.text = '';
         }).catchError((error) {
-          // Manejar errores de solicitud HTTP
           Get.snackbar(
             'Error',
             'Los datos introducidos son incorrectos. Prueba otra vez.',

@@ -38,10 +38,10 @@ class ActivityDetail extends StatefulWidget {
   _ActivityDetail createState() => _ActivityDetail();
 }
 
-class _ActivityDetail extends State<ActivityDetail> {
+class _ActivityDetail extends State<ActivityDetail> with SingleTickerProviderStateMixin {
   final ActivityDetailController controllerActivityDetail =
       Get.put(ActivityDetailController());
-
+  late AnimationController _controller;
   Future<String?>? _addressFuture;
   bool isLoading = true;
   bool showReviewForm = false;
@@ -56,6 +56,10 @@ class _ActivityDetail extends State<ActivityDetail> {
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
     alreadyCommented = false;
     userService = UserService();
     activityService = ActivityService();
@@ -64,6 +68,13 @@ class _ActivityDetail extends State<ActivityDetail> {
     onUpdate = Get.arguments?['onUpdate'];
     getActivity();
     setupMapTheme();
+  }
+
+  
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Future<void> getActivity() async {
@@ -270,7 +281,19 @@ class _ActivityDetail extends State<ActivityDetail> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: Container(
+          color: Pallete.backgroundColor,
+          child: RotationTransition(
+            turns: _controller,
+            child: Image.asset(
+              'assets/spotfinder.png',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
     } else {
       return Scaffold(
         appBar: AppBar(
@@ -386,7 +409,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            DateFormat('hh:mm a').format(activity.date.toLocal()),
+                            DateFormat('hh:mm a')
+                                .format(activity.date.toLocal()),
                             style: TextStyle(
                               color: Pallete.textColor,
                               fontWeight: FontWeight.bold,
@@ -720,8 +744,8 @@ class _ActivityDetail extends State<ActivityDetail> {
                                       controller: controllerActivityDetail
                                           .contentController,
                                       maxLines: 5,
-                                      style: TextStyle(
-                                          color: Pallete.textColor),
+                                      style:
+                                          TextStyle(color: Pallete.textColor),
                                       decoration: InputDecoration(
                                         hintText: 'Enter content',
                                         filled: true,

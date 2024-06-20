@@ -23,28 +23,28 @@ class ParamTextBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: const BoxConstraints(
-        maxWidth: 200,
+        maxWidth: 400,
       ),
       child: TextFormField(
         controller: controller,
         obscureText: obscureText,
         style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
         decoration: InputDecoration(
-          filled: true, // Habilita el relleno del campo de texto
-          fillColor: Colors.white, // Establece el color de fondo blanco
+          filled: true,
+          fillColor: Colors.white,
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(
               color: Pallete.backgroundColor,
               width: 2,
             ),
-            borderRadius: BorderRadius.circular(50),
+            borderRadius: BorderRadius.circular(0),
           ),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(
               color: Pallete.salmonColor,
               width: 2,
             ),
-            borderRadius: BorderRadius.circular(50),
+            borderRadius: BorderRadius.circular(0),
           ),
           hintText: text,
           hintStyle: const TextStyle(
@@ -69,4 +69,5 @@ class ParamTextBox extends StatelessWidget {
     );
   }
 }
+
 
